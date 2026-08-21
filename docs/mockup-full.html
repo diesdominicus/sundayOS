@@ -70,12 +70,13 @@ table.hw{width:100%;border-collapse:collapse;}
 table.hw th{font-size:11px;color:var(--soft);font-weight:600;padding:0 0 8px;text-align:center;}
 table.hw td{padding:6px 0;font-size:13.5px;}
 table.hw td.first{text-align:left;padding-right:8px;}
-table.hw td.c{text-align:center;}
-.dot{width:20px;height:20px;border-radius:6px;border:2px solid var(--sea-bg);display:inline-grid;place-items:center;}
+table.hw td.c{text-align:center;padding:3px 2px;}
+.dot{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:var(--surface2);display:inline-grid;place-items:center;cursor:pointer;-webkit-appearance:none;font-family:inherit;touch-action:manipulation;transition:background .12s,border-color .12s;}
+.dot:active{transform:scale(.9);}
 .dot.on{background:var(--sea);border-color:var(--sea);}
-.dot.on svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3;}
+.dot.on svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3;}
 .dot.lem.on{background:var(--lemon);border-color:var(--lemon);}
-.dot.today{outline:2px solid var(--lemon);outline-offset:1px;}
+.dot.today{outline:2px solid var(--lemon);outline-offset:2px;}
 .hfoot{display:flex;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);font-size:13px;color:var(--soft);}
 .hfoot .streak{color:var(--lemon);font-weight:600;}
 
@@ -307,29 +308,18 @@ textarea.note-input:focus{border-color:var(--sea);}
 <!-- ── CALENDAR ── -->
 <div class="section" id="s-calendar">
   <div class="page-title">Calendar</div>
-  <div class="page-sub">Your important dates, feast days &amp; birthdays.</div>
+  <div class="page-sub">Your important dates, feast days &amp; birthdays. Tap a day to add an event.</div>
   <div class="card" style="max-width:520px;margin-bottom:18px;">
     <div class="cal-month">
-      <button>‹</button>
-      <h3>August 2026</h3>
-      <button>›</button>
+      <button onclick="calPrev()">‹</button>
+      <h3 id="cal-month-label">August 2026</h3>
+      <button onclick="calNext()">›</button>
     </div>
-    <div class="cal-grid">
-      <div class="ch">M</div><div class="ch">T</div><div class="ch">W</div><div class="ch">T</div><div class="ch">F</div><div class="ch">S</div><div class="ch">S</div>
-      <div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd past">1</div><div class="cd past">2</div>
-      <div class="cd past">3</div><div class="cd past">4</div><div class="cd past">5</div><div class="cd past">6</div><div class="cd past">7</div><div class="cd today">8</div><div class="cd">9</div>
-      <div class="cd">10</div><div class="cd">11</div><div class="cd">12</div><div class="cd">13</div><div class="cd">14</div><div class="cd has-event">15</div><div class="cd">16</div>
-      <div class="cd">17</div><div class="cd">18</div><div class="cd">19</div><div class="cd">20</div><div class="cd">21</div><div class="cd">22</div><div class="cd">23</div>
-      <div class="cd has-event">24</div><div class="cd">25</div><div class="cd">26</div><div class="cd">27</div><div class="cd">28</div><div class="cd">29</div><div class="cd">30</div>
-      <div class="cd">31</div>
-    </div>
+    <div class="cal-grid" id="cal-grid"></div>
   </div>
   <div class="card" style="max-width:520px;">
-    <h3 class="lbl">upcoming</h3>
-    <div class="up"><span>✝️ Assumption of Mary</span><span class="when">Aug 15</span></div>
-    <div class="up"><span>🎂 Mom's birthday</span><span class="when">Aug 24</span></div>
-    <div class="up"><span>📖 Confession due</span><span class="when">Aug 22</span></div>
-    <div class="up"><span class="love">❤ Date or young-adult event</span><span class="when">by Aug 31</span></div>
+    <h3 class="lbl">upcoming <span class="r" style="cursor:pointer" onclick="addCalEvent()">+ add event</span></h3>
+    <div id="cal-upcoming"></div>
   </div>
 </div>
 
@@ -852,9 +842,9 @@ function renderHabitTable(tableId, weekOffset){
       const isFuture = d > now;
       const cls = 'dot' + (h.isLemon?' lem':'') + (done?' on':'') + (isToday?' today':'');
       if(isFuture && !done){
-        html += `<td class="c"><span class="${cls}" style="opacity:.3;cursor:default;"></span></td>`;
+        html += `<td class="c"><button class="${cls}" style="opacity:.3;cursor:default;" disabled></button></td>`;
       } else {
-        html += `<td class="c"><span class="${cls}" style="cursor:pointer" onclick="toggleHabit('${h.id}','${dk}')">${done?CK:''}</span></td>`;
+        html += `<td class="c"><button class="${cls}" onclick="toggleHabit('${h.id}','${dk}')">${done?CK:''}</button></td>`;
       }
     });
     html += '</tr>';
@@ -1463,6 +1453,22 @@ function renderTravelLists(){
   function proj([lon,lat]){return [(lon+180)*(1000/360),(90-lat)*(500/180)];}
   function mkPath(pts){return pts.map((p,i)=>(i?'L':'M')+proj(p).map(v=>v.toFixed(1)).join(',')).join(' ')+'Z';}
 
+  // Country centroids [lon, lat] for pin placement
+  const CENTROIDS={
+    'Canada':[-96,60],'USA':[-98,38],'Alaska':[-153,64],'Mexico':[-102,24],
+    'Cuba':[-80,22],'Colombia':[-74,4],'Venezuela':[-66,8],'Brazil':[-51,-10],
+    'Argentina':[-64,-34],'Chile':[-71,-30],'Peru':[-76,-10],'Iceland':[-19,65],
+    'Norway':[15,65],'Sweden':[18,62],'Finland':[26,64],'UK':[-2,54],
+    'Ireland':[-8,53],'France':[2,46],'Spain':[-4,40],'Portugal':[-8,39],
+    'Germany':[10,51],'Poland':[20,52],'Italy':[12,43],'Greece':[22,39],
+    'Switzerland':[8,47],'Netherlands':[5,52],'Austria':[14,47],'Denmark':[10,56],
+    'Russia':[90,60],'Turkey':[35,39],'Morocco':[-6,32],'Algeria':[3,28],
+    'Nigeria':[8,10],'Egypt':[30,27],'Kenya':[37,0],'South Africa':[25,-29],
+    'Saudi Arabia':[45,24],'Iran':[53,32],'India':[78,22],'China':[105,35],
+    'Japan':[138,37],'South Korea':[128,36],'Thailand':[101,15],'Vietnam':[106,16],
+    'Indonesia':[118,-2],'Australia':[134,-25],'New Zealand':[172,-41]
+  };
+
   function renderMap(){
     const svg=document.getElementById('travel-map');
     if(!svg) return;
@@ -1470,12 +1476,31 @@ function renderTravelLists(){
     const VISITED = data.visited.map(t=>t.country);
     const WISHLIST = data.wishlist.map(t=>t.country);
     let html='';
+    // Country polygons
     Object.entries(W).forEach(([name,pts])=>{
       const vis=VISITED.includes(name), wl=WISHLIST.includes(name);
       const fill=vis?'#6E9A5E':wl?'#E7B12F':'#C8DCE8';
-      const op=vis||wl?'0.88':'0.55';
-      const sw=vis||wl?'1':'0.4';
+      const op=vis||wl?'0.9':'0.5';
+      const sw=vis||wl?'1.2':'0.4';
       html+=`<path d="${mkPath(pts)}" fill="${fill}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"><title>${name}</title></path>`;
+    });
+    // Flag pins for visited + wishlist countries
+    const pin=(x,y,flag,color)=>{
+      const px=x.toFixed(1), py=y.toFixed(1);
+      return `<g transform="translate(${px},${py})">
+        <circle r="11" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+        <text text-anchor="middle" dominant-baseline="central" font-size="12">${flag}</text>
+      </g>`;
+    };
+    data.visited.forEach(t=>{
+      const c=CENTROIDS[t.country]; if(!c) return;
+      const [px,py]=proj(c);
+      html+=pin(px,py,FLAGS[t.country]||'🌍','#6E9A5E');
+    });
+    data.wishlist.forEach(t=>{
+      const c=CENTROIDS[t.country]; if(!c) return;
+      const [px,py]=proj(c);
+      html+=pin(px,py,FLAGS[t.country]||'🌍','#E7B12F');
     });
     svg.innerHTML=html;
   }
@@ -1503,6 +1528,134 @@ function renderTravelLists(){
   if(tEl){ obs.observe(tEl,{attributes:true,attributeFilter:['class']}); if(tEl.classList.contains('active')){ renderMap(); renderTravelLists(); } }
 })();
 
+// ═══════ CALENDAR ═══════
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+const FEAST_DATES = {
+  '01-01':'🕊️ Mary, Mother of God','03-19':'⚜️ St. Joseph','03-25':'✨ The Annunciation',
+  '06-29':'⚓ Sts. Peter & Paul','07-22':'🌹 St. Mary Magdalene','08-06':'✦ The Transfiguration',
+  '08-08':'✦ St. Dominic','08-15':'⭐ Assumption of Mary','08-22':'👑 Queenship of Mary',
+  '09-29':'⚔️ Sts. Michael, Gabriel & Raphael','10-07':'📿 Our Lady of the Rosary',
+  '11-01':'🕯️ All Saints','11-02':'🕯️ All Souls','12-08':'🌟 Immaculate Conception',
+  '12-25':'🎄 Christmas'
+};
+
+function getCalEvents(){
+  return DB.get('cal_events', [
+    {date:'2026-08-15', label:'✝️ Assumption of Mary', type:'feast'},
+    {date:'2026-08-24', label:'🎂 Mom\'s birthday', type:'birthday'},
+  ]);
+}
+
+function renderCalendar(){
+  const grid = document.getElementById('cal-grid');
+  const label = document.getElementById('cal-month-label');
+  const upEl = document.getElementById('cal-upcoming');
+  if(!grid) return;
+
+  const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  label.textContent = MON[calMonth] + ' ' + calYear;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(calYear, calMonth, 1);
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const startDow = (first.getDay()+6)%7; // Monday=0
+  const events = getCalEvents();
+
+  // feast days this month
+  const mmStr = String(calMonth+1).padStart(2,'0');
+
+  let html = '<div class="ch">M</div><div class="ch">T</div><div class="ch">W</div><div class="ch">T</div><div class="ch">F</div><div class="ch">S</div><div class="ch">S</div>';
+  for(let i=0; i<startDow; i++) html += '<div class="cd empty"></div>';
+
+  for(let d=1; d<=daysInMonth; d++){
+    const dt = new Date(calYear, calMonth, d);
+    const isToday = dt.getTime()===today.getTime();
+    const isPast = dt < today;
+    const dk = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const ddStr = String(d).padStart(2,'0');
+    const mmdd = mmStr+'-'+ddStr;
+    const hasEvent = events.some(e=>e.date===dk) || !!FEAST_DATES[mmdd];
+    let cls = 'cd';
+    if(isToday) cls += ' today';
+    else if(isPast) cls += ' past';
+    if(hasEvent) cls += ' has-event';
+    html += `<div class="${cls}" onclick="calDayClick('${dk}',${d})" style="cursor:pointer">${d}</div>`;
+  }
+  grid.innerHTML = html;
+
+  // Upcoming events (next 60 days)
+  const nowTs = today.getTime();
+  const cutoff = nowTs + 60*864e5;
+  const upcoming = [];
+
+  // Add feast days
+  for(let d=1; d<=daysInMonth; d++){
+    const dk = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const ddStr = String(d).padStart(2,'0');
+    const feast = FEAST_DATES[mmStr+'-'+ddStr];
+    if(feast){
+      const dt = new Date(calYear,calMonth,d).getTime();
+      if(dt>=nowTs&&dt<=cutoff) upcoming.push({date:dk, label:feast, type:'feast'});
+    }
+  }
+  // Add user events
+  events.forEach(e=>{
+    const dt = new Date(e.date).getTime();
+    if(dt>=nowTs&&dt<=cutoff) upcoming.push(e);
+  });
+  upcoming.sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(!upcoming.length){
+    upEl.innerHTML = '<div style="color:var(--soft);font-size:14px;">No upcoming events. Tap a day to add one.</div>';
+  } else {
+    upEl.innerHTML = upcoming.slice(0,8).map(e=>{
+      const dt = new Date(e.date+'T00:00:00');
+      const diff = Math.round((dt-today)/864e5);
+      const when = diff===0?'today':diff===1?'tomorrow':`in ${diff} days`;
+      return `<div class="up">
+        <span>${e.label}</span>
+        <span class="when">${when}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+window.calPrev = function(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); };
+window.calNext = function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); };
+
+window.calDayClick = function(dk, day){
+  const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const feast = FEAST_DATES[String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0')];
+  let msg = feast ? `${feast}\n\nAdd your own event for ${MON[calMonth]} ${day}?` : `Add event for ${MON[calMonth]} ${day}?`;
+  const label = prompt(msg);
+  if(!label) return;
+  const events = getCalEvents();
+  events.push({date:dk, label, type:'personal'});
+  DB.set('cal_events', events);
+  renderCalendar();
+  sendToSheets('Calendar',['Date','EventDate','Event','Type'],[todayStr(),dk,label,'personal']);
+  showToast('Event added ✓');
+};
+
+window.addCalEvent = function(){
+  const dateStr = prompt('Date? (YYYY-MM-DD)'); if(!dateStr) return;
+  const label = prompt('Event name?'); if(!label) return;
+  const events = getCalEvents();
+  events.push({date:dateStr, label, type:'personal'});
+  DB.set('cal_events', events);
+  renderCalendar();
+  showToast('Event added ✓');
+};
+
+// Render calendar when navigated to
+const calObs = new MutationObserver(()=>{
+  if(document.getElementById('s-calendar')?.classList.contains('active')) renderCalendar();
+});
+const calEl = document.getElementById('s-calendar');
+if(calEl){ calObs.observe(calEl,{attributes:true,attributeFilter:['class']}); }
+
 // ═══════ MOOD PICKER ═══════
 document.querySelectorAll('.mood-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -1525,6 +1678,7 @@ document.querySelectorAll('.mood-btn').forEach(btn=>{
   renderCollections();
   renderTravelLists();
   renderWordOfYear();
+  renderCalendar();
   updateStreaks();
 })();
 </script>
