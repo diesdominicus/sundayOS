@@ -265,7 +265,7 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="litday" id="litday"></div>
       <div id="feastwrap"></div>
       <h2 id="greet">good morning, Domenica</h2>
-      <div class="sub" id="hero-sub">5 of 8 habits today · Mass 4/5 this week</div>
+      <div class="sub" id="hero-sub"></div>
       <div class="wx" id="wx"><span class="m">loading weather…</span></div>
     </div>
   </section>
@@ -496,7 +496,8 @@ textarea.note-input:focus{border-color:var(--sea);}
         <span style="font-size:18px;color:var(--soft);">lb</span>
         <span style="font-size:13px;color:var(--soft);margin-left:4px;">goal: 145 lb</span>
       </div>
-      <div class="field-row"><label>Today</label><input type="number" id="body-weight-input" placeholder="lb" step="0.1"></div>
+      <div class="field-row"><label>Weight</label><input type="number" id="body-weight-input" placeholder="lb" step="0.1"></div>
+      <div class="field-row"><label>Date</label><input type="date" id="body-date-input"></div>
       <button class="btn" style="margin-top:4px;" onclick="saveBody()">Save</button>
     </div>
     <div class="card">
@@ -967,14 +968,48 @@ document.getElementById('branch').innerHTML='<path d="M205 4 C150 18 120 40 96 7
   const FEASTS={'01-01':'Mary, Mother of God','03-19':'St. Joseph','03-25':'the Annunciation','06-29':'Sts. Peter and Paul','07-22':'St. Mary Magdalene','08-06':'the Transfiguration','08-08':'St. Dominic','08-15':'the Assumption of Mary','08-22':'the Queenship of Mary','09-29':'Sts. Michael, Gabriel & Raphael','10-07':'Our Lady of the Rosary','11-01':'All Saints','11-02':'All Souls','12-08':'the Immaculate Conception','12-25':'the Nativity of the Lord'};
   const NAMEDAY={'08-08':true};
   const mmdd=String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  // Liturgical day + feast
   const litEl=document.getElementById('litday');if(litEl) litEl.textContent=litDay(now);
   if(FEASTS[mmdd]){const fw=document.getElementById('feastwrap');if(fw) fw.innerHTML='<span class="feast">✦ '+(NAMEDAY[mmdd]?'<b>'+FEASTS[mmdd]+'</b> · your name day ✨':FEASTS[mmdd])+'</span>';}
+  // Greeting
   const hr=now.getHours();const gEl=document.getElementById('greet');if(gEl) gEl.textContent=(hr<12?'good morning':hr<18?'good afternoon':'good evening')+', Domenica';
+  // Full date in hero subtitle
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const ordinal=n=>n+(n%10===1&&n!==11?'st':n%10===2&&n!==12?'nd':n%10===3&&n!==13?'rd':'th');
+  const heroSub=document.getElementById('hero-sub');
+  if(heroSub) heroSub.textContent=DAYS[now.getDay()]+', '+MONTHS[now.getMonth()]+' '+ordinal(now.getDate())+' '+now.getFullYear();
+  // Week range for habit tables
   const wkSun=sundayOnOrBefore(now);const mon=new Date(wkSun);mon.setDate(wkSun.getDate()+1);const sun=new Date(mon);sun.setDate(mon.getDate()+6);
   const MOA=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const wkr=MOA[mon.getMonth()]+' '+mon.getDate()+'–'+sun.getDate();
   ['wkrange','wkrange2'].forEach(id=>{const el=document.getElementById(id);if(el) el.textContent=wkr;});
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=temperature_2m,weather_code&temperature_unit=fahrenheit').then(r=>r.json()).then(j=>{const m={0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',51:'light drizzle',61:'light rain',63:'rain',80:'showers',95:'storm'}[j.current.weather_code]||'—';const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="t">'+Math.round(j.current.temperature_2m)+'°</span><span class="m">New York City<br>'+m+'</span>';}).catch(()=>{const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="m">weather offline</span>';});
+  // Weather with emoji
+  const WX_EMOJI={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=temperature_2m,weather_code&temperature_unit=fahrenheit').then(r=>r.json()).then(j=>{
+    const code=j.current.weather_code;
+    const emoji=WX_EMOJI[code]||'🌡️';
+    const desc={0:'clear',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',51:'drizzle',61:'light rain',63:'rain',71:'light snow',73:'snow',80:'showers',95:'thunderstorm'}[code]||'';
+    const wx=document.getElementById('wx');
+    if(wx) wx.innerHTML=`<span style="font-size:28px;line-height:1;">${emoji}</span><span class="t">${Math.round(j.current.temperature_2m)}°</span><span class="m">New York City${desc?'<br>'+desc:''}</span>`;
+  }).catch(()=>{const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="m">weather offline</span>';});
+  // Rotating quotes — add yours to the Quotes tab in your Google Sheet
+  const QUOTES=[
+    {q:'Be who God meant you to be and you will set the world on fire.',a:'St. Catherine of Siena'},
+    {q:'You have made us for yourself, O Lord, and our heart is restless until it rests in you.',a:'St. Augustine'},
+    {q:'Start by doing what\'s necessary, then what\'s possible, and suddenly you are doing the impossible.',a:'St. Francis of Assisi'},
+    {q:'God does not ask about our ability or our inability, but our availability.',a:'Mary Kay Ash'},
+    {q:'To fall in love with God is the greatest romance; to seek him, the greatest adventure.',a:'St. Augustine'},
+    {q:'Don\'t pray when you feel like it. Have an appointment with the Lord and keep it.',a:'Corrie ten Boom'},
+    {q:'A saint is not someone who never sins, but one who sins less and less and gets up faster and faster.',a:'St. Francis de Sales'},
+    {q:'If you are what you should be, you will set the whole world ablaze.',a:'St. Catherine of Siena'},
+  ];
+  // Pick quote by day-of-year so it changes daily but is consistent all day
+  const doy=Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);
+  const q=QUOTES[doy%QUOTES.length];
+  const qEl=document.getElementById('qp');const qCite=document.querySelector('.quote cite');
+  if(qEl) qEl.textContent='“'+q.q+'”';
+  if(qCite) qCite.textContent='— '+q.a;
 })();
 
 // ═══════ COLLECTIONS ═══════
@@ -1043,7 +1078,7 @@ const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWV
 
 // ── Keys that travel between devices via Sheets ──
 const SYNC_KEYS=['habits_def','habit_logs','today_log','brain','body','money',
-                 'relationships','cal_events','collections','travel'];
+                 'relationships','cal_events','collections','travel','gcal_ics_url'];
 
 // Push full state to Sheets _AppSync tab — called after every save
 function saveAllToSheets(){
@@ -1192,12 +1227,20 @@ window.removePrayer = function(i){
 
 window.saveBody = function(){
   const w = document.getElementById('body-weight-input')?.value || '';
-  if(!w) return;
-  DB.push('body', {date:todayStr(), type:'weight', value:parseFloat(w), unit:'lb'});
+  if(!w){ showToast('Enter a weight first'); return; }
+  const dateInput = document.getElementById('body-date-input')?.value;
+  const date = dateInput || new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  // Remove existing entry for same date then add new one
+  const existing = DB.get('body',[]).filter(e=>!(e.type==='weight'&&e.date===date));
+  existing.unshift({date, type:'weight', value:parseFloat(w), unit:'lb'});
+  existing.sort((a,b)=>b.date.localeCompare(a.date)); // newest first
+  DB.set('body', existing);
   renderBodyDisplay();
   document.getElementById('body-weight-input').value = '';
+  // Set date input back to today
+  document.getElementById('body-date-input').value = new Date().toISOString().slice(0,10);
   showToast('Weight logged ✓');
-  sendToSheets('Body',['Date','Type','Value','Unit'],[todayStr(),'weight',w,'lb']);
+  sendToSheets('Body',['Date','Type','Value','Unit'],[date,'weight',w,'lb']);
   saveAllToSheets();
 };
 
