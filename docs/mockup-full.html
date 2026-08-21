@@ -362,79 +362,37 @@ textarea.note-input:focus{border-color:var(--sea);}
   </div>
 </div>
 
-<!-- ── DAILY: GRATITUDE ── -->
-<div class="section" id="s-daily-gratitude">
-  <div class="page-title">Gratitude</div>
-  <div class="page-sub">Three things, every day. Your therapist was right.</div>
+<!-- ── DAILY: TODAY ── -->
+<div class="section" id="s-daily-today">
+  <div class="page-title">Today</div>
+  <div class="page-sub">One or two sentences. Every day. 365 days of your life.</div>
   <div class="cards">
     <div class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>today — Aug 8</h3>
-      <div class="field-row"><label style="color:var(--lemon);font-weight:700;">1</label><input type="text" value="Slow rosary in the rain"></div>
-      <div class="field-row"><label style="color:var(--lemon);font-weight:700;">2</label><input type="text" value="Mom called just to say hi"></div>
-      <div class="field-row"><label style="color:var(--lemon);font-weight:700;">3</label><input type="text" value="Lemon &amp; olive oil on warm bread"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-        <span style="font-size:13px;color:var(--soft);" id="grat-streak">🔥 0-day streak</span>
-        <button class="btn" onclick="saveGratitude()">Save</button>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>log today</h3>
+      <textarea class="note-input" id="today-text" style="min-height:80px;" placeholder="In a sentence or two — what did today hold?"></textarea>
+      <div style="margin:12px 0 16px;">
+        <div style="font-size:12px;color:var(--soft);margin-bottom:8px;">how did today feel?</div>
+        <div id="today-mood-btns" style="display:flex;gap:8px;">
+          <button class="mood-star" data-v="1" onclick="selectMood(1)" style="font-size:22px;background:none;border:2px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;">😞</button>
+          <button class="mood-star" data-v="2" onclick="selectMood(2)" style="font-size:22px;background:none;border:2px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;">😕</button>
+          <button class="mood-star" data-v="3" onclick="selectMood(3)" style="font-size:22px;background:none;border:2px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;">😐</button>
+          <button class="mood-star" data-v="4" onclick="selectMood(4)" style="font-size:22px;background:none;border:2px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;">😊</button>
+          <button class="mood-star" data-v="5" onclick="selectMood(5)" style="font-size:22px;background:none;border:2px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;">🌟</button>
+        </div>
       </div>
+      <button class="btn" onclick="saveToday()">Save day</button>
     </div>
     <div class="card">
-      <h3 class="lbl">recent</h3>
-      <div id="grat-recent"><div style="color:var(--soft);font-size:14px;">No entries yet.</div></div>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 12l4-4 4 4 4-4"/></svg>mood over time</h3>
+      <div id="today-mood-chart" style="margin-top:4px;"></div>
     </div>
-  </div>
-</div>
-
-<!-- ── DAILY: EXAMEN ── -->
-<div class="section" id="s-daily-examen">
-  <div class="page-title">Evening Examen</div>
-  <div class="page-sub">Five minutes at the end of the day, with God.</div>
-  <div class="card" style="max-width:620px;">
-    <div class="examen-step">
-      <div class="step-num">1</div>
-      <div><div class="step-q">Become aware of God's presence.</div><div class="step-hint">Take a breath. Rest in gratitude that He is here.</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What does His presence feel like right now?"></textarea></div>
-    </div>
-    <div class="examen-step">
-      <div class="step-num">2</div>
-      <div><div class="step-q">Review the day with gratitude.</div><div class="step-hint">Walk through the day's gifts — big and small.</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What am I most grateful for today?"></textarea></div>
-    </div>
-    <div class="examen-step">
-      <div class="step-num">3</div>
-      <div><div class="step-q">Notice your emotions.</div><div class="step-hint">Where did you feel consolation? Desolation?</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What stirred in me today?"></textarea></div>
-    </div>
-    <div class="examen-step">
-      <div class="step-num">4</div>
-      <div><div class="step-q">Choose one feature of the day and pray with it.</div><div class="step-hint">A moment that stood out — good or hard.</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What do I want to sit with?"></textarea></div>
-    </div>
-    <div class="examen-step">
-      <div class="step-num">5</div>
-      <div><div class="step-q">Look toward tomorrow.</div><div class="step-hint">What is God asking of you tomorrow?</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="One intention for tomorrow..."></textarea></div>
-    </div>
-    <div style="margin-top:18px;display:flex;gap:10px;">
-      <button class="btn" onclick="saveExamen()">Save examen</button>
-      <button class="btn btn-ghost" onclick="document.querySelectorAll('#s-daily-examen textarea').forEach(t=>t.value='')">Clear</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── DAILY: PRAYER ── -->
-<div class="section" id="s-daily-prayer">
-  <div class="page-title">Prayer Intentions</div>
-  <div class="page-sub">Who and what you're carrying to God.</div>
-  <div class="cards">
-    <div class="card">
-      <h3 class="lbl">active intentions</h3>
-      <div id="prayer-list"><div style="color:var(--soft);font-size:14px;padding:10px 0;">No intentions yet. Add one below.</div></div>
-      <div style="margin-top:16px;display:flex;gap:10px;">
-        <input type="text" id="prayer-input" class="note-input" style="min-height:auto;padding:9px 12px;font-size:14px;font-family:var(--sans);" placeholder="Add an intention…">
-        <button class="btn" style="white-space:nowrap;" onclick="savePrayer()">Add</button>
-      </div>
+    <div class="card" style="column-span:all;">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>word cloud <span style="font-size:12px;font-weight:400;color:var(--soft);margin-left:6px;">from all your entries</span></h3>
+      <div id="today-wordcloud" style="min-height:80px;padding:8px 0;"></div>
     </div>
     <div class="card">
-      <h3 class="lbl">sacraments log</h3>
-      <div class="row"><span>Last confession</span><span class="soft">Jul 26</span></div>
-      <div class="row"><span>Next due</span><span style="color:#B4532E;font-size:13px;">Aug 9 (overdue)</span></div>
-      <div class="row"><span>Mass this week</span><span class="soft">4 / 5</span></div>
-      <div class="row"><span>Adoration this week</span><span class="soft">4 / 5</span></div>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>recent days</h3>
+      <div id="today-log"></div>
     </div>
   </div>
 </div>
@@ -443,13 +401,13 @@ textarea.note-input:focus{border-color:var(--sea);}
 <div class="section" id="s-daily-brain">
   <div class="page-title">Brain Dump</div>
   <div class="page-sub">Get it out of your head. No structure, no pressure.</div>
-  <div class="card" style="max-width:640px;">
-    <textarea class="note-input" id="brain-textarea" style="min-height:280px;" placeholder="Whatever's in your head — to-dos, worries, ideas, random thoughts. Just get it out."></textarea>
-    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;">
-      <span style="font-size:12px;color:var(--soft);">Each save creates a new entry.</span>
-      <button class="btn" onclick="saveBrain()">Save note</button>
+  <div class="card" style="max-width:640px;margin-bottom:18px;">
+    <textarea class="note-input" id="brain-textarea" style="min-height:160px;" placeholder="Whatever's in your head — to-dos, worries, ideas, random thoughts. Just get it out."></textarea>
+    <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+      <button class="btn" onclick="saveBrain()">Post note</button>
     </div>
   </div>
+  <div id="brain-board" style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;padding:4px;"></div>
 </div>
 
 <!-- ── LIFE GOALS: GOALS ── -->
@@ -533,21 +491,22 @@ textarea.note-input:focus{border-color:var(--sea);}
 <!-- ── LIFE GOALS: BODY ── -->
 <div class="section" id="s-goals-body">
   <div class="page-title">Body</div>
-  <div class="page-sub">Weight, exercise, and how you feel physically.</div>
+  <div class="page-sub">Weight log and trend. Goal: 145 lb.</div>
   <div class="cards">
     <div class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 12l2-2 4 4 8-8 4 4"/></svg>weight</h3>
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;"><span style="font-size:28px;font-weight:700;" id="body-weight-display">—</span><span style="font-size:16px;color:var(--soft);">lb</span><span style="font-size:13px;color:var(--soft);margin-left:6px;">goal: 145 lb</span></div>
-      <div class="chart-ph">📈 weight trend chart (last 30 days)</div>
-      <div class="field-row"><label>Log today</label><input type="number" id="body-weight-input" placeholder="lb"></div>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 12l2-2 4 4 8-8 4 4"/></svg>log weight</h3>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px;">
+        <span style="font-size:36px;font-weight:700;" id="body-weight-display">—</span>
+        <span style="font-size:18px;color:var(--soft);">lb</span>
+        <span style="font-size:13px;color:var(--soft);margin-left:4px;">goal: 145 lb</span>
+      </div>
+      <div class="field-row"><label>Today</label><input type="number" id="body-weight-input" placeholder="lb" step="0.1"></div>
       <button class="btn" style="margin-top:4px;" onclick="saveBody()">Save</button>
     </div>
     <div class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>exercise log</h3>
-      <div class="row"><span>Aug 8</span><span class="soft">Arms · 12 min</span></div>
-      <div class="row"><span>Aug 6</span><span class="soft">Abs · 10 min</span></div>
-      <div class="row"><span>Aug 4</span><span class="soft">Legs · 15 min</span></div>
-      <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;">+ Log workout</button></div>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 4-7"/></svg>trend — last 30 entries</h3>
+      <div id="body-chart" style="margin:4px 0 12px;overflow-x:auto;"></div>
+      <div id="body-log" style="max-height:180px;overflow-y:auto;"></div>
     </div>
   </div>
 </div>
@@ -658,22 +617,6 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="card" id="tab-career" style="display:none;"></div>
 </div>
 
-<!-- ── YEAR: WORD ── -->
-<div class="section" id="s-year-word">
-  <div class="page-title">Word of the Year</div>
-  <div class="page-sub">Your theme and intention for 2026.</div>
-  <div class="woy-card">
-    <div class="woy-word" id="woy-display-word">Roots</div>
-    <div class="woy-sub" id="woy-display-sub">This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.</div>
-  </div>
-  <div class="card" style="max-width:540px;">
-    <h3 class="lbl">update your word</h3>
-    <div class="field-row"><label>Word</label><input type="text" id="woy-input-word" placeholder="Your word for the year…"></div>
-    <div style="margin-bottom:12px;"><label style="font-size:13px;color:var(--soft);display:block;margin-bottom:6px;">What it means to you</label><textarea class="note-input" id="woy-input-meaning" style="min-height:100px;" placeholder="What does this word mean to you?"></textarea></div>
-    <button class="btn" onclick="saveWordOfYear()">Save</button>
-  </div>
-</div>
-
 <!-- ── YEAR: ANNUAL REVIEW ── -->
 <div class="section" id="s-year-review">
   <div class="page-title">Annual Review</div>
@@ -700,15 +643,23 @@ const DB = {
 // ═══════ NAV CONFIG ═══════
 const HUBS = [
   {id:'home', label:'Home', icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
-  {id:'calendar', label:'Calendar', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
   {id:'daily', label:'Daily', icon:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
-    subs:[{id:'daily-habits',label:'Habits'},{id:'daily-journal',label:'Journal'},{id:'daily-gratitude',label:'Gratitude'},{id:'daily-examen',label:'Examen'},{id:'daily-prayer',label:'Prayer'},{id:'daily-brain',label:'Brain Dump'}]},
-  {id:'goals', label:'Life Goals', icon:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>',
-    subs:[{id:'goals-list',label:'Goals'},{id:'goals-areas',label:'7 Areas'},{id:'goals-relationships',label:'Relationships'},{id:'goals-body',label:'Body'},{id:'goals-money',label:'Money'}]},
+    subs:[
+      {id:'daily-habits',label:'Habits'},
+      {id:'daily-journal',label:'Journal'},
+      {id:'daily-today',label:'Today'},
+      {id:'daily-brain',label:'Brain Dump'},
+      {id:'goals-list',label:'Goals'},
+      {id:'goals-areas',label:'7 Areas'},
+      {id:'goals-relationships',label:'Relationships'},
+      {id:'goals-body',label:'Body'},
+      {id:'goals-money',label:'Money'},
+    ]},
+  {id:'calendar', label:'Calendar', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
   {id:'mem', label:'Memories', icon:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/>',
     subs:[{id:'mem-photos',label:'Photos'},{id:'mem-travel',label:'Travel'},{id:'mem-collections',label:'Collections'}]},
   {id:'year', label:'Year', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3"/>',
-    subs:[{id:'year-word',label:'Word of the Year'},{id:'year-review',label:'Annual Review'}]}
+    subs:[{id:'year-review',label:'Annual Review'}]}
 ];
 
 const caret = `<svg class="ca" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
@@ -1205,16 +1156,6 @@ window.removePrayer = function(i){
   const arr = DB.get('prayer',[]); arr.splice(i,1); DB.set('prayer',arr); renderPrayerList();
 };
 
-window.saveBrain = function(){
-  const ta = document.getElementById('brain-textarea');
-  const note = ta?.value?.trim() || '';
-  if(!note) return;
-  DB.push('brain', {date:todayStr(), note});
-  ta.value = '';
-  showToast('Note saved ✓');
-  sendToSheets('BrainDump',['Date','Note'],[todayStr(),note]);
-};
-
 window.saveBody = function(){
   const w = document.getElementById('body-weight-input')?.value || '';
   if(!w) return;
@@ -1528,6 +1469,189 @@ function renderTravelLists(){
   if(tEl){ obs.observe(tEl,{attributes:true,attributeFilter:['class']}); if(tEl.classList.contains('active')){ renderMap(); renderTravelLists(); } }
 })();
 
+// ═══════ TODAY (daily log + mood) ═══════
+let selectedMood = 0;
+
+window.selectMood = function(v){
+  selectedMood = v;
+  document.querySelectorAll('.mood-star').forEach(b=>{
+    const bv = +b.dataset.v;
+    b.style.borderColor = bv===v ? 'var(--sea)' : 'var(--line)';
+    b.style.background = bv===v ? 'var(--sea-bg)' : 'none';
+  });
+};
+
+window.saveToday = function(){
+  const text = document.getElementById('today-text')?.value?.trim() || '';
+  if(!text){ showToast('Write something first!'); return; }
+  const today = todayStr();
+  let entries = DB.get('today_log', []).filter(e=>e.date!==today);
+  entries.unshift({date:today, text, mood:selectedMood||3, ts:new Date().toISOString()});
+  DB.set('today_log', entries);
+  document.getElementById('today-text').value = '';
+  selectedMood = 0;
+  document.querySelectorAll('.mood-star').forEach(b=>{ b.style.borderColor='var(--line)'; b.style.background='none'; });
+  renderToday();
+  showToast('Day logged ✓');
+  sendToSheets('DayLog',['Date','Entry','Mood'],[today,text,selectedMood||3]);
+};
+
+function renderToday(){
+  const entries = DB.get('today_log', []);
+
+  // Recent log
+  const logEl = document.getElementById('today-log');
+  if(logEl){
+    if(!entries.length){
+      logEl.innerHTML = '<div style="color:var(--soft);font-size:14px;">No entries yet. Start today!</div>';
+    } else {
+      const MOOD_E = ['','😞','😕','😐','😊','🌟'];
+      logEl.innerHTML = entries.slice(0,30).map(e=>`
+        <div class="j-entry">
+          <div class="j-date" style="display:flex;justify-content:space-between;">${e.date}<span>${MOOD_E[e.mood]||''}</span></div>
+          <div class="j-text" style="font-size:14px;">${escHtml(e.text)}</div>
+        </div>`).join('');
+    }
+  }
+
+  // Mood chart (last 30 days, SVG sparkline)
+  const chartEl = document.getElementById('today-mood-chart');
+  if(chartEl && entries.length > 0){
+    const pts = entries.slice(0,30).reverse();
+    const W=300, H=80, PAD=10;
+    const xStep = pts.length > 1 ? (W-PAD*2)/(pts.length-1) : 0;
+    const yScale = v => PAD + (H-PAD*2) * (1 - (v-1)/4);
+    const MOOD_COLORS = ['','#B4532E','#D08A5A','#6E8093','#6E9A5E','#E7B12F'];
+
+    let path='', circles='';
+    pts.forEach((e,i)=>{
+      const x = PAD + i*xStep;
+      const y = yScale(e.mood||3);
+      path += (i===0?`M${x},${y}`:`L${x},${y}`);
+      circles += `<circle cx="${x}" cy="${y}" r="4" fill="${MOOD_COLORS[e.mood]||'var(--sea)'}"><title>${e.date}: ${['','awful','bad','ok','good','great'][e.mood]||''}</title></circle>`;
+    });
+
+    // Y axis labels
+    const MOOD_E2 = ['','😞','😕','😐','😊','🌟'];
+    let labels = '';
+    for(let v=1;v<=5;v++){
+      labels += `<text x="0" y="${yScale(v)+4}" font-size="10" fill="var(--soft)">${MOOD_E2[v]}</text>`;
+    }
+
+    chartEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:300px;display:block;">
+      <path d="${path}" fill="none" stroke="var(--sea)" stroke-width="1.5" stroke-linejoin="round"/>
+      ${circles}${labels}
+    </svg>`;
+  } else if(chartEl) {
+    chartEl.innerHTML = '<div style="color:var(--soft);font-size:13px;padding:12px 0;">Log a few days to see your mood trend.</div>';
+  }
+
+  // Word cloud
+  const wcEl = document.getElementById('today-wordcloud');
+  if(wcEl){
+    const STOP = new Set(['i','a','an','the','and','or','but','so','in','on','at','to','for','of','my','it','was','is','had','have','with','just','up','me','we','its','this','that','then','not','been','did','do','are','be','he','she','they','we','you','very','too','also','got','went','today','day','felt','feel','like','one','more','out','even','some','really','from','as','all','no','at','by','into','than','there','were','when','what','which']);
+    const freq = {};
+    entries.forEach(e=>{
+      (e.text||'').toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).forEach(w=>{
+        if(w.length>3 && !STOP.has(w)) freq[w] = (freq[w]||0)+1;
+      });
+    });
+    const words = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,40);
+    if(!words.length){ wcEl.innerHTML='<div style="color:var(--soft);font-size:13px;">Words will appear here as you log days.</div>'; return; }
+    const max = words[0][1];
+    const CLOUD_COLORS = ['var(--sea)','var(--leaf)','var(--coral)','var(--purple)','var(--lemon)','var(--teal)'];
+    wcEl.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;line-height:1.8;">'+
+      words.map(([w,cnt],i)=>{
+        const sz = 13 + Math.round((cnt/max)*22);
+        const col = CLOUD_COLORS[i%CLOUD_COLORS.length];
+        return `<span style="font-size:${sz}px;color:${col};font-family:var(--voice);opacity:${0.6+0.4*cnt/max}">${w}</span>`;
+      }).join('')+'</div>';
+  }
+}
+
+// ═══════ BRAIN DUMP — STICKY NOTES ═══════
+const STICKY_COLORS = ['#FFF9C4','#DCEAF3','#D5EDDA','#EDE0F5','#FFE0CC','#FBEEC2'];
+
+window.saveBrain = function(){
+  const ta = document.getElementById('brain-textarea');
+  const note = ta?.value?.trim() || '';
+  if(!note) return;
+  DB.push('brain', {id: Date.now(), date:todayStr(), note});
+  ta.value = '';
+  renderBrainBoard();
+  showToast('Note posted ✓');
+  sendToSheets('BrainDump',['Date','Note'],[todayStr(),note]);
+};
+
+window.deleteBrain = function(id){
+  const notes = DB.get('brain',[]);
+  // Support old entries without id by index-based fallback
+  const idx = notes.findIndex(n=>n.id===id);
+  if(idx !== -1) notes.splice(idx, 1);
+  DB.set('brain', notes);
+  renderBrainBoard();
+};
+
+function renderBrainBoard(){
+  const board = document.getElementById('brain-board');
+  if(!board) return;
+  // Backfill ids on old notes
+  let notes = DB.get('brain', []);
+  let changed = false;
+  notes.forEach(n=>{ if(!n.id){ n.id=Date.now()+Math.random(); changed=true; } });
+  if(changed) DB.set('brain', notes);
+  if(!notes.length){
+    board.innerHTML = '<div style="color:var(--soft);font-size:14px;padding:12px;">Your notes will appear here as sticky notes.</div>';
+    return;
+  }
+  board.innerHTML = notes.map((n,i)=>{
+    const col = STICKY_COLORS[i % STICKY_COLORS.length];
+    const rot = ((i*37+n.id)%7)-3; // deterministic slight rotation
+    return `<div style="width:170px;min-height:110px;background:${col};border-radius:4px;padding:14px 12px 10px;position:relative;box-shadow:2px 4px 12px rgba(0,0,0,.10);transform:rotate(${rot}deg);transition:transform .15s;font-family:var(--voice);font-size:13px;line-height:1.5;word-break:break-word;flex-shrink:0;">
+      <button onclick="deleteBrain(${n.id})" style="position:absolute;top:5px;right:7px;background:none;border:none;cursor:pointer;font-size:15px;opacity:.35;line-height:1;" title="Delete">×</button>
+      <div style="font-size:10px;color:var(--soft);margin-bottom:6px;">${n.date}</div>
+      ${escHtml(n.note)}
+    </div>`;
+  }).join('');
+}
+
+// ═══════ BODY CHART ═══════
+function renderBodyDisplay(){
+  const entries = DB.get('body',[]).filter(e=>e.type==='weight');
+  const latest = entries[0];
+  const el = document.getElementById('body-weight-display');
+  if(el) el.textContent = latest ? latest.value : '—';
+
+  // Log
+  const logEl = document.getElementById('body-log');
+  if(logEl){
+    if(!entries.length){ logEl.innerHTML='<div style="color:var(--soft);font-size:13px;">No entries yet.</div>'; }
+    else logEl.innerHTML = entries.slice(0,15).map(e=>`
+      <div class="row"><span>${e.date}</span><span class="soft">${e.value} lb</span></div>`).join('');
+  }
+
+  // SVG line chart
+  const chartEl = document.getElementById('body-chart');
+  if(chartEl){
+    const pts = entries.slice(0,30).reverse();
+    if(pts.length < 2){ chartEl.innerHTML='<div style="color:var(--soft);font-size:13px;padding:8px 0;">Log at least 2 entries to see the trend.</div>'; return; }
+    const vals = pts.map(e=>+e.value);
+    const minV = Math.min(...vals)-1, maxV = Math.max(...vals)+1;
+    const W=300, H=80, PAD=8;
+    const xStep = (W-PAD*2)/(pts.length-1);
+    const yScale = v => PAD + (H-PAD*2)*(1-(v-minV)/(maxV-minV));
+    let d = pts.map((e,i)=>`${i===0?'M':'L'}${(PAD+i*xStep).toFixed(1)},${yScale(+e.value).toFixed(1)}`).join(' ');
+    // Area fill
+    const areaD = d + ` L${(PAD+(pts.length-1)*xStep).toFixed(1)},${H} L${PAD},${H} Z`;
+    chartEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:320px;display:block;">
+      <path d="${areaD}" fill="var(--sea)" fill-opacity=".12"/>
+      <path d="${d}" fill="none" stroke="var(--sea)" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="${(PAD+(pts.length-1)*xStep).toFixed(1)}" cy="${yScale(vals[vals.length-1]).toFixed(1)}" r="4" fill="var(--sea)"/>
+      <text x="${(PAD+(pts.length-1)*xStep).toFixed(1)}" y="${yScale(vals[vals.length-1]).toFixed(1)-8}" text-anchor="middle" font-size="10" fill="var(--sea)">${vals[vals.length-1]} lb</text>
+    </svg>`;
+  }
+}
+
 // ═══════ CALENDAR ═══════
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
@@ -1628,10 +1752,21 @@ window.calNext = function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} 
 window.calDayClick = function(dk, day){
   const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const feast = FEAST_DATES[String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0')];
-  let msg = feast ? `${feast}\n\nAdd your own event for ${MON[calMonth]} ${day}?` : `Add event for ${MON[calMonth]} ${day}?`;
+  const events = getCalEvents();
+  const dayEvents = events.filter(e=>e.date===dk);
+
+  // Build display message with existing events
+  let msg = `📅 ${MON[calMonth]} ${day}\n`;
+  if(feast) msg += `✝ ${feast}\n`;
+  if(dayEvents.length){
+    msg += '\nEvents:\n' + dayEvents.map(e=>`• ${e.label}`).join('\n');
+    msg += '\n\nAdd another event? (or cancel to close)';
+  } else {
+    msg += feast ? '\nAdd your own event?' : '\nNo events. Add one?';
+  }
+
   const label = prompt(msg);
   if(!label) return;
-  const events = getCalEvents();
   events.push({date:dk, label, type:'personal'});
   DB.set('cal_events', events);
   renderCalendar();
@@ -1668,17 +1803,14 @@ document.querySelectorAll('.mood-btn').forEach(btn=>{
 (function init(){
   renderHomeHabits();
   renderHabits();
-  renderHomeGrat();
-  renderGratRecent();
-  loadTodayGrat();
   renderJournalRecent();
-  renderPrayerList();
   renderBodyDisplay();
   renderMoneyDisplay();
   renderCollections();
   renderTravelLists();
-  renderWordOfYear();
   renderCalendar();
   updateStreaks();
+  renderToday();
+  renderBrainBoard();
 })();
 </script>
