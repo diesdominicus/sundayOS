@@ -1874,6 +1874,63 @@ function showGCalUI(){
   }
 }
 
+// ── ICS parser (client-side, RFC 5545) ──────────────────────────────────────
+function icsDateToISO(val){
+  // Strip Z (handle as local), trim whitespace
+  const v = val.replace(/Z$/,'').trim();
+  if(v.length===8){
+    // All-day YYYYMMDD
+    return v.slice(0,4)+'-'+v.slice(4,6)+'-'+v.slice(6,8);
+  }
+  if(v.length>=15){
+    // Timed YYYYMMDDTHHmmss[Z]
+    return v.slice(0,4)+'-'+v.slice(4,6)+'-'+v.slice(6,8)+'T'+v.slice(9,11)+':'+v.slice(11,13)+':'+v.slice(13,15);
+  }
+  return v;
+}
+
+function parseICS(text){
+  if(!text||!text.includes('BEGIN:VCALENDAR')) return [];
+  // Unfold lines: CRLF/LF + SPACE or TAB = continuation
+  text = text.replace(/\r\n([ \t])/g,'$1').replace(/\n([ \t])/g,'$1').replace(/\r/g,'');
+  const lines = text.split('\n');
+  const events = [];
+  let inEvent=false, cur={};
+  for(const rawLine of lines){
+    const line = rawLine.trimEnd();
+    if(line==='BEGIN:VEVENT'){  inEvent=true; cur={}; continue; }
+    if(line==='END:VEVENT'){
+      inEvent=false;
+      if(cur.date && cur.title) events.push({...cur});
+      continue;
+    }
+    if(!inEvent) continue;
+    const ci = line.indexOf(':');
+    if(ci<0) continue;
+    const propPart = line.slice(0,ci);
+    const val = line.slice(ci+1)
+      .replace(/\\n/g,'\n').replace(/\\,/g,',').replace(/\\;/g,';').replace(/\\\\/g,'\\');
+    const si = propPart.indexOf(';');
+    const prop = (si>=0 ? propPart.slice(0,si) : propPart).toUpperCase();
+    const params = si>=0 ? propPart.slice(si+1).toUpperCase() : '';
+    switch(prop){
+      case 'SUMMARY':     cur.title=val; break;
+      case 'LOCATION':    if(val) cur.location=val; break;
+      case 'DESCRIPTION': if(val) cur.description=val; break;
+      case 'STATUS':      cur.status=val; break;
+      case 'UID':         cur.uid=val; break;
+      case 'DTSTART':
+        cur.allDay = params.includes('VALUE=DATE') || !val.includes('T');
+        cur.date   = icsDateToISO(val);
+        break;
+      case 'DTEND':  cur.end  = icsDateToISO(val); break;
+      case 'RRULE':  cur.rrule = val; break;
+    }
+  }
+  return events;
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 window.loadGCalEvents = async function(force=false){
   const icsUrl  = DB.get('gcal_ics_url', null);
   if(!icsUrl) return;
@@ -1886,28 +1943,28 @@ window.loadGCalEvents = async function(force=false){
     async function fetchCal(url){
       const proxyUrl = SCRIPT_URL+'?action=cal&url='+encodeURIComponent(url);
       const res = await fetch(proxyUrl, {redirect:'follow'});
-      const text = await res.text();
-      try{ return JSON.parse(text); } catch{ return []; }
+      const raw = await res.text();
+      // If Apps Script returns raw ICS text → parse client-side
+      if(raw.includes('BEGIN:VCALENDAR')) return parseICS(raw);
+      // Fallback: old format returned JSON array
+      try{ const j=JSON.parse(raw); return Array.isArray(j)?j:[]; } catch{ return []; }
     }
-    const [ev1, ev2] = await Promise.all([fetchCal(icsUrl), icsUrl2 ? fetchCal(icsUrl2) : []]);
-    // Merge and deduplicate by title+date
+    const [ev1, ev2] = await Promise.all([fetchCal(icsUrl), icsUrl2 ? fetchCal(icsUrl2) : Promise.resolve([])]);
+    // Merge and deduplicate by uid or title+date
     const seen = new Set();
-    const events = [...(Array.isArray(ev1)?ev1:[]), ...(Array.isArray(ev2)?ev2:[])].filter(e=>{
-      const k = (e.title||'')+'|'+(e.date||'');
+    const events = [...(ev1||[]), ...(ev2||[])].filter(e=>{
+      const k = e.uid || ((e.title||'')+'|'+(e.date||''));
       if(seen.has(k)) return false; seen.add(k); return true;
     });
-    if(Array.isArray(events)){
-      DB.set('gcal_cache', {ts: Date.now(), events});
-      showGCalUI();
-      renderCalendar();
-      if(badge){ badge.textContent='✓'; setTimeout(()=>badge.textContent='',3000); }
-      if(force) showToast(events.length ? `${events.length} events loaded` : 'No events found — check ICS URL');
-    } else {
-      console.warn('GCal: unexpected response', events);
-    }
-  } catch(e){
-    console.warn('GCal fetch failed:',e);
+    DB.set('gcal_cache', {ts: Date.now(), events});
+    showGCalUI();
+    renderCalendar();
+    if(badge){ badge.textContent='✓'; setTimeout(()=>badge.textContent='',3000); }
+    if(force) showToast(events.length ? `${events.length} events loaded ✓` : 'No events found — check ICS URL');
+  } catch(err){
+    console.warn('GCal fetch failed:',err);
     if(badge) badge.textContent='';
+    if(force) showToast('Calendar sync failed — check connection');
   }
 };
 
