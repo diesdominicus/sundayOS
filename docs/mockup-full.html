@@ -318,7 +318,7 @@ textarea.note-input:focus{border-color:var(--sea);}
 
 <!-- ── DAILY: HABITS ── -->
 <div class="section" id="s-daily-habits">
-  <div class="page-title">Habits</div>
+  <div class="page-title">Habits Tracker</div>
   <div class="page-sub">Your daily &amp; weekly commitments across all 7 areas.</div>
   <div class="card">
     <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>this week <span class="weekhead"><button onclick="habitWeekOffset--;renderHabits()">‹</button><span id="wkrange2">Aug 3–9</span><button onclick="habitWeekOffset++;renderHabits()">›</button></span></h3>
@@ -329,35 +329,9 @@ textarea.note-input:focus{border-color:var(--sea);}
 </div>
 
 <!-- ── DAILY: JOURNAL ── -->
-<div class="section" id="s-daily-journal">
-  <div class="page-title">Journal</div>
-  <div class="page-sub">Your private thoughts, one entry at a time.</div>
-  <div class="cards">
-    <div class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>today — Aug 8</h3>
-      <div class="mood-pick" style="margin-bottom:12px;">
-        <div class="mood-btn on">😌<span class="mood-label">calm</span></div>
-        <div class="mood-btn">😊<span class="mood-label">happy</span></div>
-        <div class="mood-btn">😔<span class="mood-label">low</span></div>
-        <div class="mood-btn">🙏<span class="mood-label">grateful</span></div>
-        <div class="mood-btn">😤<span class="mood-label">stressed</span></div>
-        <div class="mood-btn">✨<span class="mood-label">joyful</span></div>
-      </div>
-      <textarea class="note-input" id="journal-textarea" placeholder="What's on your heart today?"></textarea>
-      <div style="margin-top:12px;display:flex;gap:8px;">
-        <button class="btn" onclick="saveJournal()">Save entry</button>
-      </div>
-    </div>
-    <div class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>recent entries</h3>
-      <div id="journal-recent"><div style="color:var(--soft);font-size:14px;">No entries yet.</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── DAILY: TODAY ── -->
+<!-- ── DAILY: DAYBOOK ── -->
 <div class="section" id="s-daily-today">
-  <div class="page-title">Today</div>
+  <div class="page-title">Daybook</div>
   <div class="page-sub">One or two sentences. Every day. 365 days of your life.</div>
   <div class="cards">
     <div class="card">
@@ -404,9 +378,21 @@ textarea.note-input:focus{border-color:var(--sea);}
 </div>
 
 <!-- ── LIFE GOALS: GOALS ── -->
-<div class="section" id="s-goals-list">
-  <div class="page-title">Goals</div>
-  <div class="page-sub">Your SMART goals, auto-linked to what you track.</div>
+<!-- ── LIFE GOALS (merged) ── -->
+<div class="section" id="s-life-goals">
+  <div class="page-title">Life Goals</div>
+  <div class="page-sub">Your 7 areas of life and the goals inside each one.</div>
+
+  <!-- Wheel at top -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;max-width:900px;margin-bottom:22px;">
+    <div class="card">
+      <div style="display:flex;justify-content:center;"><svg id="big-wheel" viewBox="-80 -14 560 428" style="width:100%;max-width:420px;overflow:visible;"></svg></div>
+      <div style="text-align:center;font-size:12px;color:var(--soft);margin-top:8px;">each slice fills from center to its score (out of 10)</div>
+    </div>
+    <div class="card" id="wheel-detail"></div>
+  </div>
+
+  <!-- Goal cards -->
   <div class="cards">
     <div class="card">
       <h3 class="lbl" style="color:#6E9A5E"><svg viewBox="0 0 24 24" style="stroke:#6E9A5E"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>Spiritual</h3>
@@ -416,7 +402,7 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="goal-item"><div class="gtop"><b>Confession every 2 weeks</b><span class="gpct">—</span></div><div class="bar"><i style="width:0%;background:#6E9A5E"></i></div><div class="goal-note" style="color:#B4532E">Last: Jul 26 · overdue</div></div>
     </div>
     <div class="card">
-      <h3 class="lbl" style="color:#4FA3A0"><svg viewBox="0 0 24 24" style="stroke:#4FA3A0"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zM2 12h20"/><path d="M12 2a15 10 0 010 20 15 10 0 010-20"/></svg>Physical</h3>
+      <h3 class="lbl" style="color:#4FA3A0"><svg viewBox="0 0 24 24" style="stroke:#4FA3A0"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zM2 12h20"/><path d="M12 2a15 10 0 010 20 15 10 0 010-20"/></svg>Physical / Health</h3>
       <div class="goal-item"><div class="gtop"><b>Strength 5×/week (10 min)</b><span class="gpct">60%</span></div><div class="bar"><i style="width:60%;background:#4FA3A0"></i></div><div class="goal-note">3 sessions this week · arms, abs, legs rotation</div></div>
       <div class="goal-item"><div class="gtop"><b>7,500 steps / day</b><span class="gpct">71%</span></div><div class="bar"><i style="width:71%;background:#4FA3A0"></i></div><div class="goal-note">5 of 7 days hit target</div></div>
       <div class="goal-item"><div class="gtop"><b>Hold weight at 145 lb</b><span class="gpct">95%</span></div><div class="bar"><i style="width:95%;background:#4FA3A0"></i></div><div class="goal-note">Current: 147 lb · goal: 145 lb</div></div>
@@ -445,19 +431,6 @@ textarea.note-input:focus{border-color:var(--sea);}
   </div>
 </div>
 
-<!-- ── LIFE GOALS: 7 AREAS ── -->
-<div class="section" id="s-goals-areas">
-  <div class="page-title">7 Areas of Life</div>
-  <div class="page-sub">Your balance at a glance — tap any slice to see the goals behind it.</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;max-width:900px;">
-    <div class="card">
-      <div style="display:flex;justify-content:center;"><svg id="big-wheel" viewBox="-80 -14 560 428" style="width:100%;max-width:420px;overflow:visible;"></svg></div>
-      <div style="text-align:center;font-size:12px;color:var(--soft);margin-top:8px;">each slice fills from center to its score (out of 10)</div>
-    </div>
-    <div class="card" id="wheel-detail"></div>
-  </div>
-</div>
-
 <!-- ── LIFE GOALS: RELATIONSHIPS ── -->
 <div class="section" id="s-goals-relationships">
   <div class="page-title">Relationships</div>
@@ -481,10 +454,14 @@ textarea.note-input:focus{border-color:var(--sea);}
   </div>
 </div>
 
-<!-- ── LIFE GOALS: BODY ── -->
+<!-- ── HEALTH ── -->
 <div class="section" id="s-goals-body">
-  <div class="page-title">Body</div>
-  <div class="page-sub">Weight log and trend. Goal: 145 lb.</div>
+  <div class="page-title">Health</div>
+  <div class="page-sub">Weight log, trend, and your physical goals.</div>
+  <div style="margin-bottom:14px;">
+    <button class="btn btn-ghost" style="font-size:13px;" onclick="navigate('daily-habits')">→ Health habits in Habits Tracker</button>
+    <button class="btn btn-ghost" style="font-size:13px;margin-left:8px;" onclick="navigate('life-goals')">→ Physical goals in Life Goals</button>
+  </div>
   <div class="cards">
     <div class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 12l2-2 4 4 8-8 4 4"/></svg>log weight</h3>
@@ -504,10 +481,14 @@ textarea.note-input:focus{border-color:var(--sea);}
   </div>
 </div>
 
-<!-- ── LIFE GOALS: MONEY ── -->
+<!-- ── FINANCE ── -->
 <div class="section" id="s-goals-money">
-  <div class="page-title">Money</div>
+  <div class="page-title">Finance</div>
   <div class="page-sub">Three numbers, updated monthly. Simple as that.</div>
+  <div style="margin-bottom:14px;">
+    <button class="btn btn-ghost" style="font-size:13px;" onclick="navigate('daily-habits')">→ Finance habits in Habits Tracker</button>
+    <button class="btn btn-ghost" style="font-size:13px;margin-left:8px;" onclick="navigate('life-goals')">→ Financial goals in Life Goals</button>
+  </div>
   <div class="cards">
     <div class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth</h3>
@@ -635,21 +616,19 @@ const DB = {
 
 // ═══════ NAV CONFIG ═══════
 const HUBS = [
-  {id:'home',              label:'Home',         icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
-  {id:'daily-habits',     label:'Habits',        icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>'},
-  {id:'daily-journal',    label:'Journal',       icon:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>'},
-  {id:'daily-today',      label:'Today',         icon:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
-  {id:'daily-brain',      label:'Brain Dump',    icon:'<path d="M9.5 2a2.5 2.5 0 000 5"/><path d="M14.5 2a2.5 2.5 0 010 5"/><path d="M12 7v13"/><path d="M9 10a3 3 0 00-3 3c0 1.5 1 2.5 3 3"/><path d="M15 10a3 3 0 013 3c0 1.5-1 2.5-3 3"/>'},
-  {id:'goals-list',       label:'Goals',         icon:'<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'},
-  {id:'goals-areas',      label:'7 Areas',       icon:'<circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/>'},
-  {id:'goals-relationships', label:'Relationships', icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>'},
-  {id:'goals-body',       label:'Body',          icon:'<path d="M12 2a4 4 0 100 8 4 4 0 000-8z"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>'},
-  {id:'goals-money',      label:'Money',         icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'},
-  {id:'calendar',         label:'Calendar',      icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
-  {id:'mem-photos',       label:'Photos',        icon:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'},
-  {id:'mem-travel',       label:'Travel',        icon:'<path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/>'},
-  {id:'mem-collections',  label:'Collections',   icon:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>'},
-  {id:'year-review',      label:'Annual Review', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3"/>'},
+  {id:'home',                label:'Home',           icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
+  {id:'daily-habits',        label:'Habits Tracker', icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>'},
+  {id:'life-goals',          label:'Life Goals',     icon:'<circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/>'},
+  {id:'daily-today',         label:'Daybook',        icon:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
+  {id:'daily-brain',         label:'Brain Dump',     icon:'<path d="M9.5 2a2.5 2.5 0 000 5"/><path d="M14.5 2a2.5 2.5 0 010 5"/><path d="M12 7v13"/><path d="M9 10a3 3 0 00-3 3c0 1.5 1 2.5 3 3"/><path d="M15 10a3 3 0 013 3c0 1.5-1 2.5-3 3"/>'},
+  {id:'goals-relationships', label:'Relationships',  icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>'},
+  {id:'goals-body',          label:'Health',         icon:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'},
+  {id:'goals-money',         label:'Finance',        icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'},
+  {id:'calendar',            label:'Calendar',       icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
+  {id:'mem-photos',          label:'Photos',         icon:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'},
+  {id:'mem-travel',          label:'Travel',         icon:'<path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/>'},
+  {id:'mem-collections',     label:'Collections',    icon:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>'},
+  {id:'year-review',         label:'Annual Review',  icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3"/>'},
 ];
 
 function buildNav(){
@@ -927,10 +906,10 @@ const AREAS=[
       `<button class="btn" style="margin-top:16px" onclick="navigate('goals-list')">Open ${a.name} goals <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
   }
   // Draw when section becomes visible (observe)
-  const obs=new MutationObserver(()=>{if(document.getElementById('s-goals-areas').classList.contains('active')){draw();detail();}});
-  obs.observe(document.getElementById('s-goals-areas'),{attributes:true,attributeFilter:['class']});
+  const obs=new MutationObserver(()=>{if(document.getElementById('s-life-goals').classList.contains('active')){draw();detail();}});
+  obs.observe(document.getElementById('s-life-goals'),{attributes:true,attributeFilter:['class']});
   // also draw immediately if already active
-  if(document.getElementById('s-goals-areas').classList.contains('active')){draw();detail();}
+  if(document.getElementById('s-life-goals').classList.contains('active')){draw();detail();}
 })();
 
 // ═══════ LEMON BRANCH ═══════
