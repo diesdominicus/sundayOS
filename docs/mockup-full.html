@@ -285,18 +285,16 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="up"><span class="love">❤ Book a date or event</span><span class="when">this month</span></div>
     </section>
     <section class="card grat">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>grateful today <span class="r">log →</span></h3>
-      <p><span class="n">1</span>Slow rosary in the rain</p>
-      <p><span class="n">2</span>Mom called just to say hi</p>
-      <p><span class="n">3</span>Lemon &amp; olive oil on warm bread</p>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>grateful today <span class="r" onclick="navigate('daily-gratitude')" style="cursor:pointer">log →</span></h3>
+      <div id="home-grat"><p style="color:var(--soft);font-size:14px;">Log your gratitude today →</p></div>
     </section>
     <section class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth <span class="r">update →</span></h3>
-      <div class="big">$48,600</div>
-      <div class="trend-up">▲ 5.2% since last month</div>
-      <div class="nwrow"><span>Retirement</span><span>$32,200</span></div>
-      <div class="nwrow"><span>Savings</span><span>$21,400</span></div>
-      <div class="nwrow"><span>Loans</span><span style="color:#B4532E">−$5,000</span></div>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth <span class="r" onclick="navigate('goals-money')" style="cursor:pointer">update →</span></h3>
+      <div class="big" id="home-nw">$48,600</div>
+      <div class="trend-up" id="home-trend">▲ 5.2% since last month</div>
+      <div class="nwrow"><span>Retirement</span><span id="home-ret">$32,200</span></div>
+      <div class="nwrow"><span>Savings</span><span id="home-sav">$21,400</span></div>
+      <div class="nwrow"><span>Loans</span><span id="home-loan" style="color:#B4532E">−$5,000</span></div>
     </section>
     <section class="card examen-card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>evening examen</h3>
@@ -340,10 +338,11 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="page-title">Habits</div>
   <div class="page-sub">Your daily &amp; weekly commitments across all 7 areas.</div>
   <div class="card">
-    <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>this week <span class="weekhead"><button>‹</button><span id="wkrange2">Aug 3–9</span><button>›</button></span></h3>
+    <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>this week <span class="weekhead"><button onclick="habitWeekOffset--;renderHabits()">‹</button><span id="wkrange2">Aug 3–9</span><button onclick="habitWeekOffset++;renderHabits()">›</button></span></h3>
     <table class="hw" id="hw-full"></table>
-    <div class="hfoot"><span class="streak">🔥 12-day streak</span><span>swipe or use arrows to flip back</span></div>
+    <div class="hfoot"><span class="streak" id="habit-streak">🔥 0-day streak</span><span>tap any dot to toggle · use arrows to flip back</span></div>
   </div>
+  <div class="card" id="habit-stats-card" style="margin-top:18px;"></div>
 </div>
 
 <!-- ── DAILY: JOURNAL ── -->
@@ -361,23 +360,14 @@ textarea.note-input:focus{border-color:var(--sea);}
         <div class="mood-btn">😤<span class="mood-label">stressed</span></div>
         <div class="mood-btn">✨<span class="mood-label">joyful</span></div>
       </div>
-      <textarea class="note-input" placeholder="What's on your heart today?">Today is my name day — St. Dominic. I lit a candle at morning Mass and thought about how he built the Dominicans because he genuinely loved people and wanted them to know truth. Something about that felt very personal today.</textarea>
+      <textarea class="note-input" id="journal-textarea" placeholder="What's on your heart today?"></textarea>
       <div style="margin-top:12px;display:flex;gap:8px;">
-        <button class="btn">Save entry</button>
+        <button class="btn" onclick="saveJournal()">Save entry</button>
       </div>
     </div>
     <div class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>recent entries</h3>
-      <div class="j-entry">
-        <div class="j-date">Aug 7 · Friday</div>
-        <div class="j-text">Walked to the park after work. The city felt slow and golden, the way it does in late summer. Read Steinbeck on a bench and stayed until the fireflies came out.</div>
-        <span class="j-mood" style="background:var(--lemon-bg);color:#8a6a14;">✨ joyful</span>
-      </div>
-      <div class="j-entry">
-        <div class="j-date">Aug 5 · Wednesday</div>
-        <div class="j-text">Tired. But confession was really good — Fr. P. said something that clicked. Made pasta from scratch tonight.</div>
-        <span class="j-mood" style="background:var(--surface2);color:var(--soft);">😌 calm</span>
-      </div>
+      <div id="journal-recent"><div style="color:var(--soft);font-size:14px;">No entries yet.</div></div>
     </div>
   </div>
 </div>
@@ -393,14 +383,13 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="field-row"><label style="color:var(--lemon);font-weight:700;">2</label><input type="text" value="Mom called just to say hi"></div>
       <div class="field-row"><label style="color:var(--lemon);font-weight:700;">3</label><input type="text" value="Lemon &amp; olive oil on warm bread"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-        <span style="font-size:13px;color:var(--soft);">🔥 12-day streak</span>
-        <button class="btn">Save</button>
+        <span style="font-size:13px;color:var(--soft);" id="grat-streak">🔥 0-day streak</span>
+        <button class="btn" onclick="saveGratitude()">Save</button>
       </div>
     </div>
     <div class="card">
       <h3 class="lbl">recent</h3>
-      <div class="j-entry"><div class="j-date">Aug 7</div><div class="j-text" style="font-size:13px;line-height:1.7;">1. The smell of coffee at 6am<br>2. Adoration — full hour, total silence<br>3. Message from Giulia out of nowhere</div></div>
-      <div class="j-entry"><div class="j-date">Aug 6</div><div class="j-text" style="font-size:13px;line-height:1.7;">1. My body is healthy and strong<br>2. A really honest conversation at work<br>3. Good book + a good lamp</div></div>
+      <div id="grat-recent"><div style="color:var(--soft);font-size:14px;">No entries yet.</div></div>
     </div>
   </div>
 </div>
@@ -431,8 +420,8 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div><div class="step-q">Look toward tomorrow.</div><div class="step-hint">What is God asking of you tomorrow?</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="One intention for tomorrow..."></textarea></div>
     </div>
     <div style="margin-top:18px;display:flex;gap:10px;">
-      <button class="btn">Save examen</button>
-      <button class="btn btn-ghost">Clear</button>
+      <button class="btn" onclick="saveExamen()">Save examen</button>
+      <button class="btn btn-ghost" onclick="document.querySelectorAll('#s-daily-examen textarea').forEach(t=>t.value='')">Clear</button>
     </div>
   </div>
 </div>
@@ -444,13 +433,10 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="cards">
     <div class="card">
       <h3 class="lbl">active intentions</h3>
-      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Mom's health</div><div class="days">praying 14 days</div></div></div>
-      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Friends finding their vocation</div><div class="days">praying 6 days</div></div></div>
-      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Peace in the world</div><div class="days">praying 30 days</div></div></div>
-      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Direction on the career step</div><div class="days">praying 3 days</div></div></div>
+      <div id="prayer-list"><div style="color:var(--soft);font-size:14px;padding:10px 0;">No intentions yet. Add one below.</div></div>
       <div style="margin-top:16px;display:flex;gap:10px;">
-        <input type="text" class="note-input" style="min-height:auto;padding:9px 12px;font-size:14px;font-family:var(--sans);" placeholder="Add an intention…">
-        <button class="btn" style="white-space:nowrap;">Add</button>
+        <input type="text" id="prayer-input" class="note-input" style="min-height:auto;padding:9px 12px;font-size:14px;font-family:var(--sans);" placeholder="Add an intention…">
+        <button class="btn" style="white-space:nowrap;" onclick="savePrayer()">Add</button>
       </div>
     </div>
     <div class="card">
@@ -468,10 +454,10 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="page-title">Brain Dump</div>
   <div class="page-sub">Get it out of your head. No structure, no pressure.</div>
   <div class="card" style="max-width:640px;">
-    <textarea class="note-input" style="min-height:280px;" placeholder="Whatever's in your head — to-dos, worries, ideas, random thoughts. Just get it out.">Need to look up that book Caitlin recommended. Also want to find the specific verse Fr. James quoted on Sunday. Should probably call Grandma this week — it's been a while. What even IS the difference between imperfetto and passato prossimo again? Also maybe make that lemon pasta again this weekend.</textarea>
+    <textarea class="note-input" id="brain-textarea" style="min-height:280px;" placeholder="Whatever's in your head — to-dos, worries, ideas, random thoughts. Just get it out."></textarea>
     <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;">
-      <span style="font-size:12px;color:var(--soft);">Saved automatically</span>
-      <button class="btn">Save note</button>
+      <span style="font-size:12px;color:var(--soft);">Each save creates a new entry.</span>
+      <button class="btn" onclick="saveBrain()">Save note</button>
     </div>
   </div>
 </div>
@@ -546,10 +532,10 @@ textarea.note-input:focus{border-color:var(--sea);}
     </div>
     <div class="card">
       <h3 class="lbl">log a connection</h3>
-      <div class="field-row"><label>Who</label><input type="text" placeholder="Name…"></div>
-      <div class="field-row"><label>How</label><input type="text" placeholder="call, text, hangout…"></div>
-      <div class="field-row"><label>Note</label><input type="text" placeholder="What did you talk about?"></div>
-      <button class="btn" style="margin-top:4px;">Log it</button>
+      <div class="field-row"><label>Who</label><input type="text" id="rel-person" placeholder="Name…"></div>
+      <div class="field-row"><label>How</label><input type="text" id="rel-how" placeholder="call, text, hangout…"></div>
+      <div class="field-row"><label>Note</label><input type="text" id="rel-note" placeholder="What did you talk about?"></div>
+      <button class="btn" style="margin-top:4px;" onclick="saveRelationship()">Log it</button>
     </div>
   </div>
 </div>
@@ -561,10 +547,10 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="cards">
     <div class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 12l2-2 4 4 8-8 4 4"/></svg>weight</h3>
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;"><span style="font-size:28px;font-weight:700;">147</span><span style="font-size:16px;color:var(--soft);">lb</span><span style="font-size:13px;color:var(--soft);margin-left:6px;">goal: 145 lb</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;"><span style="font-size:28px;font-weight:700;" id="body-weight-display">—</span><span style="font-size:16px;color:var(--soft);">lb</span><span style="font-size:13px;color:var(--soft);margin-left:6px;">goal: 145 lb</span></div>
       <div class="chart-ph">📈 weight trend chart (last 30 days)</div>
-      <div class="field-row"><label>Log today</label><input type="number" placeholder="lb"></div>
-      <button class="btn" style="margin-top:4px;">Save</button>
+      <div class="field-row"><label>Log today</label><input type="number" id="body-weight-input" placeholder="lb"></div>
+      <button class="btn" style="margin-top:4px;" onclick="saveBody()">Save</button>
     </div>
     <div class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>exercise log</h3>
@@ -583,17 +569,17 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="cards">
     <div class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth</h3>
-      <div class="big">$48,600</div>
-      <div class="trend-up">▲ 5.2% since last month</div>
-      <div class="nwrow"><span>Retirement / Investments</span><span>$32,200</span></div>
-      <div class="nwrow"><span>Savings</span><span>$21,400</span></div>
-      <div class="nwrow"><span>Student Loans</span><span style="color:#B4532E">−$5,000</span></div>
+      <div class="big" id="money-net">$48,600</div>
+      <div class="trend-up" id="money-trend">▲ 5.2% since last month</div>
+      <div class="nwrow"><span>Retirement / Investments</span><span id="money-ret-val">$32,200</span></div>
+      <div class="nwrow"><span>Savings</span><span id="money-sav-val">$21,400</span></div>
+      <div class="nwrow"><span>Student Loans</span><span id="money-loan-val" style="color:#B4532E">−$5,000</span></div>
       <div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:16px;">
         <h3 class="lbl" style="margin-bottom:14px;">update numbers</h3>
-        <div class="field-row"><label>Retirement</label><input type="number" placeholder="$"></div>
-        <div class="field-row"><label>Savings</label><input type="number" placeholder="$"></div>
-        <div class="field-row"><label>Loans</label><input type="number" placeholder="$"></div>
-        <button class="btn">Save for August</button>
+        <div class="field-row"><label>Retirement</label><input type="number" id="money-input-ret" placeholder="$"></div>
+        <div class="field-row"><label>Savings</label><input type="number" id="money-input-sav" placeholder="$"></div>
+        <div class="field-row"><label>Loans</label><input type="number" id="money-input-loan" placeholder="$"></div>
+        <button class="btn" onclick="saveMoney()">Save</button>
       </div>
     </div>
     <div class="card">
@@ -653,19 +639,12 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="cards">
     <div class="card">
       <h3 class="lbl">been there</h3>
-      <div class="place"><span class="flag">🇮🇹</span><span>Italy — Amalfi, Rome, Florence</span><span class="been">✓ visited</span></div>
-      <div class="place"><span class="flag">🇫🇷</span><span>France — Paris</span><span class="been">✓ visited</span></div>
-      <div class="place"><span class="flag">🇺🇸</span><span>USA</span><span class="been">✓ visited</span></div>
-      <div class="place"><span class="flag">🇨🇦</span><span>Canada — Montreal, Quebec City</span><span class="been">✓ visited</span></div>
-      <div class="place"><span class="flag">🇲🇽</span><span>Mexico</span><span class="been">✓ visited</span></div>
+      <div id="travel-visited-list"></div>
       <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;" onclick="addTravel('visited')">+ Add a country</button></div>
     </div>
     <div class="card">
       <h3 class="lbl">wish list</h3>
-      <div class="place"><span class="flag">🇬🇷</span><span>Greece — Santorini</span><span class="wish">✦ someday</span></div>
-      <div class="place"><span class="flag">🇵🇹</span><span>Portugal — Lisbon, Fátima</span><span class="wish">✦ someday</span></div>
-      <div class="place"><span class="flag">🇮🇪</span><span>Ireland</span><span class="wish">✦ someday</span></div>
-      <div class="place"><span class="flag">🇯🇵</span><span>Japan</span><span class="wish">✦ someday</span></div>
+      <div id="travel-wishlist-list"></div>
       <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;" onclick="addTravel('wishlist')">+ Add to wish list</button></div>
     </div>
   </div>
@@ -675,24 +654,18 @@ textarea.note-input:focus{border-color:var(--sea);}
 <div class="section" id="s-mem-collections">
   <div class="page-title">Collections</div>
   <div class="page-sub">Everything you've read, watched, and experienced.</div>
-  <div class="tab-row">
-    <button class="tab on" onclick="switchTab(this,'books')">📚 Books (4)</button>
-    <button class="tab" onclick="switchTab(this,'movies')">🎬 Movies</button>
-    <button class="tab" onclick="switchTab(this,'shows')">📺 Shows</button>
-    <button class="tab" onclick="switchTab(this,'live')">🎭 Live</button>
-    <button class="tab" onclick="switchTab(this,'career')">💼 Career</button>
+  <div class="tab-row" id="coll-tabs">
+    <button class="tab on" onclick="switchCollTab(this,'books')">📚 Books</button>
+    <button class="tab" onclick="switchCollTab(this,'movies')">🎬 Movies</button>
+    <button class="tab" onclick="switchCollTab(this,'shows')">📺 Shows</button>
+    <button class="tab" onclick="switchCollTab(this,'live')">🎭 Live</button>
+    <button class="tab" onclick="switchCollTab(this,'career')">💼 Career</button>
   </div>
-  <div class="card" id="tab-books">
-    <div class="book-item"><div class="book-cover" style="background:#4FA3A0;"></div><div><div class="book-title">East of Eden</div><div class="book-author">John Steinbeck</div><span class="book-status status-read">✓ read · Jan 2026</span></div></div>
-    <div class="book-item"><div class="book-cover" style="background:#C77E92;"></div><div><div class="book-title">Middlemarch</div><div class="book-author">George Eliot</div><span class="book-status status-reading">currently reading</span></div></div>
-    <div class="book-item"><div class="book-cover" style="background:#D08A5A;"></div><div><div class="book-title">The Brothers Karamazov</div><div class="book-author">Dostoevsky</div><span class="book-status status-read">✓ read · Mar 2026</span></div></div>
-    <div class="book-item"><div class="book-cover" style="background:#8A6BA8;"></div><div><div class="book-title">Interior Castle</div><div class="book-author">St. Teresa of Ávila</div><span class="book-status status-read">✓ read · May 2026</span></div></div>
-    <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;">+ Add book</button></div>
-  </div>
-  <div class="card" id="tab-movies" style="display:none;"><p style="color:var(--soft);font-size:14px;">No movies logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add movie</button></p></div>
-  <div class="card" id="tab-shows" style="display:none;"><p style="color:var(--soft);font-size:14px;">No shows logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add show</button></p></div>
-  <div class="card" id="tab-live" style="display:none;"><p style="color:var(--soft);font-size:14px;">No live events logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add event</button></p></div>
-  <div class="card" id="tab-career" style="display:none;"><p style="color:var(--soft);font-size:14px;">No milestones logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add milestone</button></p></div>
+  <div class="card" id="tab-books"></div>
+  <div class="card" id="tab-movies" style="display:none;"></div>
+  <div class="card" id="tab-shows" style="display:none;"></div>
+  <div class="card" id="tab-live" style="display:none;"></div>
+  <div class="card" id="tab-career" style="display:none;"></div>
 </div>
 
 <!-- ── YEAR: WORD ── -->
@@ -700,14 +673,14 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="page-title">Word of the Year</div>
   <div class="page-sub">Your theme and intention for 2026.</div>
   <div class="woy-card">
-    <div class="woy-word">Roots</div>
-    <div class="woy-sub">This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.</div>
+    <div class="woy-word" id="woy-display-word">Roots</div>
+    <div class="woy-sub" id="woy-display-sub">This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.</div>
   </div>
   <div class="card" style="max-width:540px;">
     <h3 class="lbl">update your word</h3>
-    <div class="field-row"><label>Word</label><input type="text" value="Roots"></div>
-    <div style="margin-bottom:12px;"><label style="font-size:13px;color:var(--soft);display:block;margin-bottom:6px;">What it means to you</label><textarea class="note-input" style="min-height:100px;">This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.</textarea></div>
-    <button class="btn">Save</button>
+    <div class="field-row"><label>Word</label><input type="text" id="woy-input-word" placeholder="Your word for the year…"></div>
+    <div style="margin-bottom:12px;"><label style="font-size:13px;color:var(--soft);display:block;margin-bottom:6px;">What it means to you</label><textarea class="note-input" id="woy-input-meaning" style="min-height:100px;" placeholder="What does this word mean to you?"></textarea></div>
+    <button class="btn" onclick="saveWordOfYear()">Save</button>
   </div>
 </div>
 
@@ -727,6 +700,13 @@ textarea.note-input:focus{border-color:var(--sea);}
 <div class="toast" id="toast"></div>
 
 <script>
+// ═══════ DB — localStorage wrapper ═══════
+const DB = {
+  get(k, def=null){ try{ const v=localStorage.getItem('sos_'+k); return v!==null ? JSON.parse(v) : def; } catch{ return def; } },
+  set(k, v){ try{ localStorage.setItem('sos_'+k, JSON.stringify(v)); } catch{} },
+  push(k, item, max=500){ const arr=this.get(k,[]); arr.unshift(item); if(arr.length>max) arr.pop(); this.set(k,arr); return arr; }
+};
+
 // ═══════ NAV CONFIG ═══════
 const HUBS = [
   {id:'home', label:'Home', icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
@@ -800,18 +780,205 @@ function navigate(pageId){
 
 buildNav();
 
-// ═══════ HABITS GRID ═══════
-const CK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
-const HB=[['Daily Mass',[1,1,1,0,1,1,0],0],['Adoration',[0,1,0,1,1,1,0],0],['Rosary',[0,0,0,0,0,1,0],0],['Strength',[1,0,1,0,1,0,0],1],['7,500 steps',[1,1,1,1,0,1,0],1],['Italian',[1,1,0,1,1,0,0],0],['Read',[0,1,0,0,1,0,0],0],['Gratitude',[1,1,1,1,1,1,0],0]];
-const todayCol=(new Date().getDay()+6)%7;
-function makeHW(){
-  let hw='<tr><th style="text-align:left"></th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr>';
-  HB.forEach(h=>{hw+='<tr><td class="first">'+h[0]+'</td>'+h[1].map((v,i)=>'<td class="c"><span class="dot '+(h[2]?'lem ':'')+(v?'on ':'')+(i===todayCol?'today':'')+'">'+(v?CK:'')+'</span></td>').join('')+'</tr>';});
-  return hw;
+// ═══════ HABITS ═══════
+const DEFAULT_HABITS = [
+  {id:'mass',    name:'Daily Mass',  isLemon:false},
+  {id:'adora',   name:'Adoration',   isLemon:false},
+  {id:'rosary',  name:'Rosary',      isLemon:false},
+  {id:'strength',name:'Strength',    isLemon:true},
+  {id:'steps',   name:'7,500 steps', isLemon:true},
+  {id:'italian', name:'Italian',     isLemon:false},
+  {id:'read',    name:'Read',        isLemon:false},
+  {id:'grat',    name:'Gratitude',   isLemon:false},
+];
+const CK='<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:3"><path d="M5 12l5 5L20 7"/></svg>';
+let habitWeekOffset = 0;
+
+function getHabits(){ return DB.get('habits_def', DEFAULT_HABITS); }
+function getLogs(){ return DB.get('habit_logs', {}); }
+
+function dateKey(d){
+  const dt = d || new Date();
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
 }
-document.getElementById('hw-home').innerHTML = makeHW();
-const hwFull = document.getElementById('hw-full');
-if(hwFull) hwFull.innerHTML = makeHW();
+
+function getWeekDates(offsetWeeks=0){
+  const now = new Date();
+  const dow = now.getDay(); // 0=Sun
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - ((dow+6)%7) + offsetWeeks*7);
+  mon.setHours(0,0,0,0);
+  return Array.from({length:7}, (_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+window.toggleHabit = function(habitId, dk){
+  const logs = getLogs();
+  if(!logs[dk]) logs[dk] = {};
+  logs[dk][habitId] = !logs[dk][habitId];
+  DB.set('habit_logs', logs);
+  renderHabitTable('hw-full', habitWeekOffset);
+  renderHabitTable('hw-home', 0);
+  renderHabitStats();
+  updateStreaks();
+};
+
+function renderHabitTable(tableId, weekOffset){
+  const table = document.getElementById(tableId);
+  if(!table) return;
+  const habits = getHabits();
+  const logs = getLogs();
+  const dates = getWeekDates(weekOffset);
+  const todayDk = dateKey();
+  const now = new Date(); now.setHours(23,59,59,999);
+  const DAY_LABELS = ['M','T','W','T','F','S','S'];
+
+  // Update week range display
+  const wkEl = tableId==='hw-home' ? document.getElementById('wkrange') : document.getElementById('wkrange2');
+  if(wkEl){
+    const MOA=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    wkEl.textContent = MOA[dates[0].getMonth()]+' '+dates[0].getDate()+'–'+dates[6].getDate();
+  }
+
+  let html = '<tr><th style="text-align:left;font-size:12px;color:var(--soft)"></th>';
+  dates.forEach((d,i) => html += `<th style="font-size:11px;color:var(--soft)">${DAY_LABELS[i]}</th>`);
+  html += '</tr>';
+
+  habits.forEach(h => {
+    html += `<tr><td class="first" style="font-size:13px;white-space:nowrap;">${h.name}</td>`;
+    dates.forEach(d => {
+      const dk = dateKey(d);
+      const done = !!(logs[dk] && logs[dk][h.id]);
+      const isToday = dk === todayDk;
+      const isFuture = d > now;
+      const cls = 'dot' + (h.isLemon?' lem':'') + (done?' on':'') + (isToday?' today':'');
+      if(isFuture && !done){
+        html += `<td class="c"><span class="${cls}" style="opacity:.3;cursor:default;"></span></td>`;
+      } else {
+        html += `<td class="c"><span class="${cls}" style="cursor:pointer" onclick="toggleHabit('${h.id}','${dk}')">${done?CK:''}</span></td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  table.innerHTML = html;
+}
+
+function calcStreak(){
+  const habits = getHabits();
+  const logs = getLogs();
+  let streak = 0;
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  let allowEmpty = true; // allow today to have nothing if no habits done yet
+  while(streak < 366){
+    const dk = dateKey(d);
+    const dayLogs = logs[dk] || {};
+    const doneCount = habits.filter(h => dayLogs[h.id]).length;
+    if(doneCount === 0 && allowEmpty){ d.setDate(d.getDate()-1); allowEmpty=false; continue; }
+    if(doneCount === 0) break;
+    streak++;
+    d.setDate(d.getDate()-1);
+    allowEmpty = false;
+  }
+  return streak;
+}
+
+function updateStreaks(){
+  const s = calcStreak();
+  document.querySelectorAll('.streak, #habit-streak').forEach(el => el.textContent = `🔥 ${s}-day streak`);
+  const gratStreak = document.getElementById('grat-streak');
+  if(gratStreak){ const gs = calcGratStreak(); gratStreak.textContent = `🔥 ${gs}-day streak`; }
+}
+
+function calcGratStreak(){
+  const entries = DB.get('gratitude',[]);
+  let streak=0;
+  const d=new Date(); d.setHours(0,0,0,0);
+  let allowToday=true;
+  while(streak<366){
+    const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const found=entries.find(e=>e.date===ds);
+    if(!found && allowToday){ d.setDate(d.getDate()-1); allowToday=false; continue; }
+    if(!found) break;
+    streak++; d.setDate(d.getDate()-1); allowToday=false;
+  }
+  return streak;
+}
+
+function renderHabitStats(){
+  const statsEl = document.getElementById('habit-stats-card');
+  if(!statsEl) return;
+  const habits = getHabits();
+  const logs = getLogs();
+  const now = new Date();
+
+  // Week
+  const weekDates = getWeekDates(0);
+  let wkDone=0, wkPoss=0;
+  weekDates.forEach(d => {
+    if(d <= now){ const dk=dateKey(d); habits.forEach(h => { wkPoss++; if(logs[dk]&&logs[dk][h.id]) wkDone++; }); }
+  });
+  const wkPct = wkPoss ? Math.round(wkDone/wkPoss*100) : 0;
+
+  // Month
+  const dayOfMonth = now.getDate();
+  let moDone=0, moPoss=0;
+  for(let day=1; day<=dayOfMonth; day++){
+    const d=new Date(now.getFullYear(), now.getMonth(), day);
+    const dk=dateKey(d);
+    habits.forEach(h => { moPoss++; if(logs[dk]&&logs[dk][h.id]) moDone++; });
+  }
+  const moPct = moPoss ? Math.round(moDone/moPoss*100) : 0;
+
+  // Year per-habit
+  const yr = String(now.getFullYear());
+  const yearCounts = {};
+  habits.forEach(h => yearCounts[h.id]=0);
+  Object.entries(logs).forEach(([dk, dayLogs]) => {
+    if(dk.startsWith(yr)) habits.forEach(h => { if(dayLogs[h.id]) yearCounts[h.id]++; });
+  });
+  const totalYr = Object.values(yearCounts).reduce((a,b)=>a+b,0);
+  const daysElapsed = Math.floor((now - new Date(now.getFullYear(),0,1))/(864e5))+1;
+
+  statsEl.innerHTML = `
+    <h3 class="lbl" style="margin-bottom:16px;"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>stats</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+      <div style="text-align:center;background:var(--surface2);border-radius:14px;padding:14px 8px;">
+        <div style="font-size:26px;font-weight:700;color:var(--sea);">${wkPct}%</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px;">this week</div>
+        <div style="font-size:11px;color:var(--soft);">${wkDone}/${wkPoss}</div>
+      </div>
+      <div style="text-align:center;background:var(--surface2);border-radius:14px;padding:14px 8px;">
+        <div style="font-size:26px;font-weight:700;color:var(--leaf);">${moPct}%</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px;">this month</div>
+        <div style="font-size:11px;color:var(--soft);">${moDone}/${moPoss}</div>
+      </div>
+      <div style="text-align:center;background:var(--surface2);border-radius:14px;padding:14px 8px;">
+        <div style="font-size:26px;font-weight:700;color:var(--lemon);">${totalYr}</div>
+        <div style="font-size:12px;color:var(--soft);margin-top:2px;">${yr} total</div>
+        <div style="font-size:11px;color:var(--soft);">completions</div>
+      </div>
+    </div>
+    <div style="border-top:1px dashed var(--line);padding-top:14px;">
+      ${habits.map(h => {
+        const cnt = yearCounts[h.id] || 0;
+        const pct = Math.min(Math.round(cnt/Math.max(daysElapsed,1)*100), 100);
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span style="font-size:13px;min-width:100px;">${h.name}</span>
+          <div style="flex:1"><div class="bar"><i style="width:${pct}%;background:${h.isLemon?'var(--lemon)':'var(--sea)'}"></i></div></div>
+          <span style="font-size:13px;color:var(--soft);min-width:70px;text-align:right;">${cnt}× this yr</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderHabits(){
+  renderHabitTable('hw-full', habitWeekOffset);
+  renderHabitStats();
+  updateStreaks();
+}
+function renderHomeHabits(){
+  renderHabitTable('hw-home', 0);
+}
 
 // ═══════ MINI WHEEL (home) ═══════
 (function(){
@@ -909,15 +1076,65 @@ document.getElementById('branch').innerHTML='<path d="M205 4 C150 18 120 40 96 7
   fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=temperature_2m,weather_code&temperature_unit=fahrenheit').then(r=>r.json()).then(j=>{const m={0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',51:'light drizzle',61:'light rain',63:'rain',80:'showers',95:'storm'}[j.current.weather_code]||'—';const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="t">'+Math.round(j.current.temperature_2m)+'°</span><span class="m">New York City<br>'+m+'</span>';}).catch(()=>{const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="m">weather offline</span>';});
 })();
 
-// ═══════ COLLECTIONS TABS ═══════
-function switchTab(btn, tabId){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+// ═══════ COLLECTIONS ═══════
+const COLL_COLORS=['#4FA3A0','#C77E92','#D08A5A','#8A6BA8','#E0B24A','#4F7CA8','#6E9A5E'];
+const STATUS_CSS={'read':'status-read','currently reading':'status-reading','want to read':'status-want','watched':'status-read','want to watch':'status-want','attended':'status-read','want to see':'status-want','milestone':'status-reading'};
+const STATUS_LABEL={'read':'✓ read','currently reading':'currently reading','want to read':'want to read','watched':'✓ watched','want to watch':'want to watch','attended':'✓ attended','want to see':'want to see','milestone':'milestone'};
+
+function switchCollTab(btn, tabId){
+  document.querySelectorAll('#coll-tabs .tab').forEach(t=>t.classList.remove('on'));
   btn.classList.add('on');
   ['books','movies','shows','live','career'].forEach(t=>{
     const el=document.getElementById('tab-'+t);
     if(el) el.style.display = t===tabId ? 'block' : 'none';
   });
 }
+
+function renderCollections(){
+  const items = DB.get('collections', [
+    {date:'Jan 2026',type:'book',title:'East of Eden',author:'John Steinbeck',status:'read'},
+    {date:'May 2026',type:'book',title:'Interior Castle',author:'St. Teresa of Ávila',status:'read'},
+    {date:'Mar 2026',type:'book',title:'The Brothers Karamazov',author:'Dostoevsky',status:'read'},
+    {date:'',type:'book',title:'Middlemarch',author:'George Eliot',status:'currently reading'},
+  ]);
+
+  const typeMap={books:'book',movies:'movie',shows:'show',live:'live',career:'career'};
+  const labels={books:'📚 Books',movies:'🎬 Movies',shows:'📺 Shows',live:'🎭 Live',career:'💼 Career'};
+
+  Object.entries(typeMap).forEach(([tabKey, typeVal]) => {
+    const tabItems = items.filter(i=>i.type===typeVal);
+    const tabBtn = document.querySelector(`#coll-tabs .tab[onclick*="'${tabKey}'"]`);
+    if(tabBtn) tabBtn.textContent = labels[tabKey] + (tabItems.length ? ` (${tabItems.length})` : '');
+
+    const el = document.getElementById('tab-'+tabKey);
+    if(!el) return;
+    let html = tabItems.map((item,i) => `
+      <div class="book-item">
+        <div class="book-cover" style="background:${COLL_COLORS[i%COLL_COLORS.length]};"></div>
+        <div style="flex:1">
+          <div class="book-title">${escHtml(item.title)}</div>
+          ${item.author?`<div class="book-author">${escHtml(item.author)}</div>`:''}
+          <span class="book-status ${STATUS_CSS[item.status]||'status-want'}">${STATUS_LABEL[item.status]||item.status}${item.date?' · '+item.date:''}</span>
+        </div>
+      </div>`).join('');
+    html += `<div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;" onclick="addCollection('${typeVal}')">+ Add</button></div>`;
+    el.innerHTML = html;
+  });
+}
+
+window.addCollection = function(type){
+  const prmpt={book:'Book title?',movie:'Movie title?',show:'Show title?',live:'Event name?',career:'Milestone?'};
+  const title = prompt(prmpt[type]||'Title?'); if(!title) return;
+  const auth2={book:'Author?',movie:'Director (optional)',show:'Creator / Network',live:'Venue / Artist',career:'Details'};
+  const author = prompt(auth2[type]||'Details?') || '';
+  const opts={book:['want to read','currently reading','read'],movie:['want to watch','watched'],show:['want to watch','currently reading','watched'],live:['want to see','attended'],career:['milestone']};
+  const o = opts[type]||[''];
+  const status = o.length===1 ? o[0] : (prompt('Status? ('+o.join(' / ')+')') || o[0]);
+  DB.push('collections', {date:todayStr(), type, title, author, status});
+  renderCollections();
+  showToast('Added ✓');
+  sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],[todayStr(),type,title,author,status]);
+};
 
 // ═══════ GOOGLE SHEETS SYNC ═══════
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWVMIeDgv4EOuA7oC3OnsK1hAHcUhQy2WYINmdonhKhazHGZ/exec';
@@ -947,80 +1164,252 @@ function todayStr(){
   return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 
-// — Journal —
-document.querySelector('#s-daily-journal .btn')?.addEventListener('click',()=>{
-  const mood=document.querySelector('#s-daily-journal .mood-btn.on .mood-label')?.textContent||'';
-  const entry=document.querySelector('#s-daily-journal textarea')?.value||'';
+// ═══════ SAVE FUNCTIONS ═══════
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+window.saveJournal = function(){
+  const mood = document.querySelector('#s-daily-journal .mood-btn.on')?.querySelector('.mood-label')?.textContent?.trim() || '';
+  const moodEmoji = document.querySelector('#s-daily-journal .mood-btn.on')?.childNodes[0]?.nodeValue?.trim() || '';
+  const entry = document.getElementById('journal-textarea')?.value?.trim() || '';
+  if(!entry){ showToast('Write something first!'); return; }
+  DB.push('journal', {date:todayStr(), mood: moodEmoji+' '+mood, entry});
+  renderJournalRecent();
+  showToast('Journal entry saved ✓');
   sendToSheets('Journal',['Date','Mood','Entry'],[todayStr(),mood,entry]);
-});
+};
 
-// — Gratitude —
-document.querySelector('#s-daily-gratitude .btn')?.addEventListener('click',()=>{
-  const inputs=document.querySelectorAll('#s-daily-gratitude input');
-  sendToSheets('Gratitude',['Date','1','2','3'],[todayStr(),inputs[0]?.value,inputs[1]?.value,inputs[2]?.value]);
-});
+window.saveGratitude = function(){
+  const inputs = document.querySelectorAll('#s-daily-gratitude .field-row input');
+  const g1=inputs[0]?.value||'', g2=inputs[1]?.value||'', g3=inputs[2]?.value||'';
+  if(!g1&&!g2&&!g3){ showToast('Add at least one thing!'); return; }
+  let entries = DB.get('gratitude',[]).filter(e=>e.date!==todayStr());
+  entries.unshift({date:todayStr(), g1, g2, g3});
+  DB.set('gratitude', entries);
+  renderHomeGrat();
+  renderGratRecent();
+  updateStreaks();
+  showToast('Gratitude saved ✓');
+  sendToSheets('Gratitude',['Date','1','2','3'],[todayStr(),g1,g2,g3]);
+};
 
-// — Examen —
-document.querySelector('#s-daily-examen .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
-  const ta=document.querySelectorAll('#s-daily-examen textarea');
-  sendToSheets('Examen',['Date','Presence','Gratitude','Emotions','Feature','Tomorrow'],
-    [todayStr(),ta[0]?.value,ta[1]?.value,ta[2]?.value,ta[3]?.value,ta[4]?.value]);
-});
+window.saveExamen = function(){
+  const ta = document.querySelectorAll('#s-daily-examen textarea');
+  const data = {date:todayStr(), presence:ta[0]?.value||'', gratitude:ta[1]?.value||'', emotions:ta[2]?.value||'', feature:ta[3]?.value||'', tomorrow:ta[4]?.value||''};
+  DB.push('examen', data);
+  showToast('Examen saved ✓');
+  sendToSheets('Examen',['Date','Presence','Gratitude','Emotions','Feature','Tomorrow'],[todayStr(),data.presence,data.gratitude,data.emotions,data.feature,data.tomorrow]);
+};
 
-// — Prayer intention —
-document.querySelector('#s-daily-prayer .btn')?.addEventListener('click',()=>{
-  const val=document.querySelector('#s-daily-prayer input[type="text"]')?.value||'';
-  if(val) sendToSheets('Prayer',['Date','Intention'],[todayStr(),val]);
-});
+window.savePrayer = function(){
+  const input = document.getElementById('prayer-input');
+  const val = input?.value?.trim() || '';
+  if(!val) return;
+  DB.push('prayer', {intention:val, timestamp:new Date().toISOString(), date:todayStr()});
+  input.value = '';
+  renderPrayerList();
+  showToast('Intention added ✓');
+  sendToSheets('Prayer',['Date','Intention'],[todayStr(),val]);
+};
 
-// — Brain Dump —
-document.querySelector('#s-daily-brain .btn')?.addEventListener('click',()=>{
-  const note=document.querySelector('#s-daily-brain textarea')?.value||'';
+window.removePrayer = function(i){
+  const arr = DB.get('prayer',[]); arr.splice(i,1); DB.set('prayer',arr); renderPrayerList();
+};
+
+window.saveBrain = function(){
+  const ta = document.getElementById('brain-textarea');
+  const note = ta?.value?.trim() || '';
+  if(!note) return;
+  DB.push('brain', {date:todayStr(), note});
+  ta.value = '';
+  showToast('Note saved ✓');
   sendToSheets('BrainDump',['Date','Note'],[todayStr(),note]);
-});
+};
 
-// — Body: weight —
-document.querySelector('#s-goals-body .card .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
-  const w=document.querySelector('#s-goals-body input[type="number"]')?.value||'';
-  if(w) sendToSheets('Body',['Date','Type','Value','Unit'],[todayStr(),'weight',w,'lb']);
-});
+window.saveBody = function(){
+  const w = document.getElementById('body-weight-input')?.value || '';
+  if(!w) return;
+  DB.push('body', {date:todayStr(), type:'weight', value:parseFloat(w), unit:'lb'});
+  renderBodyDisplay();
+  document.getElementById('body-weight-input').value = '';
+  showToast('Weight logged ✓');
+  sendToSheets('Body',['Date','Type','Value','Unit'],[todayStr(),'weight',w,'lb']);
+};
 
-// — Money —
-document.querySelector('#s-goals-money .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
-  const inputs=document.querySelectorAll('#s-goals-money input[type="number"]');
-  const ret=inputs[0]?.value||0, sav=inputs[1]?.value||0, loans=inputs[2]?.value||0;
-  const net=(parseFloat(ret)||0)+(parseFloat(sav)||0)-(parseFloat(loans)||0);
+window.saveMoney = function(){
+  const ret = parseFloat(document.getElementById('money-input-ret')?.value) || 0;
+  const sav = parseFloat(document.getElementById('money-input-sav')?.value) || 0;
+  const loans = parseFloat(document.getElementById('money-input-loan')?.value) || 0;
+  const net = ret + sav - loans;
+  DB.push('money', {date:todayStr(), retirement:ret, savings:sav, loans, net});
+  renderMoneyDisplay();
+  showToast('Numbers saved ✓');
   sendToSheets('Money',['Date','Retirement','Savings','Loans','NetWorth'],[todayStr(),ret,sav,loans,net]);
-});
+};
 
-// — Relationships —
-document.querySelector('#s-goals-relationships .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
-  const inputs=document.querySelectorAll('#s-goals-relationships input[type="text"]');
-  sendToSheets('Relationships',['Date','Person','How','Note'],
-    [todayStr(),inputs[0]?.value,inputs[1]?.value,inputs[2]?.value]);
-});
+window.saveRelationship = function(){
+  const person = document.getElementById('rel-person')?.value||'';
+  const how = document.getElementById('rel-how')?.value||'';
+  const note = document.getElementById('rel-note')?.value||'';
+  if(!person) return;
+  DB.push('relationships', {date:todayStr(), person, how, note});
+  ['rel-person','rel-how','rel-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  showToast('Connection logged ✓');
+  sendToSheets('Relationships',['Date','Person','How','Note'],[todayStr(),person,how,note]);
+};
 
-// — Collections: book —
-document.querySelector('#tab-books .btn-ghost')?.addEventListener('click',()=>{
-  const title=prompt('Book title?'); if(!title) return;
-  const author=prompt('Author?')||'';
-  sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],
-    [todayStr(),'book',title,author,'want to read']);
-});
+window.saveWordOfYear = function(){
+  const word = document.getElementById('woy-input-word')?.value||'';
+  const meaning = document.getElementById('woy-input-meaning')?.value||'';
+  DB.set('word', {word, meaning});
+  renderWordOfYear();
+  showToast('Word saved ✓');
+  sendToSheets('WordOfYear',['Date','Word','Meaning'],[todayStr(),word,meaning]);
+};
 
-// — Travel: add place —
-document.querySelectorAll('#s-mem-travel .btn-ghost').forEach((btn,i)=>{
-  btn.addEventListener('click',()=>{
-    const place=prompt(i===0?'Place visited?':'Place on wish list?'); if(!place) return;
-    sendToSheets('Travel',['Date','Place','Status'],[todayStr(),place,i===0?'visited':'wishlist']);
+// ═══════ RENDER FUNCTIONS ═══════
+function renderJournalRecent(){
+  const el = document.getElementById('journal-recent');
+  if(!el) return;
+  const entries = DB.get('journal',[]);
+  if(!entries.length){ el.innerHTML='<div style="color:var(--soft);font-size:14px;">No entries yet.</div>'; return; }
+  el.innerHTML = entries.slice(0,6).map(e=>`
+    <div class="j-entry">
+      <div class="j-date">${e.date}</div>
+      <div class="j-text">${escHtml(e.entry).substring(0,180)}${e.entry.length>180?'…':''}</div>
+      ${e.mood?`<span class="j-mood" style="background:var(--lemon-bg);color:#8a6a14;">${e.mood}</span>`:''}
+    </div>`).join('');
+}
+
+function renderHomeGrat(){
+  const el = document.getElementById('home-grat');
+  if(!el) return;
+  const entries = DB.get('gratitude',[]);
+  const today = entries.find(e=>e.date===todayStr());
+  if(today){
+    el.innerHTML = [today.g1, today.g2, today.g3].filter(Boolean)
+      .map((g,i)=>`<p><span class="n">${i+1}</span>${escHtml(g)}</p>`).join('');
+  } else {
+    el.innerHTML = '<p style="color:var(--soft);font-size:14px;font-style:italic;">Log your gratitude today →</p>';
+  }
+}
+
+function renderGratRecent(){
+  const el = document.getElementById('grat-recent');
+  if(!el) return;
+  const entries = DB.get('gratitude',[]);
+  if(!entries.length){ el.innerHTML='<div style="color:var(--soft);font-size:14px;">No entries yet.</div>'; return; }
+  el.innerHTML = entries.slice(0,5).map(e=>`
+    <div class="j-entry">
+      <div class="j-date">${e.date}</div>
+      <div class="j-text" style="font-size:13px;line-height:1.7;">
+        ${e.g1?`1. ${escHtml(e.g1)}`:''}${e.g2?`<br>2. ${escHtml(e.g2)}`:''}${e.g3?`<br>3. ${escHtml(e.g3)}`:''}
+      </div>
+    </div>`).join('');
+}
+
+function loadTodayGrat(){
+  const inputs = document.querySelectorAll('#s-daily-gratitude .field-row input');
+  const entries = DB.get('gratitude',[]);
+  const today = entries.find(e=>e.date===todayStr());
+  if(today && inputs.length>=3){ inputs[0].value=today.g1||''; inputs[1].value=today.g2||''; inputs[2].value=today.g3||''; }
+}
+
+function renderPrayerList(){
+  const el = document.getElementById('prayer-list');
+  if(!el) return;
+  const intentions = DB.get('prayer',[]);
+  if(!intentions.length){ el.innerHTML='<div style="color:var(--soft);font-size:14px;padding:10px 0;">No intentions yet. Add one below.</div>'; return; }
+  const now = new Date();
+  el.innerHTML = intentions.map((p,i)=>{
+    const added = new Date(p.timestamp||now);
+    const days = Math.max(0,Math.floor((now-added)/(864e5)));
+    return `<div class="intent">
+      <div class="cross">✦</div>
+      <div style="flex:1"><div style="font-size:14px;">${escHtml(p.intention)}</div>
+      <div class="days">praying ${days===0?'today':days+' day'+(days===1?'':'s')}</div></div>
+      <button onclick="removePrayer(${i})" style="border:none;background:none;color:var(--soft);cursor:pointer;font-size:18px;padding:4px;line-height:1;">×</button>
+    </div>`;
+  }).join('');
+}
+
+function renderBodyDisplay(){
+  const entries = DB.get('body',[]);
+  const latest = entries.find(e=>e.type==='weight');
+  const el = document.getElementById('body-weight-display');
+  if(el) el.textContent = latest ? latest.value : '—';
+}
+
+function renderMoneyDisplay(){
+  const entries = DB.get('money',[]);
+  const latest = entries[0];
+  if(!latest) return;
+  const fmt = n => '$'+Number(n||0).toLocaleString();
+  const set = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  set('money-net', fmt(latest.net));
+  set('money-ret-val', fmt(latest.retirement));
+  set('money-sav-val', fmt(latest.savings));
+  set('money-loan-val', '−'+fmt(latest.loans));
+  set('home-nw', fmt(latest.net));
+  set('home-ret', fmt(latest.retirement));
+  set('home-sav', fmt(latest.savings));
+  set('home-loan', '−'+fmt(latest.loans));
+  // Pre-fill inputs
+  const ri=document.getElementById('money-input-ret'); if(ri&&!ri.value) ri.value=latest.retirement||'';
+  const si=document.getElementById('money-input-sav'); if(si&&!si.value) si.value=latest.savings||'';
+  const li=document.getElementById('money-input-loan'); if(li&&!li.value) li.value=latest.loans||'';
+}
+
+function renderWordOfYear(){
+  const data = DB.get('word', {word:'Roots', meaning:'This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.'});
+  const wEl=document.getElementById('woy-display-word'); if(wEl) wEl.textContent=data.word;
+  const mEl=document.getElementById('woy-display-sub'); if(mEl) mEl.textContent=data.meaning;
+  const wi=document.getElementById('woy-input-word'); if(wi&&!wi.value) wi.value=data.word;
+  const mi=document.getElementById('woy-input-meaning'); if(mi&&!mi.value) mi.value=data.meaning;
+}
+
+// ═══════ TRAVEL (persistent) ═══════
+const FLAGS={'Italy':'🇮🇹','France':'🇫🇷','Canada':'🇨🇦','Mexico':'🇲🇽','USA':'🇺🇸','Greece':'🇬🇷','Portugal':'🇵🇹','Ireland':'🇮🇪','Japan':'🇯🇵','UK':'🇬🇧','Spain':'🇪🇸','Germany':'🇩🇪','Australia':'🇦🇺','Brazil':'🇧🇷','India':'🇮🇳','China':'🇨🇳','South Korea':'🇰🇷','Argentina':'🇦🇷','New Zealand':'🇳🇿','Peru':'🇵🇪','Chile':'🇨🇱','Colombia':'🇨🇴','Russia':'🇷🇺','Turkey':'🇹🇷','Morocco':'🇲🇦','Egypt':'🇪🇬','Nigeria':'🇳🇬','Kenya':'🇰🇪','South Africa':'🇿🇦','Saudi Arabia':'🇸🇦','Iran':'🇮🇷','Thailand':'🇹🇭','Vietnam':'🇻🇳','Indonesia':'🇮🇩','Philippines':'🇵🇭','Netherlands':'🇳🇱','Belgium':'🇧🇪','Switzerland':'🇨🇭','Austria':'🇦🇹','Poland':'🇵🇱','Sweden':'🇸🇪','Norway':'🇳🇴','Finland':'🇫🇮','Denmark':'🇩🇰','Iceland':'🇮🇸'};
+
+function getTravelData(){
+  return DB.get('travel', {
+    visited:[
+      {country:'Italy',places:'Amalfi, Rome, Florence'},
+      {country:'France',places:'Paris'},
+      {country:'USA',places:''},
+      {country:'Canada',places:'Montreal, Quebec City'},
+      {country:'Mexico',places:''}
+    ],
+    wishlist:[
+      {country:'Greece',places:'Santorini'},
+      {country:'Portugal',places:'Lisbon, Fátima'},
+      {country:'Ireland',places:''},
+      {country:'Japan',places:''}
+    ]
   });
-});
+}
+
+function renderTravelLists(){
+  const data = getTravelData();
+  const vEl=document.getElementById('travel-visited-list');
+  if(vEl) vEl.innerHTML = data.visited.map(t=>`
+    <div class="place">
+      <span class="flag">${FLAGS[t.country]||'🌍'}</span>
+      <span>${escHtml(t.country)}${t.places?' — '+escHtml(t.places):''}</span>
+      <span class="been">✓ visited</span>
+    </div>`).join('');
+  const wEl=document.getElementById('travel-wishlist-list');
+  if(wEl) wEl.innerHTML = data.wishlist.map(t=>`
+    <div class="place">
+      <span class="flag">${FLAGS[t.country]||'🌍'}</span>
+      <span>${escHtml(t.country)}${t.places?' — '+escHtml(t.places):''}</span>
+      <span class="wish">✦ someday</span>
+    </div>`).join('');
+  const vc=document.getElementById('tmap-vc'); if(vc) vc.textContent=data.visited.length;
+  const wc=document.getElementById('tmap-wc'); if(wc) wc.textContent=data.wishlist.length;
+}
 
 // ═══════ WORLD MAP ═══════
 (function(){
-  const VISITED=['Italy','France','Canada','Mexico','USA'];
-  const WISHLIST=['Greece','Portugal','Ireland','Japan'];
-  const FLAGS={'Italy':'🇮🇹','France':'🇫🇷','Canada':'🇨🇦','Mexico':'🇲🇽','USA':'🇺🇸','Greece':'🇬🇷','Portugal':'🇵🇹','Ireland':'🇮🇪','Japan':'🇯🇵','UK':'🇬🇧','Spain':'🇪🇸','Germany':'🇩🇪','Australia':'🇦🇺','Brazil':'🇧🇷','India':'🇮🇳','China':'🇨🇳','South Korea':'🇰🇷','Argentina':'🇦🇷','New Zealand':'🇳🇿'};
   // Country polygons [lon, lat] — proper simplified outlines
   const W={
     'Canada':      [[-52,47],[-60,46],[-64,44],[-67,47],[-71,45],[-76,44],[-83,42],[-83,46],[-86,46],[-90,48],[-95,49],[-110,49],[-123,49],[-130,54],[-140,60],[-140,72],[-110,75],[-85,75],[-65,68],[-60,63],[-52,47]],
@@ -1077,6 +1466,9 @@ document.querySelectorAll('#s-mem-travel .btn-ghost').forEach((btn,i)=>{
   function renderMap(){
     const svg=document.getElementById('travel-map');
     if(!svg) return;
+    const data = getTravelData();
+    const VISITED = data.visited.map(t=>t.country);
+    const WISHLIST = data.wishlist.map(t=>t.country);
     let html='';
     Object.entries(W).forEach(([name,pts])=>{
       const vis=VISITED.includes(name), wl=WISHLIST.includes(name);
@@ -1086,31 +1478,53 @@ document.querySelectorAll('#s-mem-travel .btn-ghost').forEach((btn,i)=>{
       html+=`<path d="${mkPath(pts)}" fill="${fill}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"><title>${name}</title></path>`;
     });
     svg.innerHTML=html;
-    const vc=document.getElementById('tmap-vc'); if(vc) vc.textContent=VISITED.length;
-    const wc=document.getElementById('tmap-wc'); if(wc) wc.textContent=WISHLIST.length;
   }
 
   window.addTravel=function(status){
     const country=prompt(status==='visited'?'Country you visited?':'Country on your wish list?');
     if(!country) return;
     const places=prompt('Specific places (optional)?')||'';
-    if(status==='visited') VISITED.push(country);
-    else WISHLIST.push(country);
+    const data = getTravelData();
+    if(status==='visited') data.visited.push({country,places});
+    else data.wishlist.push({country,places});
+    DB.set('travel', data);
     renderMap();
+    renderTravelLists();
+    showToast('Travel saved ✓');
     sendToSheets('Travel',['Date','Country','Specific Places','Status'],[todayStr(),country,places,status]);
   };
 
+  window._renderTravelMap = renderMap;
+
   const obs=new MutationObserver(()=>{
-    if(document.getElementById('s-mem-travel')?.classList.contains('active')) renderMap();
+    if(document.getElementById('s-mem-travel')?.classList.contains('active')){ renderMap(); renderTravelLists(); }
   });
   const tEl=document.getElementById('s-mem-travel');
-  if(tEl){ obs.observe(tEl,{attributes:true,attributeFilter:['class']}); if(tEl.classList.contains('active')) renderMap(); }
+  if(tEl){ obs.observe(tEl,{attributes:true,attributeFilter:['class']}); if(tEl.classList.contains('active')){ renderMap(); renderTravelLists(); } }
 })();
 
-// — Word of Year —
-document.querySelector('#s-year-word .btn')?.addEventListener('click',()=>{
-  const word=document.querySelector('#s-year-word input[type="text"]')?.value||'';
-  const meaning=document.querySelector('#s-year-word textarea')?.value||'';
-  sendToSheets('WordOfYear',['Date','Word','Meaning'],[todayStr(),word,meaning]);
+// ═══════ MOOD PICKER ═══════
+document.querySelectorAll('.mood-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#s-daily-journal .mood-btn').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  });
 });
+
+// ═══════ INIT — render everything from localStorage ═══════
+(function init(){
+  renderHomeHabits();
+  renderHabits();
+  renderHomeGrat();
+  renderGratRecent();
+  loadTodayGrat();
+  renderJournalRecent();
+  renderPrayerList();
+  renderBodyDisplay();
+  renderMoneyDisplay();
+  renderCollections();
+  renderTravelLists();
+  renderWordOfYear();
+  updateStreaks();
+})();
 </script>
