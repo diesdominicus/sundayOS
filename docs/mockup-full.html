@@ -27,15 +27,8 @@ body{font-family:var(--sans);color:var(--ink);background:var(--ground);}
 .me span{font-size:12px;color:var(--soft);font-style:italic;line-height:1.4;display:block;margin-top:4px;}
 .nav-hub{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:13px;color:var(--sea-deep);font-size:14px;cursor:pointer;margin-bottom:1px;user-select:none;}
 .nav-hub svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
-.nav-hub .ca{margin-left:auto;width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;opacity:.5;transition:transform .2s;flex-shrink:0;}
 .nav-hub:hover{background:rgba(255,255,255,.45);}
 .nav-hub.on{background:var(--cream);font-weight:600;box-shadow:0 3px 10px rgba(40,75,107,.10);}
-.nav-hub.open .ca{transform:rotate(90deg);}
-.sub-items{display:none;padding:0 0 4px 41px;}
-.sub-items.open{display:block;}
-.sub-item{display:block;padding:6px 10px;font-size:13px;color:var(--soft);cursor:pointer;border-radius:9px;}
-.sub-item:hover{background:rgba(255,255,255,.4);color:var(--ink);}
-.sub-item.on{color:var(--sea-deep);font-weight:600;}
 
 /* ── CARDS ── */
 .card{background:var(--surface);border-radius:22px;padding:20px 22px;}
@@ -642,81 +635,41 @@ const DB = {
 
 // ═══════ NAV CONFIG ═══════
 const HUBS = [
-  {id:'home', label:'Home', icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
-  {id:'daily', label:'Daily', icon:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
-    subs:[
-      {id:'daily-habits',label:'Habits'},
-      {id:'daily-journal',label:'Journal'},
-      {id:'daily-today',label:'Today'},
-      {id:'daily-brain',label:'Brain Dump'},
-      {id:'goals-list',label:'Goals'},
-      {id:'goals-areas',label:'7 Areas'},
-      {id:'goals-relationships',label:'Relationships'},
-      {id:'goals-body',label:'Body'},
-      {id:'goals-money',label:'Money'},
-    ]},
-  {id:'calendar', label:'Calendar', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
-  {id:'mem', label:'Memories', icon:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/>',
-    subs:[{id:'mem-photos',label:'Photos'},{id:'mem-travel',label:'Travel'},{id:'mem-collections',label:'Collections'}]},
-  {id:'year', label:'Year', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3"/>',
-    subs:[{id:'year-review',label:'Annual Review'}]}
+  {id:'home',              label:'Home',         icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
+  {id:'daily-habits',     label:'Habits',        icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>'},
+  {id:'daily-journal',    label:'Journal',       icon:'<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>'},
+  {id:'daily-today',      label:'Today',         icon:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
+  {id:'daily-brain',      label:'Brain Dump',    icon:'<path d="M9.5 2a2.5 2.5 0 000 5"/><path d="M14.5 2a2.5 2.5 0 010 5"/><path d="M12 7v13"/><path d="M9 10a3 3 0 00-3 3c0 1.5 1 2.5 3 3"/><path d="M15 10a3 3 0 013 3c0 1.5-1 2.5-3 3"/>'},
+  {id:'goals-list',       label:'Goals',         icon:'<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'},
+  {id:'goals-areas',      label:'7 Areas',       icon:'<circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/>'},
+  {id:'goals-relationships', label:'Relationships', icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>'},
+  {id:'goals-body',       label:'Body',          icon:'<path d="M12 2a4 4 0 100 8 4 4 0 000-8z"/><path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>'},
+  {id:'goals-money',      label:'Money',         icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'},
+  {id:'calendar',         label:'Calendar',      icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
+  {id:'mem-photos',       label:'Photos',        icon:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'},
+  {id:'mem-travel',       label:'Travel',        icon:'<path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/>'},
+  {id:'mem-collections',  label:'Collections',   icon:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>'},
+  {id:'year-review',      label:'Annual Review', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3"/>'},
 ];
-
-const caret = `<svg class="ca" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
 
 function buildNav(){
   const root = document.getElementById('nav-root');
-  root.innerHTML = HUBS.map(h=>{
-    const hasSubs = h.subs && h.subs.length;
-    return `
-      <div class="nav-hub${h.id==='home'?' on':''}" data-hub="${h.id}" onclick="hubClick('${h.id}')">
-        <svg class="i" viewBox="0 0 24 24">${h.icon}</svg>${h.label}${hasSubs?caret:''}
-      </div>
-      ${hasSubs?`<div class="sub-items" id="sub-${h.id}">${h.subs.map(s=>`<div class="sub-item" data-page="${s.id}" onclick="navigate('${s.id}')">${s.label}</div>`).join('')}</div>`:''}
-    `;
-  }).join('');
+  root.innerHTML = HUBS.map(h=>`
+    <div class="nav-hub${h.id==='home'?' on':''}" data-hub="${h.id}" onclick="navigate('${h.id}')">
+      <svg class="i" viewBox="0 0 24 24">${h.icon}</svg>${h.label}
+    </div>`).join('');
 }
 
 let currentPage = 'home';
 
-function hubClick(hubId){
-  const hub = HUBS.find(h=>h.id===hubId);
-  if(!hub) return;
-  if(hub.subs && hub.subs.length){
-    // toggle sub-items
-    const subEl = document.getElementById('sub-'+hubId);
-    const hubEl = document.querySelector(`[data-hub="${hubId}"]`);
-    const isOpen = subEl.classList.contains('open');
-    subEl.classList.toggle('open', !isOpen);
-    hubEl.classList.toggle('open', !isOpen);
-    // navigate to first sub if not already on one
-    if(!isOpen) navigate(hub.subs[0].id);
-  } else {
-    navigate(hubId);
-  }
-}
-
 function navigate(pageId){
-  // hide all
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   const target = document.getElementById('s-'+pageId);
   if(target) target.classList.add('active');
   currentPage = pageId;
-  // update nav highlight
   document.querySelectorAll('.nav-hub').forEach(el=>el.classList.remove('on'));
-  document.querySelectorAll('.sub-item').forEach(el=>el.classList.remove('on'));
-  // find which hub owns this page
-  const hub = HUBS.find(h=>h.id===pageId||(h.subs&&h.subs.find(s=>s.id===pageId)));
-  if(hub){
-    document.querySelector(`[data-hub="${hub.id}"]`).classList.add('on');
-    const subEl = document.getElementById('sub-'+hub.id);
-    if(subEl && hub.subs){
-      subEl.classList.add('open');
-      document.querySelector(`[data-hub="${hub.id}"]`).classList.add('open');
-      const sub = document.querySelector(`[data-page="${pageId}"]`);
-      if(sub) sub.classList.add('on');
-    }
-  }
+  const active = document.querySelector(`[data-hub="${pageId}"]`);
+  if(active) active.classList.add('on');
 }
 
 buildNav();
