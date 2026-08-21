@@ -2,6 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DOMENICA OS</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 :root{
   --ground:#EFE9D8;--panel:#D7E7F0;--surface:#FCFAF2;--surface2:#EAF2F8;
@@ -227,7 +228,15 @@ textarea.note-input:focus{border-color:var(--sea);}
 }
 </style>
 
-<div class="app">
+<!-- ═══ SIGN-IN GATE ═══ -->
+<div id="signin-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--ground);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;">
+  <div style="font-family:var(--voice);font-size:32px;color:var(--sea-deep);letter-spacing:.02em;">DOMENICA OS</div>
+  <div style="font-size:14px;color:var(--soft);text-align:center;max-width:300px;">Sign in with your Google account to continue.</div>
+  <div id="g_id_signin"></div>
+  <div id="signin-error" style="color:#B4532E;font-size:13px;display:none;">This account doesn't have access.</div>
+</div>
+
+<div class="app" id="app-shell" style="display:none;">
 <!-- ═══════════════════════ RAIL ═══════════════════════ -->
 <aside class="rail" id="rail">
   <div class="me">
@@ -620,7 +629,7 @@ textarea.note-input:focus{border-color:var(--sea);}
 </div>
 
 </main>
-</div>
+</div><!-- end app-shell -->
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1038,8 +1047,9 @@ const SYNC_KEYS=['habits_def','habit_logs','today_log','brain','body','money',
 
 // Push full state to Sheets _AppSync tab — called after every save
 function saveAllToSheets(){
-  const data={};
+  const data={_ts:Date.now()};
   SYNC_KEYS.forEach(k=>{ const v=DB.get(k,null); if(v!==null) data[k]=v; });
+  DB.set('_localTs', data._ts); // track when we last pushed
   if(!_writeQueue['_AppSync']) _writeQueue['_AppSync']=Promise.resolve();
   _writeQueue['_AppSync']=_writeQueue['_AppSync'].then(()=>
     fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',
@@ -1049,7 +1059,39 @@ function saveAllToSheets(){
   );
 }
 
-// Pull full state from Sheets on startup — remote wins (it's the shared source of truth)
+// Merge remote data additively — arrays are unioned so no entry ever disappears
+function mergeRemote(remote){
+  // Array keys: union by a unique signature, remote entries first (newest device wins)
+  const arrayKeys={
+    today_log: e=>e.date,
+    brain:     e=>e.id||e.date+e.note,
+    body:      e=>e.date+e.type,
+    money:     e=>e.date,
+    relationships: e=>e.date+e.person,
+    collections:   e=>e.date+e.title,
+  };
+  Object.entries(arrayKeys).forEach(([k,sig])=>{
+    const local = DB.get(k,[]);
+    const rem = remote[k]||[];
+    const seen = new Set(local.map(sig));
+    const merged = [...local, ...rem.filter(e=>!seen.has(sig(e)))];
+    DB.set(k, merged);
+  });
+  // Habit logs: deep merge — if either side says done, it's done
+  const localLogs = DB.get('habit_logs',{});
+  const remLogs = remote.habit_logs||{};
+  Object.entries(remLogs).forEach(([dk,day])=>{
+    if(!localLogs[dk]) localLogs[dk]={};
+    Object.entries(day||{}).forEach(([hid,done])=>{ if(done) localLogs[dk][hid]=true; });
+  });
+  DB.set('habit_logs', localLogs);
+  // Scalar / object keys: take remote only if local hasn't been modified since last sync
+  ['habits_def','travel'].forEach(k=>{
+    if(remote[k]!==undefined) DB.set(k, remote[k]);
+  });
+}
+
+// Pull full state from Sheets — merge additively so nothing gets wiped
 async function loadFromSheets(){
   const badge=document.getElementById('sync-badge');
   if(badge) badge.textContent='⟳';
@@ -1058,7 +1100,7 @@ async function loadFromSheets(){
     const text=await res.text();
     const remote=JSON.parse(text);
     if(remote && typeof remote==='object' && Object.keys(remote).length>0){
-      SYNC_KEYS.forEach(k=>{ if(remote[k]!==undefined) DB.set(k,remote[k]); });
+      mergeRemote(remote);
       if(badge){ badge.textContent='✓'; setTimeout(()=>{ badge.textContent=''; },3000); }
       renderAll();
     } else { if(badge) badge.textContent=''; }
@@ -1655,14 +1697,7 @@ function renderBodyDisplay(){
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 
-const FEAST_DATES = {
-  '01-01':'🕊️ Mary, Mother of God','03-19':'⚜️ St. Joseph','03-25':'✨ The Annunciation',
-  '06-29':'⚓ Sts. Peter & Paul','07-22':'🌹 St. Mary Magdalene','08-06':'✦ The Transfiguration',
-  '08-08':'✦ St. Dominic','08-15':'⭐ Assumption of Mary','08-22':'👑 Queenship of Mary',
-  '09-29':'⚔️ Sts. Michael, Gabriel & Raphael','10-07':'📿 Our Lady of the Rosary',
-  '11-01':'🕯️ All Saints','11-02':'🕯️ All Souls','12-08':'🌟 Immaculate Conception',
-  '12-25':'🎄 Christmas'
-};
+// FEAST_DATES removed — calendar shows Google Calendar events only
 
 function getCalEvents(){
   // Google Calendar events only — no manual entries, no dummy data
@@ -1771,8 +1806,7 @@ function renderCalendar(){
     const isPast = dt < today;
     const dk = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const ddStr = String(d).padStart(2,'0');
-    const mmdd = mmStr+'-'+ddStr;
-    const hasEvent = events.some(e=>e.date===dk) || !!FEAST_DATES[mmdd];
+    const hasEvent = events.some(e=>e.date===dk);
     let cls = 'cd';
     if(isToday) cls += ' today';
     else if(isPast) cls += ' past';
@@ -1786,17 +1820,6 @@ function renderCalendar(){
   const cutoff = nowTs + 60*864e5;
   const upcoming = [];
 
-  // Add feast days
-  for(let d=1; d<=daysInMonth; d++){
-    const dk = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const ddStr = String(d).padStart(2,'0');
-    const feast = FEAST_DATES[mmStr+'-'+ddStr];
-    if(feast){
-      const dt = new Date(calYear,calMonth,d).getTime();
-      if(dt>=nowTs&&dt<=cutoff) upcoming.push({date:dk, label:feast, type:'feast'});
-    }
-  }
-  // Add user events
   events.forEach(e=>{
     const dt = new Date(e.date).getTime();
     if(dt>=nowTs&&dt<=cutoff) upcoming.push(e);
@@ -1826,23 +1849,18 @@ let _calSelectedDk = null;
 window.calDayClick = function(dk, day){
   _calSelectedDk = dk;
   const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const feast = FEAST_DATES[String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0')];
   const events = getCalEvents();
   const dayEvents = events.filter(e=>e.date===dk);
 
-  // Highlight selected day
   document.querySelectorAll('.cal-grid .cd').forEach(el=>el.classList.remove('sel'));
   const clickedEl = document.querySelector(`.cal-grid .cd[data-dk="${dk}"]`);
   if(clickedEl) clickedEl.classList.add('sel');
 
-  // Render detail panel
   const panel = document.getElementById('cal-day-detail');
   const heading = document.getElementById('cal-detail-heading');
-  const feastEl = document.getElementById('cal-detail-feast');
   const eventsEl = document.getElementById('cal-detail-events');
 
   heading.textContent = `${MON[calMonth]} ${day}`;
-  feastEl.innerHTML = feast ? `<span class="feast">${feast}</span>` : '';
 
   if(dayEvents.length){
     eventsEl.innerHTML = dayEvents.map(e=>`
@@ -1916,11 +1934,115 @@ function renderAll(){
   renderAnnualReview();
 }
 
+// ═══════ GOOGLE SIGN-IN ═══════
+const ALLOWED_EMAIL = 'domenicadottavio@gmail.com';
+// Paste your OAuth Client ID here once you have it (see instructions below)
+const GOOGLE_CLIENT_ID = DB.get('gcid', null) || '';
+
+function parseJwt(token){
+  try{ return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
+  catch{ return null; }
+}
+
+function showApp(){
+  document.getElementById('signin-overlay').style.display = 'none';
+  document.getElementById('app-shell').style.display = '';
+}
+
+function showSignIn(){
+  document.getElementById('signin-overlay').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+  if(GOOGLE_CLIENT_ID){
+    // Render Google button
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: onGoogleSignIn,
+      auto_select: true,
+      cancel_on_tap_outside: false,
+    });
+    google.accounts.id.renderButton(document.getElementById('g_id_signin'),
+      {theme:'outline', size:'large', text:'sign_in_with', shape:'pill'});
+    google.accounts.id.prompt(); // also try One Tap
+  } else {
+    // Client ID not set — show setup prompt
+    document.getElementById('g_id_signin').innerHTML =
+      `<div style="font-size:13px;color:var(--soft);text-align:center;max-width:300px;">
+        <b>One-time setup needed:</b><br>Enter your Google OAuth Client ID below to enable sign-in.
+        <br><br>
+        <input id="gcid-input" type="text" placeholder="xxxx.apps.googleusercontent.com"
+          style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);
+          border-radius:10px;font-size:13px;margin-bottom:10px;">
+        <button onclick="saveClientId()" style="padding:10px 22px;background:var(--sea);color:#fff;
+          border:none;border-radius:20px;font-size:14px;cursor:pointer;">Save & continue</button>
+        <br><br><span style="font-size:11px;opacity:.6;">
+          Get it at console.cloud.google.com → APIs & Services → Credentials → OAuth 2.0 Client ID (Web).<br>
+          Add https://diesdominicus.github.io as an authorized JavaScript origin.
+        </span>
+      </div>`;
+  }
+}
+
+window.saveClientId = function(){
+  const id = document.getElementById('gcid-input')?.value?.trim();
+  if(!id){ alert('Paste your Client ID first'); return; }
+  DB.set('gcid', id);
+  location.reload(); // reload so the new client ID takes effect
+};
+
+function onGoogleSignIn(response){
+  const payload = parseJwt(response.credential);
+  if(!payload){ showError(); return; }
+  if(payload.email !== ALLOWED_EMAIL){ showError(); return; }
+  // Valid — store session (JWT valid ~1hr; we'll re-prompt automatically)
+  DB.set('gsi_cred', response.credential);
+  DB.set('gsi_exp', (payload.exp||0)*1000);
+  document.getElementById('signin-error').style.display = 'none';
+  showApp();
+  startApp();
+}
+
+function showError(){
+  document.getElementById('signin-error').style.display = 'block';
+}
+
+function startApp(){
+  renderAll();
+  showGCalUI();
+  loadFromSheets();
+  loadGCalEvents();
+}
+
 // ═══════ INIT ═══════
 (function init(){
-  renderAll();          // render immediately from localStorage (instant)
-  showGCalUI();         // show connect/connected state
-  loadFromSheets();     // pull app data from Sheets (async)
-  loadGCalEvents();     // pull Google Calendar events (async, uses cache)
+  const cred = DB.get('gsi_cred', null);
+  const exp  = DB.get('gsi_exp', 0);
+  const stillValid = cred && Date.now() < exp;
+
+  if(!GOOGLE_CLIENT_ID && !stillValid){
+    // No client ID configured yet — skip auth and just show app (dev mode)
+    showApp();
+    startApp();
+    return;
+  }
+
+  if(stillValid){
+    // Already signed in and token not expired
+    showApp();
+    startApp();
+  } else {
+    // Need to sign in
+    // Wait for GSI library to load then show sign-in
+    if(typeof google !== 'undefined'){
+      showSignIn();
+    } else {
+      window.addEventListener('load', showSignIn);
+      // Fallback: if GSI fails to load (e.g. offline), show app anyway
+      setTimeout(()=>{
+        if(document.getElementById('app-shell').style.display==='none'){
+          showApp(); startApp();
+        }
+      }, 4000);
+    }
+  }
 })();
 </script>
