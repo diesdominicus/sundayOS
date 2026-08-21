@@ -1,0 +1,190 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Life — look &amp; feel</title>
+<style>
+  :root{
+    --bg:#DDE3D0; --ground:#E6EAD9; --surface:#F5F4EA; --surface2:#EBEEE0;
+    --ink:#37402F; --soft:#6B7360; --line:#D2D8C2;
+    --accent:#5F7350; --accent-bg:#DFE6D2; --accent2:#8AA07A; --sacred:#9C7A3E; --oncream:#F5F4EA;
+    --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    --round:20px;
+  }
+  *{box-sizing:border-box;}
+  .wrap{background:var(--bg);min-height:100vh;padding:22px 16px 40px;font-family:var(--sans);color:var(--ink);transition:background .4s;}
+  .switch{max-width:1000px;margin:0 auto 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;}
+  .switch .lbl{font-size:13px;color:var(--soft);margin-right:4px;}
+  .tchip{display:flex;align-items:center;gap:8px;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.5);border-radius:30px;padding:7px 13px 7px 8px;font-size:13px;cursor:pointer;color:#33322e;font-family:var(--sans);}
+  .tchip .sw{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+  .tchip.on{outline:2px solid #33322e;outline-offset:1px;}
+
+  .device{max-width:1000px;margin:0 auto;background:var(--ground);border-radius:34px;padding:26px 26px 22px;position:relative;overflow:hidden;box-shadow:0 20px 50px rgba(60,50,40,.14);transition:background .4s;}
+  .doodles{position:absolute;inset:0;pointer-events:none;z-index:0;}
+  .doodles svg{position:absolute;stroke:var(--accent2);fill:none;stroke-width:1.5;opacity:.5;}
+  .device>*{position:relative;z-index:1;}
+
+  .banner{background:var(--accent);border-radius:var(--round);padding:14px 26px;text-align:center;margin-bottom:18px;}
+  .banner h1{margin:0;color:var(--oncream);font-family:var(--sans);font-weight:800;letter-spacing:.14em;font-size:clamp(30px,6vw,54px);}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;}
+  .card{background:var(--surface);border-radius:var(--round);padding:18px 20px;}
+  .card h3{margin:0 0 12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;gap:9px;font-weight:700;}
+  .ic{width:30px;height:30px;border-radius:9px;background:var(--accent-bg);display:grid;place-items:center;color:var(--accent);flex-shrink:0;}
+  .ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;}
+
+  .check{display:flex;align-items:center;gap:11px;padding:7px 0;font-size:16px;}
+  .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--accent2);display:grid;place-items:center;flex-shrink:0;}
+  .box.on{background:var(--accent);border-color:var(--accent);}
+  .box.on svg{width:13px;height:13px;stroke:var(--oncream);fill:none;stroke-width:3;}
+
+  .cal .mhead{text-align:center;font-family:var(--voice);font-size:22px;color:var(--accent);margin-bottom:10px;}
+  .cal table{width:100%;border-collapse:collapse;}
+  .cal th{font-size:12px;color:var(--soft);font-weight:700;padding:4px 0;}
+  .cal td{text-align:center;font-size:13px;color:var(--ink);padding:5px 0;font-variant-numeric:tabular-nums;}
+  .cal td .t{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--oncream);}
+
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0;}
+  .tile{border-radius:var(--round);padding:16px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;}
+  .tile.a{background:var(--accent);color:var(--oncream);}
+  .tile.b{background:var(--surface);}
+  .tile.c{background:var(--accent2);color:#fff;}
+  .tile.d{background:var(--surface2);}
+  .tile .big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .tile .lab{font-size:12px;opacity:.85;}
+  .tile .script{font-family:var(--voice);font-style:italic;font-size:19px;}
+  .tile svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  .grat p{font-family:var(--voice);font-size:15px;line-height:1.5;margin:6px 0;color:var(--ink);}
+  .grat .n{color:var(--sacred);font-weight:700;margin-right:6px;}
+  .quote{background:var(--accent2);color:#fff;border-radius:var(--round);padding:20px;display:flex;flex-direction:column;justify-content:center;}
+  .quote p{font-family:var(--voice);font-size:17px;line-height:1.45;margin:0 0 8px;}
+  .quote cite{font-style:normal;font-size:12px;opacity:.9;}
+  .pray .pi{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:7px 0;border-bottom:1px dashed var(--line);}
+  .pray .pi:last-child{border-bottom:none;}
+  .pray .tag{font-size:11px;background:var(--accent-bg);color:var(--accent);padding:2px 8px;border-radius:10px;}
+
+  .dock{display:flex;gap:14px;justify-content:center;margin-top:18px;background:var(--surface);border-radius:26px;padding:14px;}
+  .dapp{width:52px;height:52px;border-radius:16px;background:var(--accent-bg);display:grid;place-items:center;color:var(--accent);}
+  .dapp.solid{background:var(--accent);color:var(--oncream);}
+  .dapp svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.7;}
+
+  @media (max-width:760px){
+    .grid,.row2{grid-template-columns:1fr;}
+    .tiles{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+
+<div class="wrap" id="wrap">
+  <div class="switch" id="switch"><span class="lbl">Try a vibe:</span></div>
+
+  <div class="device">
+    <div class="doodles" id="doodles"></div>
+
+    <div class="banner"><h1>DOMENICA</h1></div>
+
+    <div class="grid">
+      <div class="card">
+        <h3><span class="ic">${I_habit}</span>Today's habits</h3>
+        <div class="check"><span class="box on">${CK}</span>Daily Mass</div>
+        <div class="check"><span class="box on">${CK}</span>Rosary</div>
+        <div class="check"><span class="box">${''}</span>Adoration</div>
+        <div class="check"><span class="box on">${CK}</span>5k steps</div>
+        <div class="check"><span class="box">${''}</span>Drink water</div>
+      </div>
+      <div class="card cal" id="cal"></div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile a"><span class="lab">streak</span><span class="big">🔥 12</span></div>
+      <div class="tile b"><span class="lab" style="color:var(--soft)">now</span><span class="big" id="clock">5:35</span></div>
+      <div class="tile c"><span></span><span class="script">be blessed</span></div>
+      <div class="tile d"><span class="lab" style="color:var(--soft)">New York</span><span class="big" id="temp">72°</span></div>
+    </div>
+
+    <div class="row2">
+      <div class="card grat">
+        <h3><span class="ic">${I_heart}</span>Grateful today</h3>
+        <p><span class="n">1</span>Slow rosary in the rain</p>
+        <p><span class="n">2</span>Mom called to say hi</p>
+        <p><span class="n">3</span>Fig season is back</p>
+      </div>
+      <div class="quote">
+        <p>“Be who God meant you to be and you will set the world on fire.”</p>
+        <cite>— St. Catherine of Siena</cite>
+      </div>
+      <div class="card pray">
+        <h3><span class="ic">${I_pray}</span>Praying for</h3>
+        <div class="pi">Grandma's health<span class="tag">12d</span></div>
+        <div class="pi">Sofia's discernment<span class="tag">5d</span></div>
+        <div class="pi">Peace at work<span class="tag">3d</span></div>
+      </div>
+    </div>
+
+    <div class="dock">
+      <div class="dapp solid">${I_home}</div>
+      <div class="dapp">${I_cal}</div>
+      <div class="dapp">${I_habit}</div>
+      <div class="dapp">${I_journal}</div>
+      <div class="dapp">${I_heart}</div>
+      <div class="dapp">${I_money}</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const I_habit='<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>';
+  const I_heart='<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>';
+  const I_pray='<svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 01-10 0c0-2 1-3 2-4 .5 2 2 2 2 2 0-3-1-5 1-7z"/></svg>';
+  const I_home='<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
+  const I_cal='<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>';
+  const I_journal='<svg viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>';
+  const I_money='<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>';
+  const CK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+
+  // fill icon placeholders left in markup
+  document.querySelectorAll('.device').forEach(d=>{
+    d.innerHTML=d.innerHTML
+      .replaceAll('${I_habit}',I_habit).replaceAll('${I_heart}',I_heart).replaceAll('${I_pray}',I_pray)
+      .replaceAll('${I_home}',I_home).replaceAll('${I_cal}',I_cal).replaceAll('${I_journal}',I_journal)
+      .replaceAll('${I_money}',I_money).replaceAll('${CK}',CK).replaceAll("${''}",'');
+  });
+
+  const THEMES={
+    sage:{name:'Sage & cream',sw:'#5F7350',v:{bg:'#DDE3D0',ground:'#E6EAD9',surface:'#F5F4EA',surface2:'#EBEEE0',ink:'#37402F',soft:'#6B7360',line:'#D2D8C2',accent:'#5F7350','accent-bg':'#DFE6D2',accent2:'#8AA07A',sacred:'#9C7A3E',oncream:'#F5F4EA'}},
+    boho:{name:'Warm boho',sw:'#B0835F',v:{bg:'#E7DCCC',ground:'#EFE7DB',surface:'#F8F2E9',surface2:'#EFE6D8',ink:'#463A2E',soft:'#7A6A58',line:'#DDCFBC',accent:'#B0835F','accent-bg':'#EAD9C6',accent2:'#C2A98E',sacred:'#9A7B4F',oncream:'#FBF6EF'}},
+    blue:{name:'Porcelain blue',sw:'#4F7AA6',v:{bg:'#DCE6EF',ground:'#E9F0F6',surface:'#FBFDFF',surface2:'#EAF1F8',ink:'#2C3B4E',soft:'#5E7086',line:'#CFDCE9',accent:'#4F7AA6','accent-bg':'#DBE7F2',accent2:'#8FAECB',sacred:'#3E6690',oncream:'#FBFDFF'}},
+    autumn:{name:'Cozy autumn',sw:'#C4692B',v:{bg:'#E9D9C6',ground:'#EFE2D2',surface:'#FBF2E6',surface2:'#F1E2D0',ink:'#48331F',soft:'#7C5E45',line:'#DEC9AF',accent:'#C4692B','accent-bg':'#F0DCC4',accent2:'#DDA05A',sacred:'#A75A24',oncream:'#FBF2E6'}},
+    blush:{name:'Blush rose',sw:'#BE6E86',v:{bg:'#F0DFE4',ground:'#F6E9ED',surface:'#FEF9FA',surface2:'#F7E9ED',ink:'#4A3740',soft:'#836470',line:'#EBD3DA',accent:'#BE6E86','accent-bg':'#F3DEE5',accent2:'#DCA9B8',sacred:'#A8657C',oncream:'#FEF9FA'}},
+    plum:{name:'Plum & gold',sw:'#5C2A48',v:{bg:'#E4DAC6',ground:'#ECE5D6',surface:'#FBF8F1',surface2:'#F3EDE0',ink:'#2A211C',soft:'#6A5C51',line:'#DCD2BF',accent:'#5C2A48','accent-bg':'#EEDFE7',accent2:'#9C7A2E',sacred:'#9C7A2E',oncream:'#FBF8F1'}}
+  };
+  function applyTheme(k){const t=THEMES[k];const r=document.getElementById('wrap');for(const p in t.v)r.style.setProperty('--'+p,t.v[p]);document.querySelectorAll('.tchip').forEach(c=>c.classList.toggle('on',c.dataset.k===k));}
+  const sw=document.getElementById('switch');
+  Object.keys(THEMES).forEach(k=>{const b=document.createElement('button');b.className='tchip';b.dataset.k=k;b.innerHTML='<span class="sw" style="background:'+THEMES[k].sw+'"></span>'+THEMES[k].name;b.onclick=()=>applyTheme(k);sw.appendChild(b);});
+  applyTheme('sage');
+
+  // botanical doodles
+  const SPRIG='<svg width="70" height="90" viewBox="0 0 70 90"><path d="M35 88 C35 60 33 40 40 10"/><path d="M37 70 C22 66 16 56 14 44 C28 46 36 56 37 70Z"/><path d="M39 54 C54 50 60 40 62 28 C48 30 40 40 39 54Z"/><path d="M37 38 C24 34 19 26 18 16 C30 18 37 26 37 38Z"/></svg>';
+  const spots=[[8,120,15],[92,140,-20],[4,430,-8],[95,470,22],[46,640,10],[14,720,-14],[88,720,18]];
+  const dl=document.getElementById('doodles');
+  spots.forEach(s=>{const d=document.createElement('div');d.innerHTML=SPRIG;const el=d.firstChild;el.style.left=s[0]+'%';el.style.top=s[1]+'px';el.style.transform='rotate('+s[2]+'deg)';dl.appendChild(el);});
+
+  // month calendar
+  function renderCal(){
+    const d=new Date(),y=d.getFullYear(),mo=d.getMonth(),today=d.getDate();
+    const names=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const first=new Date(y,mo,1).getDay(),dim=new Date(y,mo+1,0).getDate();
+    const shift=(first+6)%7;let cells=[];
+    for(let i=0;i<shift;i++)cells.push('');
+    for(let n=1;n<=dim;n++)cells.push(n);
+    let rows='';
+    for(let i=0;i<cells.length;i+=7){rows+='<tr>'+cells.slice(i,i+7).map(c=>c?('<td>'+(c===today?'<span class="t">'+c+'</span>':c)+'</td>'):'<td></td>').join('')+'</tr>';}
+    document.getElementById('cal').innerHTML='<div class="mhead">'+names[mo]+'</div><table><thead><tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
+  renderCal();
+
+  // live clock + weather
+  function tick(){const d=new Date();let h=d.getHours(),m=d.getMinutes();h=h%12||12;document.getElementById('clock').textContent=h+':'+String(m).padStart(2,'0');}
+  tick();setInterval(tick,10000);
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=temperature_2m&temperature_unit=fahrenheit').then(r=>r.json()).then(j=>{document.getElementById('temp').textContent=Math.round(j.current.temperature_2m)+'°';}).catch(()=>{});
+</script>

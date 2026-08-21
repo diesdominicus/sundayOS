@@ -1,0 +1,663 @@
+<title>Life Dashboard — desktop concept</title>
+<style>
+  :root{
+    --ground:#ECE5D6; --surface:#FBF8F1; --surface-2:#F3EDE0;
+    --ink:#2A211C; --ink-soft:#6A5C51; --ink-faint:#9C8E80;
+    --line:#DCD2BF; --line-soft:#E6DDCB;
+    --plum:#5C2A48; --plum-bright:#7A3A60; --plum-bg:#EEDFE7;
+    --gold:#9C7A2E; --gold-bg:#F1E7CE;
+    --good:#4F6A3B; --good-bg:#E3E9D4;
+    --warn:#A9772B; --warn-bg:#F3E6CC;
+    --crit:#9B3B34;
+    --liturgy:#4F6A3B;
+    --radius:14px;
+    --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#171310; --surface:#221C18; --surface-2:#2A231D;
+      --ink:#EDE4D6; --ink-soft:#B6A796; --ink-faint:#847668;
+      --line:#362C24; --line-soft:#2E251F;
+      --plum:#D79BBF; --plum-bright:#E0AECD; --plum-bg:#3A2131;
+      --gold:#CDA85A; --gold-bg:#37301C;
+      --good:#9CB878; --good-bg:#2A3320;
+      --warn:#D7A55A; --warn-bg:#352A18;
+      --crit:#DB7A72;
+      --liturgy:#9CB878;
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#ECE5D6; --surface:#FBF8F1; --surface-2:#F3EDE0;
+    --ink:#2A211C; --ink-soft:#6A5C51; --ink-faint:#9C8E80;
+    --line:#DCD2BF; --line-soft:#E6DDCB;
+    --plum:#5C2A48; --plum-bright:#7A3A60; --plum-bg:#EEDFE7;
+    --gold:#9C7A2E; --gold-bg:#F1E7CE;
+    --good:#4F6A3B; --good-bg:#E3E9D4; --warn:#A9772B; --warn-bg:#F3E6CC; --crit:#9B3B34; --liturgy:#4F6A3B;
+  }
+  :root[data-theme="dark"]{
+    --ground:#171310; --surface:#221C18; --surface-2:#2A231D;
+    --ink:#EDE4D6; --ink-soft:#B6A796; --ink-faint:#847668;
+    --line:#362C24; --line-soft:#2E251F;
+    --plum:#D79BBF; --plum-bright:#E0AECD; --plum-bg:#3A2131;
+    --gold:#CDA85A; --gold-bg:#37301C;
+    --good:#9CB878; --good-bg:#2A3320; --warn:#D7A55A; --warn-bg:#352A18; --crit:#DB7A72; --liturgy:#9CB878;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .app{font-family:var(--sans); color:var(--ink); background:var(--ground);
+    min-height:100vh; display:grid; grid-template-columns:216px 1fr; letter-spacing:.1px;}
+  .num{font-variant-numeric:tabular-nums;}
+
+  .rail{border-right:1px solid var(--line); padding:22px 14px; display:flex; flex-direction:column; gap:4px; position:sticky; top:0; height:100vh;}
+  .brand{display:flex; align-items:center; gap:10px; padding:6px 10px 20px;}
+  .brand .mark{width:26px;height:26px;border-radius:50%;background:var(--plum);
+    display:grid;place-items:center;color:#FBF8F1;font-family:var(--voice);font-size:15px;}
+  .brand b{font-weight:600;font-size:15px;letter-spacing:.2px;}
+  .nav{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;
+    color:var(--ink-soft);font-size:14px;cursor:pointer;text-decoration:none;border:none;background:none;width:100%;text-align:left;font-family:var(--sans);}
+  .nav svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .nav:hover{background:var(--surface-2);color:var(--ink);}
+  .nav.active{background:var(--plum-bg);color:var(--plum);font-weight:500;}
+  .rail .spacer{flex:1;}
+  .rail .foot{font-size:12px;color:var(--ink-faint);padding:8px 11px;border-top:1px solid var(--line-soft);}
+
+  .main{padding:26px 30px 40px;max-width:1160px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .page-head{margin-bottom:20px;}
+  .page-head .eyebrow{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:13px;margin-bottom:5px;}
+  .page-head h1{font-family:var(--voice);font-weight:400;font-size:28px;margin:0;letter-spacing:.2px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:20px;
+    background:var(--good-bg);color:var(--liturgy);font-weight:500;}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--liturgy);}
+
+  /* home masthead */
+  .masthead{display:grid;grid-template-columns:1.35fr 1fr;gap:26px;align-items:stretch;margin-bottom:22px;}
+  .greet h1{font-family:var(--voice);font-weight:400;font-size:30px;margin:2px 0 0;letter-spacing:.2px;}
+  .greet .sub{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+  .weather{display:flex;align-items:center;gap:12px;margin-top:16px;}
+  .weather .t{font-size:26px;font-weight:600;}
+  .weather .m{font-size:13px;color:var(--ink-soft);}
+  .quote{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;display:flex;flex-direction:column;justify-content:center;}
+  .quote .mark2{font-family:var(--voice);color:var(--gold);font-size:34px;line-height:.4;height:16px;}
+  .quote p{font-family:var(--voice);font-size:18px;line-height:1.5;margin:6px 0 10px;color:var(--ink);}
+  .quote cite{font-style:normal;color:var(--gold);font-size:13px;letter-spacing:.3px;}
+
+  .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;}
+  .card.span2{grid-column:span 2;}
+  .card.span3{grid-column:span 3;}
+  .card h2{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);
+    margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .card h2 svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;}
+  .card h2.sacred{color:var(--gold);}
+
+  .reading{display:flex;gap:12px;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--line-soft);}
+  .reading:last-child{border-bottom:none;}
+  .reading .lab{width:60px;color:var(--gold);font-family:var(--voice);font-size:14px;}
+  .row{display:flex;gap:14px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line-soft);}
+  .row:last-child{border-bottom:none;}
+  .row .time{width:62px;color:var(--ink-faint);font-size:13px;}
+  .row .ev{font-size:14px;}
+  .row .ev small{display:block;color:var(--ink-soft);font-size:12px;}
+  .birthday{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--plum);
+    background:var(--plum-bg);padding:8px 11px;border-radius:9px;}
+  .birthday svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0;}
+
+  .habits .hrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:7px 0;}
+  .habits .hname{font-size:14px;}
+  .week{display:flex;gap:6px;}
+  .week span{width:18px;height:18px;border-radius:6px;border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;}
+  .week span.on{background:var(--good);border-color:var(--good);}
+  .week span.on svg{width:11px;height:11px;stroke:#FBF8F1;fill:none;stroke-width:2.4;}
+  :root[data-theme="dark"] .week span.on svg{stroke:#171310;}
+  .week span.today{outline:2px solid var(--plum);outline-offset:1px;}
+  .habits .foot{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:13px;color:var(--ink-soft);}
+  .streak{color:var(--warn);font-weight:500;}
+
+  .examen-card{background:var(--plum-bg);border-color:transparent;}
+  .examen-card h2{color:var(--plum);}
+  .examen-card p{font-family:var(--voice);font-size:16px;line-height:1.5;color:var(--ink);margin:0 0 14px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--plum);color:#FBF8F1;border:none;
+    padding:9px 15px;border-radius:9px;font-size:13px;font-family:var(--sans);cursor:pointer;}
+  :root[data-theme="dark"] .btn{color:#171310;}
+  .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .btn.ghost{background:none;color:var(--plum);border:1px solid var(--plum);}
+  :root[data-theme="dark"] .btn.ghost{color:var(--plum);}
+
+  .life .larow{display:grid;grid-template-columns:80px 1fr 30px;align-items:center;gap:10px;padding:6px 0;font-size:13px;}
+  .bar{height:7px;border-radius:5px;background:var(--surface-2);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:5px;background:var(--plum);}
+  .life .val{text-align:right;color:var(--ink-soft);font-size:12px;}
+
+  .fin .big{font-size:26px;font-weight:600;letter-spacing:.3px;}
+  .fin .cap{font-size:12px;color:var(--ink-soft);margin-bottom:14px;}
+  .fin .cap b{color:var(--good);font-weight:600;}
+  .catrow{display:grid;grid-template-columns:70px 1fr 52px;align-items:center;gap:10px;padding:5px 0;font-size:13px;}
+  .catrow .bar i{background:var(--gold);}
+  .catrow .amt{text-align:right;color:var(--ink-soft);font-size:12px;}
+  .journal-teaser .stub{font-family:var(--voice);font-size:15px;color:var(--ink);margin:0 0 14px;line-height:1.5;}
+
+  /* ---- calendar ---- */
+  .cal-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+  .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:130px;}
+  .day .dnum{font-size:13px;color:var(--ink-faint);margin-bottom:8px;}
+  .day.is-today{border-color:var(--plum);}
+  .day.is-today .dnum{color:var(--plum);font-weight:600;}
+  .ev-pill{font-size:11px;padding:3px 6px;border-radius:6px;margin-bottom:5px;line-height:1.3;
+    background:var(--plum-bg);color:var(--plum);}
+  .ev-pill.mass{background:var(--gold-bg);color:var(--gold);}
+  .ev-pill.bday{background:var(--good-bg);color:var(--liturgy);}
+  .mini h2, .up h2{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);margin:0 0 12px;}
+  .up-item{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:14px;}
+  .up-item:last-child{border-bottom:none;}
+  .up-item .when{color:var(--ink-soft);font-size:13px;}
+
+  /* ---- habits page heatmap ---- */
+  .heat{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
+  .heat:last-child{border-bottom:none;}
+  .heat .hn{font-size:14px;}
+  .dots{display:grid;grid-template-columns:repeat(30,1fr);gap:3px;}
+  .dots i{aspect-ratio:1;border-radius:3px;background:var(--surface-2);}
+  .dots i.f1{background:var(--good-bg);}
+  .dots i.f2{background:var(--good);opacity:.55;}
+  .dots i.f3{background:var(--good);}
+  .heat .st{font-size:13px;color:var(--warn);white-space:nowrap;}
+
+  /* ---- journal ---- */
+  .jgrid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;}
+  textarea.entry{width:100%;min-height:200px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);
+    color:var(--ink);font-family:var(--voice);font-size:16px;line-height:1.6;padding:14px;resize:vertical;}
+  textarea.entry:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+  .moodrow{display:flex;gap:8px;margin:12px 0;}
+  .mood{padding:6px 12px;border-radius:20px;border:1px solid var(--line);font-size:13px;cursor:pointer;background:var(--surface);color:var(--ink-soft);}
+  .mood.sel{background:var(--plum-bg);border-color:var(--plum);color:var(--plum);}
+  .past-entry{padding:12px 0;border-bottom:1px solid var(--line-soft);}
+  .past-entry .pd{font-size:12px;color:var(--ink-faint);margin-bottom:4px;}
+  .past-entry .pt{font-family:var(--voice);font-size:14px;color:var(--ink);line-height:1.5;}
+
+  /* ---- examen ---- */
+  .steps{display:flex;flex-direction:column;gap:14px;max-width:720px;}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .step .snum{font-family:var(--voice);color:var(--gold);font-size:14px;letter-spacing:.5px;}
+  .step h3{font-family:var(--voice);font-weight:400;font-size:19px;margin:4px 0 6px;}
+  .step p{font-size:14px;color:var(--ink-soft);line-height:1.6;margin:0 0 12px;}
+  .step textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);
+    color:var(--ink);font-family:var(--sans);font-size:14px;padding:11px;resize:vertical;}
+  .step textarea:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+
+  /* ---- 7 areas ---- */
+  .areas{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .area{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+  .area .ah{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .area .an{font-family:var(--voice);font-size:19px;}
+  .area .score{font-size:22px;font-weight:600;color:var(--plum);}
+  .area .trend{font-size:12px;margin-left:8px;}
+  .trend.up{color:var(--good);}
+  .trend.down{color:var(--crit);}
+  .area .note{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:8px;}
+  .spark{display:flex;align-items:flex-end;gap:3px;height:34px;margin-top:6px;}
+  .spark i{flex:1;background:var(--plum);opacity:.35;border-radius:2px;}
+  .spark i.last{opacity:1;}
+
+  /* ---- money ---- */
+  .money-top{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;}
+  .stat .sl{font-size:12px;color:var(--ink-soft);}
+  .stat .sv{font-size:24px;font-weight:600;margin-top:4px;}
+  .stat .sv.good{color:var(--good);}
+  table.tx{width:100%;border-collapse:collapse;font-size:14px;}
+  table.tx th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-faint);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line);}
+  table.tx td{padding:10px 6px;border-bottom:1px solid var(--line-soft);}
+  table.tx td.r{text-align:right;font-variant-numeric:tabular-nums;}
+  .tag{font-size:11px;padding:2px 8px;border-radius:12px;background:var(--surface-2);color:var(--ink-soft);}
+  .note-bar{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);background:var(--surface-2);border-radius:9px;padding:9px 12px;margin-top:14px;}
+  .note-bar svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0;}
+
+  /* health / money-simple / goals / prayer / collections */
+  .hstats,.mny{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+  .editwrap{font-size:24px;font-weight:600;margin-top:4px;color:var(--ink);}
+  .editwrap.neg{color:var(--crit);}
+  .editnum{font-size:24px;font-weight:600;font-family:var(--sans);border:none;background:none;color:inherit;width:5.5ch;
+    border-bottom:1px dashed var(--line);padding:2px 0;}
+  .editnum:focus{outline:none;border-bottom-color:var(--plum);}
+  .networth{max-width:520px;}
+  .nwrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px dashed var(--line-soft);}
+  .nwrow:last-child{border-bottom:none;}
+  .neg{color:var(--crit);}
+  .goals{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .goal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+  .goal .gh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+  .goal .gn{font-family:var(--voice);font-size:19px;}
+  .goal .gpct{font-size:15px;color:var(--plum);font-weight:600;}
+  .goal .gtarget{font-size:13px;color:var(--ink-soft);margin-bottom:12px;}
+  .addrow{display:flex;gap:10px;margin-bottom:16px;}
+  .addfield{flex:1;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);
+    font-family:var(--sans);font-size:14px;padding:10px 12px;}
+  .addfield:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+  .pray-item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line-soft);}
+  .pray-item:last-child{border-bottom:none;}
+  .pray-item .pt{font-size:15px;}
+  .pray-item.answered .pt{color:var(--ink-faint);text-decoration:line-through;}
+  .badge-pray{font-size:11px;color:var(--plum);background:var(--plum-bg);padding:3px 9px;border-radius:12px;white-space:nowrap;}
+  .badge-ans{font-size:11px;color:var(--liturgy);background:var(--good-bg);padding:3px 9px;border-radius:12px;white-space:nowrap;}
+  .coll{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .cbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;cursor:pointer;}
+  .cbox:hover{border-color:var(--plum);}
+  .cbox h2{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);display:flex;align-items:center;gap:8px;margin:0 0 8px;}
+  .cbox h2 svg{width:15px;height:15px;stroke:var(--gold);fill:none;stroke-width:1.7;}
+  .cbox .cc{font-size:24px;font-weight:600;}
+  .cbox .cl{font-size:13px;color:var(--ink-soft);}
+  .cbox ul{list-style:none;padding:0;margin:12px 0 0;}
+  .cbox ul li{font-size:13px;color:var(--ink-soft);padding:5px 0;border-top:1px solid var(--line-soft);}
+  .nwtrend{font-size:13px;margin-top:4px;font-weight:500;}
+  .nwtrend.up{color:var(--good);}
+  .nwtrend.down{color:var(--crit);}
+  .grat-mini{margin:0;padding-left:20px;}
+  .grat-mini li{font-family:var(--voice);font-size:14px;color:var(--ink);padding:4px 0;line-height:1.4;}
+  .grat-mini li.empty{color:var(--ink-faint);}
+  .grat-in{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .gnum{width:24px;height:24px;border-radius:50%;background:var(--gold-bg);color:var(--gold);display:grid;place-items:center;font-family:var(--voice);font-size:14px;flex-shrink:0;}
+  .grat-log{margin-top:18px;border-top:1px solid var(--line-soft);padding-top:8px;}
+  .grat-day{padding:10px 0;border-bottom:1px solid var(--line-soft);}
+  .grat-day:last-child{border-bottom:none;}
+  .grat-day .gd{font-size:12px;color:var(--ink-faint);margin-bottom:6px;}
+  .grat-day ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;}
+  .grat-day li{font-size:13px;background:var(--surface-2);border-radius:8px;padding:5px 10px;color:var(--ink);}
+  .gbig{display:flex;align-items:baseline;gap:8px;margin-bottom:14px;}
+  .gbig .num{font-size:34px;font-weight:600;color:var(--gold);}
+  .gbig .glab{font-size:14px;color:var(--ink-soft);}
+
+  @media (max-width:1000px){
+    .hstats,.mny,.goals,.coll{grid-template-columns:1fr !important;}
+    .app{grid-template-columns:1fr;}
+    .rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;overflow:auto;}
+    .rail .spacer,.rail .foot{display:none;}
+    .masthead,.bento,.cal-grid,.jgrid,.areas,.money-top{grid-template-columns:1fr !important;}
+    .card.span2,.card.span3{grid-column:span 1;}
+    .wk{grid-template-columns:repeat(4,1fr);}
+  }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><span class="mark">✦</span><b>my life</b></div>
+    <button class="nav active" data-view="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</button>
+    <button class="nav" data-view="calendar"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Calendar</button>
+    <button class="nav" data-view="habits"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Habits</button>
+    <button class="nav" data-view="health"><svg viewBox="0 0 24 24"><path d="M3 12h4l2 5 4-12 2 7h6"/></svg>Health</button>
+    <button class="nav" data-view="journal"><svg viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Journal</button>
+    <button class="nav" data-view="gratitude"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>Gratitude</button>
+    <button class="nav" data-view="examen"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>Examen</button>
+    <button class="nav" data-view="prayer"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 01-10 0c0-2 1-3 2-4 .5 2 2 2 2 2 0-3-1-5 1-7z"/></svg>Prayer</button>
+    <button class="nav" data-view="goals"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Goals</button>
+    <button class="nav" data-view="areas"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>7 Areas</button>
+    <button class="nav" data-view="money"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Money</button>
+    <button class="nav" data-view="collections"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Collections</button>
+    <div class="spacer"></div>
+    <div class="foot">Signed in · you only</div>
+  </aside>
+
+  <main class="main">
+
+    <!-- HOME -->
+    <section class="view active" data-view="home">
+      <div class="masthead">
+        <div class="greet">
+          <div class="eyebrow"><span>Wednesday, August 5</span><span class="chip"><span class="dot"></span>Ordinary Time</span></div>
+          <h1>Good morning, Domenica</h1>
+          <div class="sub">3 of 6 habits done today · 2 events ahead · examen waiting for tonight</div>
+          <div class="weather"><span class="t num">71°</span><span class="m">New York City<br>light rain, feels 72°</span></div>
+        </div>
+        <div class="quote">
+          <span class="mark2">&ldquo;</span>
+          <p>Be who God meant you to be and you will set the world on fire.</p>
+          <cite>— St. Catherine of Siena</cite>
+        </div>
+      </div>
+      <div class="bento">
+        <div class="card">
+          <h2 class="sacred"><svg viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M12 7v10M8 12h8"/></svg>Today's readings</h2>
+          <div class="reading"><span class="lab">First</span><span>Numbers 13:1–2, 25–14:1</span></div>
+          <div class="reading"><span class="lab">Psalm</span><span>106:6–7, 13–14, 21–23</span></div>
+          <div class="reading"><span class="lab">Gospel</span><span>Matthew 15:21–28</span></div>
+          <div class="reading"><span class="lab">Saint</span><span>Dedication of St. Mary Major</span></div>
+        </div>
+        <div class="card">
+          <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today's schedule</h2>
+          <div class="row"><span class="time num">7:00a</span><span class="ev">Daily Mass<small>St. Patrick's</small></span></div>
+          <div class="row"><span class="time num">12:30p</span><span class="ev">Client call — PR Hub</span></div>
+          <div class="row"><span class="time num">6:00p</span><span class="ev">Adoration hour</span></div>
+          <div class="birthday"><svg viewBox="0 0 24 24"><path d="M4 20h16v-6H4zM6 14v-3M12 14V9M18 14v-3M12 6V4"/></svg>Mom's birthday in 3 days — Aug 8</div>
+        </div>
+        <div class="card examen-card">
+          <h2><svg viewBox="0 0 24 24"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>Evening examen</h2>
+          <p>Where did I feel God's presence today? Where did I turn from it?</p>
+          <button class="btn" data-goto="examen"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Begin tonight's examen</button>
+        </div>
+        <div class="card span2 habits">
+          <h2><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Habits · this week</h2>
+          <div id="habitList"></div>
+          <div class="foot"><span class="streak">🔥 12-day streak</span><span>3 of 6 done today</span></div>
+        </div>
+        <div class="card life">
+          <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>7 areas of life</h2>
+          <div class="larow"><span>Faith</span><span class="bar"><i style="width:85%"></i></span><span class="val num">4.3</span></div>
+          <div class="larow"><span>Health</span><span class="bar"><i style="width:62%"></i></span><span class="val num">3.1</span></div>
+          <div class="larow"><span>Career</span><span class="bar"><i style="width:94%"></i></span><span class="val num">4.7</span></div>
+          <div class="larow"><span>Love</span><span class="bar"><i style="width:80%"></i></span><span class="val num">4.0</span></div>
+          <div class="larow"><span>Money</span><span class="bar"><i style="width:66%"></i></span><span class="val num">3.3</span></div>
+          <div class="larow"><span>Home</span><span class="bar"><i style="width:78%"></i></span><span class="val num">3.9</span></div>
+          <div class="larow"><span>Friends</span><span class="bar"><i style="width:72%"></i></span><span class="val num">3.6</span></div>
+        </div>
+        <div class="card fin">
+          <h2><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Net worth</h2>
+          <div class="big num">$48,600</div>
+          <div class="nwtrend up">▲ 5.2% since last month</div>
+          <div class="cap">updated for August</div>
+          <div class="nwrow"><span>Savings</span><span class="num">$21,400</span></div>
+          <div class="nwrow"><span>Investments</span><span class="num">$32,200</span></div>
+          <div class="nwrow"><span>Debt</span><span class="num neg">−$5,000</span></div>
+        </div>
+        <div class="card journal-teaser">
+          <h2><svg viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Journal</h2>
+          <p class="stub">"Rained all morning — used it to actually pray the rosary slowly for once…"</p>
+          <button class="btn" data-goto="journal"><svg viewBox="0 0 24 24"><path d="M4 20h4L18 10l-4-4L4 16z"/></svg>Write today's entry</button>
+        </div>
+        <div class="card" data-goto="gratitude" style="cursor:pointer;">
+          <h2 class="sacred"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>Grateful today</h2>
+          <ol class="grat-mini"><li>Slow rosary in the rain</li><li>Mom called just to say hi</li><li class="empty">Add a third…</li></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="view" data-view="calendar">
+      <div class="page-head">
+        <div class="eyebrow"><span>Your week · from Google Calendar</span></div>
+        <h1>Calendar</h1>
+      </div>
+      <div class="cal-grid">
+        <div>
+          <div class="wk">
+            <div class="day"><div class="dnum">Mon 4</div><div class="ev-pill mass">7a Mass</div><div class="ev-pill">Team standup</div></div>
+            <div class="day is-today"><div class="dnum">Wed 5 · today</div><div class="ev-pill mass">7a Mass</div><div class="ev-pill">12:30 PR Hub</div><div class="ev-pill">6p Adoration</div></div>
+            <div class="day"><div class="dnum">Thu 6</div><div class="ev-pill mass">7a Mass</div><div class="ev-pill">Dentist 3p</div></div>
+            <div class="day"><div class="dnum">Fri 7</div><div class="ev-pill">First Friday</div><div class="ev-pill mass">7a Mass</div></div>
+            <div class="day"><div class="dnum">Sat 8</div><div class="ev-pill bday">🎂 Mom's birthday</div></div>
+            <div class="day"><div class="dnum">Sun 9</div><div class="ev-pill mass">10a Mass</div><div class="ev-pill">Brunch w/ Sofia</div></div>
+            <div class="day"><div class="dnum">Mon 10</div><div class="ev-pill">Confession 5p</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="card up" style="margin-bottom:16px;">
+            <h2>Upcoming birthdays</h2>
+            <div class="up-item"><span>Mom</span><span class="when">Aug 8 · 3 days</span></div>
+            <div class="up-item"><span>Sofia</span><span class="when">Aug 21</span></div>
+            <div class="up-item"><span>Dad</span><span class="when">Sep 2</span></div>
+          </div>
+          <div class="card up">
+            <h2>Holy days ahead</h2>
+            <div class="up-item"><span>Assumption of Mary</span><span class="when">Aug 15</span></div>
+            <div class="up-item"><span>Queenship of Mary</span><span class="when">Aug 22</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HABITS -->
+    <section class="view" data-view="habits">
+      <div class="page-head">
+        <div class="eyebrow"><span>Last 30 days</span></div>
+        <h1>Habits</h1>
+      </div>
+      <div class="card span3" id="heatWrap"></div>
+    </section>
+
+    <!-- JOURNAL -->
+    <section class="view" data-view="journal">
+      <div class="page-head">
+        <div class="eyebrow"><span>Wednesday, August 5</span></div>
+        <h1>Journal</h1>
+      </div>
+      <div class="jgrid">
+        <div class="card">
+          <h2><svg viewBox="0 0 24 24"><path d="M4 20h4L18 10l-4-4L4 16z"/></svg>Today's entry</h2>
+          <div class="moodrow">
+            <span class="mood sel">Peaceful</span><span class="mood">Grateful</span><span class="mood">Anxious</span><span class="mood">Tired</span><span class="mood">Joyful</span>
+          </div>
+          <textarea class="entry" placeholder="What happened today, and where was God in it?">Rained all morning — used it to actually pray the rosary slowly for once. Felt unhurried in a way I haven't in weeks.</textarea>
+          <div style="margin-top:12px;"><button class="btn"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Save entry</button></div>
+        </div>
+        <div class="card">
+          <h2><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Recent entries</h2>
+          <div class="past-entry"><div class="pd">Aug 4 · Grateful</div><div class="pt">Long day but the adoration hour reset everything…</div></div>
+          <div class="past-entry"><div class="pd">Aug 3 · Anxious</div><div class="pt">Worried about the client pitch. Tried to give it to God instead of spinning…</div></div>
+          <div class="past-entry"><div class="pd">Aug 2 · Joyful</div><div class="pt">Beach day with the girls. Felt genuinely rested.</div></div>
+          <div class="past-entry"><div class="pd">Aug 1 · Peaceful</div><div class="pt">First Friday. Quiet start to the month.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRATITUDE -->
+    <section class="view" data-view="gratitude">
+      <div class="page-head"><div class="eyebrow"><span>Three things, every day</span></div><h1>Gratitude</h1></div>
+      <div class="jgrid">
+        <div class="card">
+          <h2 class="sacred"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>Today — August 5</h2>
+          <div class="grat-in"><span class="gnum">1</span><input class="addfield" value="Slow rosary in the rain — unhurried for once"></div>
+          <div class="grat-in"><span class="gnum">2</span><input class="addfield" value="Mom called just to say hi"></div>
+          <div class="grat-in"><span class="gnum">3</span><input class="addfield" placeholder="One more thing you're thankful for…"></div>
+          <button class="btn" style="margin-top:6px;"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Save today's three</button>
+        </div>
+        <div class="card">
+          <h2><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Your practice</h2>
+          <div class="gbig"><span class="num">7</span><span class="glab">day streak</span></div>
+          <div class="nwrow"><span>Days logged in August</span><span class="num">4</span></div>
+          <div class="nwrow"><span>Total entries</span><span class="num">63</span></div>
+          <p style="font-size:13px;color:var(--ink-soft);margin:14px 0 0;line-height:1.5;">A little each day. It doesn't have to be profound — small counts.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <h2><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Your gratitude log</h2>
+        <div class="grat-log" style="margin-top:0;border-top:none;padding-top:0;">
+          <div class="grat-day"><div class="gd">Aug 4</div><ul><li>Adoration hour reset me</li><li>A good client call</li><li>Homemade dinner</li></ul></div>
+          <div class="grat-day"><div class="gd">Aug 3</div><ul><li>Sunshine on the walk</li><li>Text from Dad</li><li>Finished my book</li></ul></div>
+          <div class="grat-day"><div class="gd">Aug 2</div><ul><li>Beach with the girls</li><li>Gelato</li><li>Deep, real sleep</li></ul></div>
+          <div class="grat-day"><div class="gd">Aug 1</div><ul><li>Quiet First Friday</li><li>Morning coffee on the fire escape</li><li>A slow start</li></ul></div>
+          <div class="grat-day"><div class="gd">Jul 31</div><ul><li>Finished the pitch</li><li>Sofia's laugh</li><li>Cool evening walk</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXAMEN -->
+    <section class="view" data-view="examen">
+      <div class="page-head">
+        <div class="eyebrow"><span>Ignatian examen · 5 steps</span></div>
+        <h1>Evening examen</h1>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="snum">I · Gratitude</div><h3>Give thanks for today's gifts</h3><p>Look back over the day. What are you grateful for, big or small?</p><textarea placeholder="Today I'm grateful for…"></textarea></div>
+        <div class="step"><div class="snum">II · Petition</div><h3>Ask for light</h3><p>Ask the Holy Spirit to help you see the day honestly.</p><textarea placeholder="A short prayer for clarity…"></textarea></div>
+        <div class="step"><div class="snum">III · Review</div><h3>Walk through the day</h3><p>Where did you feel God's presence? Where did you turn away?</p><textarea placeholder="Moving through morning to night…"></textarea></div>
+        <div class="step"><div class="snum">IV · Forgiveness</div><h3>Ask pardon for failings</h3><p>Name where you fell short, and ask for mercy.</p><textarea placeholder="Where I want to ask forgiveness…"></textarea></div>
+        <div class="step"><div class="snum">V · Renewal</div><h3>Resolve for tomorrow</h3><p>What one thing will you do differently tomorrow?</p><textarea placeholder="Tomorrow, with grace, I will…"></textarea></div>
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Save tonight's examen</button>
+      </div>
+    </section>
+
+    <!-- 7 AREAS -->
+    <section class="view" data-view="areas">
+      <div class="page-head">
+        <div class="eyebrow"><span>Weekly check-in · rate 1–5</span></div>
+        <h1>7 areas of life</h1>
+      </div>
+      <div class="areas">
+        <div class="area"><div class="ah"><span class="an">Faith</span><span><span class="score num">4.3</span><span class="trend up">▲ 0.4</span></span></div><div class="spark"><i style="height:50%"></i><i style="height:60%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:80%"></i><i class="last" style="height:86%"></i></div><div class="note">Daily Mass streak is holding. Adoration slipping — protect the 6pm hour.</div></div>
+        <div class="area"><div class="ah"><span class="an">Health</span><span><span class="score num">3.1</span><span class="trend down">▼ 0.3</span></span></div><div class="spark"><i style="height:70%"></i><i style="height:65%"></i><i style="height:60%"></i><i style="height:55%"></i><i style="height:58%"></i><i class="last" style="height:62%"></i></div><div class="note">Steps down this week. Sleep is the lever.</div></div>
+        <div class="area"><div class="ah"><span class="an">Career</span><span><span class="score num">4.7</span><span class="trend up">▲ 0.2</span></span></div><div class="spark"><i style="height:80%"></i><i style="height:85%"></i><i style="height:88%"></i><i style="height:90%"></i><i style="height:92%"></i><i class="last" style="height:94%"></i></div><div class="note">PR Hub launch went well. Don't let it crowd out rest.</div></div>
+        <div class="area"><div class="ah"><span class="an">Love</span><span><span class="score num">4.0</span><span class="trend up">▲ 0.1</span></span></div><div class="spark"><i style="height:75%"></i><i style="height:72%"></i><i style="height:78%"></i><i style="height:76%"></i><i style="height:79%"></i><i class="last" style="height:80%"></i></div><div class="note">Steady and good.</div></div>
+        <div class="area"><div class="ah"><span class="an">Money</span><span><span class="score num">3.3</span><span class="trend up">▲ 0.5</span></span></div><div class="spark"><i style="height:45%"></i><i style="height:50%"></i><i style="height:55%"></i><i style="height:60%"></i><i style="height:64%"></i><i class="last" style="height:66%"></i></div><div class="note">Under budget two months running. Keep it up.</div></div>
+        <div class="area"><div class="ah"><span class="an">Home</span><span><span class="score num">3.9</span><span class="trend up">▲ 0.2</span></span></div><div class="spark"><i style="height:70%"></i><i style="height:72%"></i><i style="height:74%"></i><i style="height:76%"></i><i style="height:77%"></i><i class="last" style="height:78%"></i></div><div class="note">Space feels calm lately.</div></div>
+        <div class="area"><div class="ah"><span class="an">Friends</span><span><span class="score num">3.6</span><span class="trend down">▼ 0.2</span></span></div><div class="spark"><i style="height:80%"></i><i style="height:78%"></i><i style="height:74%"></i><i style="height:72%"></i><i style="height:70%"></i><i class="last" style="height:72%"></i></div><div class="note">Reach out to Sofia this week.</div></div>
+      </div>
+    </section>
+
+    <!-- MONEY -->
+    <section class="view" data-view="money">
+      <div class="page-head">
+        <div class="eyebrow"><span>You update these three numbers once a month</span></div>
+        <h1>Money</h1>
+      </div>
+      <div class="mny">
+        <div class="stat"><div class="sl">Savings</div><div class="editwrap">$<input class="editnum num" id="sav" value="21,400"></div></div>
+        <div class="stat"><div class="sl">Investments</div><div class="editwrap">$<input class="editnum num" id="inv" value="32,200"></div></div>
+        <div class="stat"><div class="sl">Debt</div><div class="editwrap neg">$<input class="editnum num" id="debt" value="5,000"></div></div>
+      </div>
+      <div class="card networth">
+        <h2><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 5-7"/></svg>Net worth</h2>
+        <div class="big num" id="networth">$48,600</div>
+        <div class="nwtrend up" id="nwtrend">▲ 5.2% since last month</div>
+        <div class="cap">savings + investments − debt · as of August</div>
+        <div class="spark" style="height:44px;margin-top:14px;">
+          <i style="height:60%"></i><i style="height:64%"></i><i style="height:66%"></i><i style="height:72%"></i><i style="height:78%"></i><i style="height:84%"></i><i class="last" style="height:90%"></i>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-faint);margin-top:6px;">
+          <span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+        </div>
+      </div>
+      <div class="note-bar" style="max-width:520px;margin-top:16px;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>No bank connection, no transactions to log — just three numbers you edit each month.</div>
+    </section>
+
+    <!-- HEALTH -->
+    <section class="view" data-view="health">
+      <div class="page-head"><div class="eyebrow"><span>August</span></div><h1>Health</h1></div>
+      <div class="hstats">
+        <div class="stat"><div class="sl">Current weight</div><div class="editwrap"><input class="editnum num" id="wt" value="138"> lb</div></div>
+        <div class="stat"><div class="sl">Goal</div><div class="sv num">132 lb</div></div>
+        <div class="stat"><div class="sl">Workouts this week</div><div class="sv good num">4</div></div>
+      </div>
+      <div class="cal-grid">
+        <div class="card">
+          <h2><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/></svg>Weight · last 8 weeks</h2>
+          <div class="spark" style="height:120px;">
+            <i style="height:96%"></i><i style="height:92%"></i><i style="height:94%"></i><i style="height:88%"></i><i style="height:85%"></i><i style="height:83%"></i><i style="height:80%"></i><i class="last" style="height:78%"></i>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-faint);margin-top:8px;"><span>Jun 8</span><span>trending toward goal</span><span>Aug 5</span></div>
+        </div>
+        <div class="card">
+          <h2><svg viewBox="0 0 24 24"><path d="M6 12h12M8 8v8M16 8v8"/></svg>This week's workouts</h2>
+          <div class="row"><span class="time num">Mon</span><span class="ev">Pilates<small>50 min</small></span></div>
+          <div class="row"><span class="time num">Tue</span><span class="ev">Run — 3 mi</span></div>
+          <div class="row"><span class="time num">Thu</span><span class="ev">Strength</span></div>
+          <div class="row"><span class="time num">Sat</span><span class="ev">Long walk — 6 mi</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRAYER -->
+    <section class="view" data-view="prayer">
+      <div class="page-head"><div class="eyebrow"><span>Who and what you're lifting up</span></div><h1>Prayer intentions</h1></div>
+      <div class="card" style="max-width:720px;">
+        <div class="addrow">
+          <input class="addfield" placeholder="Add someone or something to pray for…">
+          <button class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+        </div>
+        <div class="pray-item"><span class="pt">Grandma's health</span><span class="badge-pray">praying · 12 days</span></div>
+        <div class="pray-item"><span class="pt">Sofia's discernment</span><span class="badge-pray">praying · 5 days</span></div>
+        <div class="pray-item"><span class="pt">Peace in the family</span><span class="badge-pray">praying · 30 days</span></div>
+        <div class="pray-item answered"><span class="pt">Job for Marco</span><span class="badge-ans">✓ answered</span></div>
+        <div class="pray-item answered"><span class="pt">Safe travels — Rome trip</span><span class="badge-ans">✓ answered</span></div>
+      </div>
+    </section>
+
+    <!-- GOALS -->
+    <section class="view" data-view="goals">
+      <div class="page-head"><div class="eyebrow"><span>2025</span></div><h1>Goals</h1></div>
+      <div class="goals">
+        <div class="goal"><div class="gh"><span class="gn">Faith</span><span class="gpct num">72%</span></div><div class="gtarget">Daily Mass + weekly adoration, all year</div><div class="bar"><i style="width:72%"></i></div></div>
+        <div class="goal"><div class="gh"><span class="gn">Fitness</span><span class="gpct num">58%</span></div><div class="gtarget">Reach goal weight, 4 workouts a week</div><div class="bar"><i style="width:58%"></i></div></div>
+        <div class="goal"><div class="gh"><span class="gn">Career</span><span class="gpct num">80%</span></div><div class="gtarget">Lead the PR Hub rollout end to end</div><div class="bar"><i style="width:80%"></i></div></div>
+        <div class="goal"><div class="gh"><span class="gn">Italian</span><span class="gpct num">40%</span></div><div class="gtarget">Hold a conversation by December</div><div class="bar"><i style="width:40%"></i></div></div>
+        <div class="goal"><div class="gh"><span class="gn">Money</span><span class="gpct num">66%</span></div><div class="gtarget">Grow savings, keep debt falling</div><div class="bar"><i style="width:66%"></i></div></div>
+        <div class="goal"><div class="gh"><span class="gn">Home</span><span class="gpct num">50%</span></div><div class="gtarget">Make the apartment feel finished</div><div class="bar"><i style="width:50%"></i></div></div>
+      </div>
+    </section>
+
+    <!-- COLLECTIONS -->
+    <section class="view" data-view="collections">
+      <div class="page-head"><div class="eyebrow"><span>Your logs · click any to open the full list</span></div><h1>Collections</h1></div>
+      <div class="coll">
+        <div class="cbox"><h2><svg viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M12 7v10M8 12h8"/></svg>Books</h2><div class="cc num">42</div><div class="cl">read · 5 in the queue</div><ul><li>The Four Agreements</li><li>Be Healed</li><li>To Kill a Mockingbird</li></ul></div>
+        <div class="cbox"><h2><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18M3 16h18M8 3v18M16 3v18"/></svg>Movies</h2><div class="cc num">128</div><div class="cl">watched</div><ul><li>Cinema Paradiso</li><li>Lady Bird</li><li>The Two Popes</li></ul></div>
+        <div class="cbox"><h2><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="13" rx="2"/><path d="M8 21h8"/></svg>TV shows</h2><div class="cc num">31</div><div class="cl">finished</div><ul><li>The Chosen</li><li>Ted Lasso</li><li>Call the Midwife</li></ul></div>
+        <div class="cbox"><h2><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="19" cy="16" r="3"/></svg>Live shows</h2><div class="cc num">18</div><div class="cl">concerts + theatre</div><ul><li>Hamilton — Broadway</li><li>Andrea Bocelli</li><li>Yankees game</li></ul></div>
+        <div class="cbox"><h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Travel</h2><div class="cc num">14 · 22</div><div class="cl">countries · US states</div><ul><li>Italy 🇮🇹</li><li>France 🇫🇷</li><li>Ireland 🇮🇪</li></ul></div>
+        <div class="cbox"><h2><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Career milestones</h2><div class="cc num">9</div><div class="cl">wins worth remembering</div><ul><li>Led PR Hub launch</li><li>First big client win</li><li>Promotion</li></ul></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const habits=[
+    {name:'Daily Mass',d:[1,1,1,0,1,1,1]},
+    {name:'Rosary',d:[1,1,0,1,1,1,1]},
+    {name:'Adoration',d:[0,1,0,0,1,0,0]},
+    {name:'5k steps',d:[1,0,1,1,0,1,0]},
+    {name:'No alcohol',d:[1,1,1,1,1,1,1]},
+    {name:'No food delivery',d:[1,1,0,1,1,0,0]},
+  ];
+  const check='<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>';
+  const list=document.getElementById('habitList');
+  list.innerHTML=habits.map((h,hi)=>{
+    const cells=h.d.map((v,i)=>{
+      const today=i===6?' today':'';
+      return `<span class="${v?'on':''}${today}" data-h="${hi}" data-i="${i}">${v?check:''}</span>`;
+    }).join('');
+    return `<div class="hrow"><span class="hname">${h.name}</span><span class="week">${cells}</span></div>`;
+  }).join('');
+  list.addEventListener('click',e=>{
+    const c=e.target.closest('span[data-h]'); if(!c)return;
+    const on=c.classList.toggle('on'); c.innerHTML=on?check:'';
+  });
+
+  const heatData=[
+    {name:'Daily Mass',streak:'12 day streak'},
+    {name:'Rosary',streak:'6 day streak'},
+    {name:'Adoration',streak:'2 day streak'},
+    {name:'5k steps',streak:'1 day streak'},
+    {name:'No alcohol',streak:'19 day streak'},
+    {name:'No food delivery',streak:'4 day streak'},
+  ];
+  document.getElementById('heatWrap').innerHTML=
+    '<h2><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>30-day consistency</h2>'+
+    heatData.map(h=>{
+      let dots='';
+      for(let i=0;i<30;i++){const r=Math.random();const c=r>0.75?'f3':r>0.45?'f2':r>0.25?'f1':'';dots+=`<i class="${c}"></i>`;}
+      return `<div class="heat"><span class="hn">${h.name}</span><div class="dots">${dots}</div><span class="st">🔥 ${h.streak}</span></div>`;
+    }).join('');
+
+  function show(view){
+    document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===view));
+    document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
+    document.querySelector('.main').scrollTo(0,0); window.scrollTo(0,0);
+  }
+  const LAST_NW=46200;
+  function money(){
+    const p=id=>parseFloat((document.getElementById(id).value||'0').replace(/[^0-9.-]/g,''))||0;
+    const nw=p('sav')+p('inv')-p('debt');
+    document.getElementById('networth').textContent='$'+nw.toLocaleString('en-US',{maximumFractionDigits:0});
+    const pct=LAST_NW?((nw-LAST_NW)/LAST_NW*100):0, up=pct>=0, el=document.getElementById('nwtrend');
+    if(el){el.textContent=(up?'▲ ':'▼ ')+Math.abs(pct).toFixed(1)+'% since last month';el.className='nwtrend '+(up?'up':'down');}
+  }
+  ['sav','inv','debt'].forEach(id=>document.getElementById(id).addEventListener('input',money));
+  money();
+
+  document.querySelectorAll('.nav').forEach(n=>n.addEventListener('click',()=>show(n.dataset.view)));
+  document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.goto)));
+</script>

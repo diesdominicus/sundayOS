@@ -1,0 +1,211 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Life — Mediterranean</title>
+<style>
+  :root{
+    --ground:#EFE9D8; --panel:#D7E7F0; --surface:#FCFAF2; --surface2:#EAF2F8;
+    --ink:#274B6B; --soft:#6E8093; --line:#E5DDCA;
+    --sea:#3E7CA8; --sea-deep:#2C5D82; --sea-bg:#DCEAF3;
+    --lemon:#E7B12F; --lemon-bg:#FBEEC2; --leaf:#6E9A5E; --cream:#FCFAF2;
+    --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+    --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .app{font-family:var(--sans);color:var(--ink);background:var(--ground);min-height:100vh;display:grid;grid-template-columns:236px 1fr;gap:22px;padding:22px;}
+
+  /* rail */
+  .rail{background:var(--panel);border-radius:26px;padding:24px 16px;position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;}
+  .me{display:flex;flex-direction:column;align-items:flex-start;padding:6px 10px 18px;}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--sea);display:grid;place-items:center;color:#fff;font-family:var(--voice);font-size:22px;margin-bottom:12px;}
+  .me h1{font-family:var(--voice);font-weight:400;font-size:23px;margin:0;line-height:1.1;}
+  .me span{font-size:13px;color:var(--soft);margin-top:4px;font-style:italic;}
+  .nav{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;color:var(--sea-deep);font-size:14px;cursor:pointer;margin-bottom:2px;}
+  .nav svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;}
+  .nav:hover{background:rgba(255,255,255,.45);}
+  .nav.on{background:var(--cream);font-weight:600;box-shadow:0 3px 10px rgba(40,75,107,.10);}
+
+  .main{min-width:0;display:flex;flex-direction:column;gap:20px;}
+  .card{background:var(--surface);border-radius:22px;padding:22px 24px;}
+  .ct{font-family:var(--voice);font-size:20px;margin:0 0 4px;font-weight:400;}
+  .cs{font-size:13px;color:var(--soft);}
+  h3.lbl{font-size:13px;letter-spacing:.04em;color:var(--soft);margin:0 0 16px;display:flex;align-items:center;gap:9px;text-transform:lowercase;font-weight:600;}
+  h3.lbl svg{width:16px;height:16px;stroke:var(--sea);fill:none;stroke-width:1.8;}
+
+  /* hero */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(160deg,#DCEAF3 0%,#EAF2F8 60%,#FCFAF2 100%);}
+  .hero .wave{position:absolute;left:0;right:0;bottom:-2px;height:46px;color:var(--sea-bg);}
+  .hero .branch{position:absolute;top:-6px;right:14px;width:210px;opacity:.95;}
+  .hero .inner{position:relative;z-index:1;}
+  .hero .eyebrow{font-size:13px;color:var(--sea);display:flex;gap:10px;align-items:center;margin-bottom:4px;}
+  .pill{background:var(--lemon-bg);color:#8a6a14;font-size:12px;padding:3px 10px;border-radius:20px;}
+  .hero h2{font-family:var(--voice);font-weight:400;font-size:32px;margin:2px 0 0;}
+  .hero .sub{color:var(--soft);font-size:14px;margin-top:6px;}
+  .wx{display:flex;align-items:center;gap:10px;margin-top:16px;}
+  .wx .t{font-size:26px;font-weight:700;}
+  .wx .m{font-size:13px;color:var(--soft);}
+
+  .quote{background:var(--sea);color:#fff;}
+  .quote p{font-family:var(--voice);font-size:20px;line-height:1.5;margin:0 0 8px;}
+  .quote cite{font-style:normal;font-size:13px;opacity:.85;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .three{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:20px;}
+
+  /* habit tracker */
+  table.hab{width:100%;border-collapse:collapse;}
+  table.hab th{font-size:12px;color:var(--soft);font-weight:600;padding:0 0 10px;text-align:center;}
+  table.hab th.first{text-align:left;}
+  table.hab td{padding:8px 0;font-size:14px;text-align:center;}
+  table.hab td.first{text-align:left;}
+  .dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--sea-bg);display:inline-grid;place-items:center;}
+  .dot.on{background:var(--sea);border-color:var(--sea);}
+  .dot.on svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3;}
+  .dot.lem{background:var(--lemon);border-color:var(--lemon);}
+
+  /* gratitude */
+  .grat p{font-family:var(--voice);font-size:15px;line-height:1.5;margin:8px 0;}
+  .grat .n{color:var(--lemon);font-weight:700;margin-right:8px;}
+
+  /* goals */
+  .goal{margin-bottom:14px;}
+  .goal .gl{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;}
+  .goal .gl b{color:var(--sea);font-weight:600;}
+  .bar{height:8px;border-radius:6px;background:var(--surface2);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:6px;background:var(--sea);}
+  .bar.lem i{background:var(--lemon);}
+
+  /* networth / prayer / calendar */
+  .big{font-size:28px;font-weight:700;}
+  .nwrow{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px dashed var(--line);}
+  .nwrow:last-child{border-bottom:none;}
+  .up{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;}
+  .up:last-child{border-bottom:none;}
+  .tag{font-size:11px;background:var(--sea-bg);color:var(--sea-deep);padding:2px 9px;border-radius:12px;}
+  .cal .m{text-align:center;font-family:var(--voice);font-size:18px;color:var(--sea);margin-bottom:8px;}
+  .cal table{width:100%;border-collapse:collapse;}
+  .cal th{font-size:11px;color:var(--soft);padding:3px 0;}
+  .cal td{text-align:center;font-size:12px;padding:4px 0;}
+  .cal td .now{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--lemon);color:#fff;}
+
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr;}
+    .rail{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px;}
+    .me{width:100%;}
+    .two,.three{grid-template-columns:1fr;}
+    .hero .branch{opacity:.5;}
+  }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="me"><div class="avatar">D</div><h1>hello,<br>Domenica</h1><span>good things take time</span></div>
+    <div class="nav on" data-i="home"></div>
+    <div class="nav" data-i="calendar"></div>
+    <div class="nav" data-i="habits"></div>
+    <div class="nav" data-i="journal"></div>
+    <div class="nav" data-i="gratitude"></div>
+    <div class="nav" data-i="examen"></div>
+    <div class="nav" data-i="prayer"></div>
+    <div class="nav" data-i="goals"></div>
+    <div class="nav" data-i="health"></div>
+    <div class="nav" data-i="money"></div>
+    <div class="nav" data-i="collections"></div>
+  </aside>
+
+  <main class="main">
+    <section class="card hero">
+      <svg class="branch" viewBox="0 0 220 150" id="branch"></svg>
+      <svg class="wave" viewBox="0 0 1200 46" preserveAspectRatio="none"><path d="M0,30 C150,6 300,6 450,24 C620,44 780,44 960,22 C1080,8 1140,10 1200,20 L1200,46 L0,46 Z" fill="currentColor"/></svg>
+      <div class="inner">
+        <div class="eyebrow"><span id="today">Saturday, August 8</span><span class="pill" id="season">Ordinary Time</span></div>
+        <h2>good morning, Domenica</h2>
+        <div class="sub">a sunny start — 3 of 6 habits done, and the sea is calm</div>
+        <div class="wx" id="wx"><span class="m">loading weather…</span></div>
+      </div>
+    </section>
+
+    <section class="card quote"><p>“Be who God meant you to be and you will set the world on fire.”</p><cite>— St. Catherine of Siena</cite></section>
+
+    <section class="card">
+      <h3 class="lbl" id="l-hab">this week's habits</h3>
+      <table class="hab">
+        <thead><tr><th class="first">habit</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr></thead>
+        <tbody id="habBody"></tbody>
+      </table>
+    </section>
+
+    <div class="three">
+      <section class="card grat">
+        <h3 class="lbl" id="l-grat">grateful today</h3>
+        <p><span class="n">1</span>Slow rosary in the rain</p>
+        <p><span class="n">2</span>Mom called just to say hi</p>
+        <p><span class="n">3</span>Lemon &amp; olive oil on warm bread</p>
+      </section>
+      <section class="card">
+        <h3 class="lbl" id="l-cal">august</h3>
+        <div class="cal" id="cal"></div>
+      </section>
+      <section class="card">
+        <h3 class="lbl" id="l-pray">praying for</h3>
+        <div class="up">Grandma's health<span class="tag">12d</span></div>
+        <div class="up">Sofia's discernment<span class="tag">5d</span></div>
+        <div class="up">Peace at work<span class="tag">3d</span></div>
+      </section>
+    </div>
+
+    <div class="two">
+      <section class="card">
+        <h3 class="lbl" id="l-goal">goals</h3>
+        <div class="goal"><div class="gl"><span>Faith</span><b>72%</b></div><div class="bar"><i style="width:72%"></i></div></div>
+        <div class="goal"><div class="gl"><span>Fitness</span><b>58%</b></div><div class="bar lem"><i style="width:58%"></i></div></div>
+        <div class="goal"><div class="gl"><span>Italian</span><b>40%</b></div><div class="bar"><i style="width:40%"></i></div></div>
+        <div class="goal"><div class="gl"><span>Home</span><b>50%</b></div><div class="bar lem"><i style="width:50%"></i></div></div>
+      </section>
+      <section class="card">
+        <h3 class="lbl" id="l-money">net worth</h3>
+        <div class="big">$48,600</div>
+        <div class="cs" style="color:var(--leaf);margin:2px 0 12px;">▲ 5.2% since last month</div>
+        <div class="nwrow"><span>Savings</span><span>$21,400</span></div>
+        <div class="nwrow"><span>Investments</span><span>$32,200</span></div>
+        <div class="nwrow"><span>Debt</span><span style="color:#B4532E;">−$5,000</span></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+  const IC={home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',calendar:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',habits:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>',journal:'<path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',gratitude:'<path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/>',examen:'<path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/>',prayer:'<path d="M12 3c2 3 5 5 5 9a5 5 0 01-10 0c0-2 1-3 2-4 .5 2 2 2 2 2 0-3-1-5 1-7z"/>',goals:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',health:'<path d="M3 12h4l2 5 4-12 2 7h6"/>',money:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',collections:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'};
+  const LABELS={home:'Home',calendar:'Calendar',habits:'Habits',journal:'Journal',gratitude:'Gratitude',examen:'Examen',prayer:'Prayer',goals:'Goals',health:'Health',money:'Money',collections:'Collections'};
+  document.querySelectorAll('.nav').forEach(n=>{const k=n.dataset.i;n.innerHTML='<svg viewBox="0 0 24 24">'+IC[k]+'</svg>'+LABELS[k];});
+  document.querySelectorAll('.nav').forEach(n=>n.addEventListener('click',()=>{document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));n.classList.add('on');}));
+  // section label icons
+  const L={'l-hab':'habits','l-grat':'gratitude','l-pray':'prayer','l-goal':'goals','l-money':'money','l-cal':'calendar'};
+  for(const id in L){const e=document.getElementById(id);e.insertAdjacentHTML('afterbegin','<svg viewBox="0 0 24 24">'+IC[L[id]]+'</svg>');}
+
+  // lemon branch illustration
+  const leaf=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><ellipse cx="0" cy="0" rx="20" ry="8" fill="#6E9A5E"/><path d="M-18 0 L18 0" stroke="#4f7742" stroke-width="1.2"/></g>`;
+  const lemon=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><ellipse cx="0" cy="0" rx="18" ry="14" fill="#E7B12F"/><ellipse cx="-5" cy="-4" rx="5" ry="3" fill="#F3D06A"/><path d="M15 -2 q6 -1 8 3" stroke="#6E9A5E" stroke-width="3" fill="none" stroke-linecap="round"/></g>`;
+  document.getElementById('branch').innerHTML=
+    '<path d="M205 4 C150 18 120 40 96 78 C80 104 60 120 34 128" stroke="#8a6a3a" stroke-width="4" fill="none" stroke-linecap="round"/>'+
+    leaf(170,20,25)+leaf(196,40,-15)+leaf(120,52,40)+leaf(150,74,-10)+leaf(74,104,30)+
+    lemon(104,92,15)+lemon(52,120,-8)+lemon(150,44,10);
+
+  // date + season
+  const now=new Date();
+  document.getElementById('today').textContent=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()]+', '+['January','February','March','April','May','June','July','August','September','October','November','December'][now.getMonth()]+' '+now.getDate();
+  function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da);}
+  (function(){const y=now.getFullYear(),E=easter(y),ash=new Date(E);ash.setDate(E.getDate()-46),pen=new Date(E);pen.setDate(E.getDate()+49);let s='Ordinary Time';if(now>=ash&&now<E)s='Lent';else if(now>=E&&now<=pen)s='Easter';else if((now.getMonth()===11&&now.getDate()>=25)||now.getMonth()===0&&now.getDate()<=6)s='Christmas';document.getElementById('season').textContent=s;})();
+
+  // habits table
+  const HB=[['Daily Mass',[1,1,1,0,1,1,0]],['Adoration',[0,1,0,0,1,0,0]],['Rosary',[1,1,0,1,1,1,0]],['5k steps',[1,0,1,1,0,1,0]],['Water',[1,1,1,1,1,0,0]],['No alcohol',[1,1,1,1,1,1,0]]];
+  const CK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+  document.getElementById('habBody').innerHTML=HB.map(h=>'<tr><td class="first">'+h[0]+'</td>'+h[1].map((v,idx)=>'<td><span class="dot '+(v?(idx===0?'on lem':'on'):'')+'">'+(v?CK:'')+'</span></td>').join('')+'</tr>').join('');
+
+  // mini calendar
+  (function(){const y=now.getFullYear(),mo=now.getMonth(),t=now.getDate();const first=new Date(y,mo,1).getDay(),dim=new Date(y,mo+1,0).getDate(),shift=(first+6)%7;let cells=[];for(let i=0;i<shift;i++)cells.push('');for(let n=1;n<=dim;n++)cells.push(n);let rows='';for(let i=0;i<cells.length;i+=7){rows+='<tr>'+cells.slice(i,i+7).map(c=>c?('<td>'+(c===t?'<span class="now">'+c+'</span>':c)+'</td>'):'<td></td>').join('')+'</tr>';}document.getElementById('cal').innerHTML='<div class="m">'+['January','February','March','April','May','June','July','August','September','October','November','December'][mo]+'</div><table><thead><tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr></thead><tbody>'+rows+'</tbody></table>';document.getElementById('l-cal').lastChild.textContent=' '+['january','february','march','april','may','june','july','august','september','october','november','december'][mo];})();
+
+  // weather
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=temperature_2m,weather_code&temperature_unit=fahrenheit').then(r=>r.json()).then(j=>{const c=j.current.weather_code;const m={0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',51:'light drizzle',61:'light rain',63:'rain',80:'showers',95:'storm'}[c]||'—';document.getElementById('wx').innerHTML='<span class="t">'+Math.round(j.current.temperature_2m)+'°</span><span class="m">New York City<br>'+m+'</span>';}).catch(()=>{document.getElementById('wx').innerHTML='<span class="m">weather offline</span>';});
+</script>

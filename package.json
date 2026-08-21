@@ -1,0 +1,9 @@
+{
+  "name": "personal-life-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Personal Catholic life dashboard — habits, calendar, readings, examen, journal, finance. Netlify + Google Sheets, gated to one login.",
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  }
+}

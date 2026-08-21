@@ -1,0 +1,1116 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOMENICA OS</title>
+<style>
+:root{
+  --ground:#EFE9D8;--panel:#D7E7F0;--surface:#FCFAF2;--surface2:#EAF2F8;
+  --ink:#274B6B;--soft:#6E8093;--line:#E5DDCA;
+  --sea:#3E7CA8;--sea-deep:#2C5D82;--sea-bg:#DCEAF3;
+  --lemon:#E7B12F;--lemon-bg:#FBEEC2;--leaf:#6E9A5E;--cream:#FCFAF2;
+  --rose:#C77E92;--coral:#D08A5A;--purple:#8A6BA8;--teal:#4FA3A0;--gold:#E0B24A;
+  --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);color:var(--ink);background:var(--ground);}
+
+/* ── LAYOUT ── */
+.app{min-height:100vh;display:grid;grid-template-columns:238px 1fr;}
+.rail{background:var(--panel);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;}
+.main{padding:22px;min-width:0;overflow-y:auto;}
+
+/* ── SIDEBAR ── */
+.me{padding:6px 10px 18px;}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--sea);display:grid;place-items:center;color:#fff;font-family:var(--voice);font-size:20px;margin-bottom:10px;}
+.me h1{font-family:var(--voice);font-weight:400;font-size:21px;white-space:nowrap;}
+.me span{font-size:12px;color:var(--soft);font-style:italic;line-height:1.4;display:block;margin-top:4px;}
+.nav-hub{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:13px;color:var(--sea-deep);font-size:14px;cursor:pointer;margin-bottom:1px;user-select:none;}
+.nav-hub svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
+.nav-hub .ca{margin-left:auto;width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;opacity:.5;transition:transform .2s;flex-shrink:0;}
+.nav-hub:hover{background:rgba(255,255,255,.45);}
+.nav-hub.on{background:var(--cream);font-weight:600;box-shadow:0 3px 10px rgba(40,75,107,.10);}
+.nav-hub.open .ca{transform:rotate(90deg);}
+.sub-items{display:none;padding:0 0 4px 41px;}
+.sub-items.open{display:block;}
+.sub-item{display:block;padding:6px 10px;font-size:13px;color:var(--soft);cursor:pointer;border-radius:9px;}
+.sub-item:hover{background:rgba(255,255,255,.4);color:var(--ink);}
+.sub-item.on{color:var(--sea-deep);font-weight:600;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border-radius:22px;padding:20px 22px;}
+.cards{columns:300px;column-gap:18px;}
+.cards>.card{break-inside:avoid;margin:0 0 18px;display:inline-block;width:100%;}
+h3.lbl{font-size:13px;letter-spacing:.03em;color:var(--soft);margin:0 0 14px;display:flex;align-items:center;gap:9px;font-weight:600;}
+h3.lbl svg{width:16px;height:16px;stroke:var(--sea);fill:none;stroke-width:1.8;}
+h3.lbl .r{margin-left:auto;font-size:12px;color:var(--sea);font-weight:500;cursor:pointer;}
+.page-title{font-family:var(--voice);font-weight:400;font-size:28px;margin-bottom:6px;}
+.page-sub{color:var(--soft);font-size:14px;margin-bottom:22px;}
+
+/* ── HOME hero ── */
+.hero{position:relative;overflow:hidden;background:linear-gradient(160deg,#DCEAF3 0%,#EAF2F8 55%,#FCFAF2 100%);margin-bottom:18px;}
+.hero .branch{position:absolute;top:-4px;right:12px;width:190px;}
+.hero .wave{position:absolute;left:0;right:0;bottom:-2px;height:42px;color:var(--sea-bg);}
+.hero .in{position:relative;z-index:1;}
+.litday{font-size:13px;color:var(--sea);font-weight:500;}
+.feast{display:inline-block;margin-top:7px;background:var(--lemon-bg);color:#8a6a14;font-size:12px;padding:3px 11px;border-radius:20px;}
+.feast b{font-weight:700;}
+.hero h2{font-family:var(--voice);font-weight:400;font-size:33px;margin:10px 0 0;}
+.hero .sub{color:var(--soft);font-size:14px;margin-top:6px;}
+.wx{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.wx .t{font-size:24px;font-weight:700;}.wx .m{font-size:13px;color:var(--soft);}
+.quote{background:var(--sea);color:#fff;margin-bottom:18px;}
+.quote p{font-family:var(--voice);font-size:19px;line-height:1.5;margin:0 0 8px;}
+.quote cite{font-style:normal;font-size:13px;opacity:.85;}
+
+/* ── HABITS ── */
+.weekhead{display:flex;align-items:center;gap:10px;margin-left:auto;font-size:12px;color:var(--soft);}
+.weekhead button{border:none;background:var(--surface2);color:var(--sea);border-radius:7px;width:22px;height:22px;cursor:pointer;font-size:13px;}
+table.hw{width:100%;border-collapse:collapse;}
+table.hw th{font-size:11px;color:var(--soft);font-weight:600;padding:0 0 8px;text-align:center;}
+table.hw td{padding:6px 0;font-size:13.5px;}
+table.hw td.first{text-align:left;padding-right:8px;}
+table.hw td.c{text-align:center;}
+.dot{width:20px;height:20px;border-radius:6px;border:2px solid var(--sea-bg);display:inline-grid;place-items:center;}
+.dot.on{background:var(--sea);border-color:var(--sea);}
+.dot.on svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3;}
+.dot.lem.on{background:var(--lemon);border-color:var(--lemon);}
+.dot.today{outline:2px solid var(--lemon);outline-offset:1px;}
+.hfoot{display:flex;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);font-size:13px;color:var(--soft);}
+.hfoot .streak{color:var(--lemon);font-weight:600;}
+
+/* ── COLLAGE ── */
+.collage{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:6px;height:150px;}
+.ph{border-radius:10px;background:var(--sea-bg);position:relative;overflow:hidden;}
+.ph:nth-child(1){grid-row:1/span 2;background:#CFE0D6;}
+.ph:nth-child(2){background:#EFDCC0;}
+.ph:nth-child(3){background:#DCE6EF;}
+.ph svg{position:absolute;inset:0;margin:auto;width:26px;height:26px;stroke:#274B6B;opacity:.3;fill:none;stroke-width:1.6;}
+.memcap{font-size:12.5px;color:var(--soft);margin-top:10px;line-height:1.5;}
+.memcap b{color:var(--ink);font-weight:600;}
+
+/* ── coming up / rows ── */
+.up{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px;gap:10px;}
+.up:last-child{border-bottom:none;}
+.up .when{color:var(--soft);font-size:13px;white-space:nowrap;}
+.up .love{color:var(--lemon);font-weight:500;}
+.row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--line);}
+.row:last-child{border-bottom:none;}
+.row .soft{color:var(--soft);font-size:13px;}
+
+/* ── grat ── */
+.grat p{font-family:var(--voice);font-size:15px;line-height:1.5;margin:7px 0;}
+.grat .n{color:var(--lemon);font-weight:700;margin-right:8px;}
+
+/* ── net worth ── */
+.big{font-size:25px;font-weight:700;}
+.nwrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px dashed var(--line);}
+.nwrow:last-child{border-bottom:none;}
+.trend-up{font-size:13px;color:var(--leaf);font-weight:600;margin:2px 0 10px;}
+.trend-dn{font-size:13px;color:#B4532E;font-weight:600;margin:2px 0 10px;}
+
+/* ── wheel mini ── */
+.wheelmini{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;}
+.wheelmini svg{width:158px;height:158px;}
+.wheelmini .go{font-size:12px;color:var(--sea);margin-top:8px;font-weight:500;}
+
+/* ── examen ── */
+.examen-card{background:var(--lemon-bg);}
+.examen-card h3.lbl{color:#8a6a14;}.examen-card h3.lbl svg{stroke:#8a6a14;}
+.examen-card p{font-family:var(--voice);font-size:16px;line-height:1.5;margin:0 0 14px;}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--sea);color:#fff;border:none;padding:9px 15px;border-radius:10px;font-size:13px;cursor:pointer;font-family:var(--sans);text-decoration:none;}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
+.btn-ghost{background:transparent;color:var(--sea);border:1.5px solid var(--sea);}
+
+/* ── progress bars ── */
+.goal-item{margin-bottom:18px;}
+.goal-item .gtop{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px;}
+.goal-item .gtop b{font-weight:600;}
+.goal-item .gpct{font-size:13px;color:var(--soft);}
+.bar{height:9px;border-radius:6px;background:var(--surface2);overflow:hidden;margin-bottom:3px;}
+.bar i{display:block;height:100%;border-radius:6px;}
+.goal-note{font-size:12px;color:var(--soft);font-style:italic;}
+
+/* ── people ── */
+.person{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px dashed var(--line);}
+.person:last-child{border-bottom:none;}
+.person .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:15px;flex-shrink:0;}
+.person .name{font-size:14px;font-weight:600;}
+.person .last{font-size:12px;color:var(--soft);margin-top:2px;}
+.person .nudge{margin-left:auto;font-size:11px;background:var(--lemon-bg);color:#8a6a14;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.person .ok{margin-left:auto;font-size:11px;color:var(--leaf);font-weight:600;}
+
+/* ── weight chart placeholder ── */
+.chart-ph{height:120px;background:var(--surface2);border-radius:14px;display:grid;place-items:center;color:var(--soft);font-size:13px;margin-bottom:14px;}
+
+/* ── journal ── */
+.j-entry{padding:12px 0;border-bottom:1px dashed var(--line);}
+.j-entry:last-child{border-bottom:none;}
+.j-date{font-size:12px;color:var(--soft);margin-bottom:4px;}
+.j-text{font-family:var(--voice);font-size:15px;line-height:1.55;color:var(--ink);}
+.j-mood{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;margin-top:6px;}
+textarea.note-input{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-family:var(--voice);font-size:15px;color:var(--ink);background:var(--surface);resize:vertical;min-height:100px;outline:none;}
+textarea.note-input:focus{border-color:var(--sea);}
+
+/* ── prayer ── */
+.intent{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);}
+.intent:last-child{border-bottom:none;}
+.intent .cross{color:var(--sea);font-size:16px;margin-top:1px;}
+.intent .days{font-size:12px;color:var(--soft);margin-top:3px;}
+
+/* ── collections ── */
+.book-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:center;}
+.book-item:last-child{border-bottom:none;}
+.book-cover{width:36px;height:52px;border-radius:5px;flex-shrink:0;}
+.book-title{font-size:14px;font-weight:600;}
+.book-author{font-size:12px;color:var(--soft);margin-top:2px;}
+.book-status{font-size:11px;margin-top:5px;padding:2px 8px;border-radius:20px;display:inline-block;}
+.status-read{background:#D5EDDA;color:#2d7a3a;}
+.status-reading{background:var(--lemon-bg);color:#8a6a14;}
+.status-want{background:var(--surface2);color:var(--soft);}
+.tab-row{display:flex;gap:8px;margin-bottom:18px;}
+.tab{padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--soft);font-family:var(--sans);}
+.tab.on{background:var(--sea);color:#fff;border-color:var(--sea);}
+
+/* ── travel ── */
+.place{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;}
+.place:last-child{border-bottom:none;}
+.place .flag{font-size:20px;width:32px;text-align:center;}
+.place .wish{color:var(--lemon);font-size:12px;margin-left:auto;}
+.place .been{color:var(--leaf);font-size:12px;margin-left:auto;}
+
+/* ── calendar ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.cal-grid .ch{font-size:11px;color:var(--soft);font-weight:600;padding:6px 0;}
+.cal-grid .cd{padding:6px 4px;border-radius:9px;font-size:13px;cursor:pointer;}
+.cal-grid .cd:hover{background:var(--surface2);}
+.cal-grid .cd.today{background:var(--sea);color:#fff;font-weight:700;}
+.cal-grid .cd.has-event::after{content:'·';display:block;color:var(--lemon);font-size:18px;line-height:0;margin-top:2px;}
+.cal-grid .cd.past{color:var(--soft);}
+.cal-grid .cd.empty{color:transparent;}
+.cal-month{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-month h3{font-family:var(--voice);font-weight:400;font-size:20px;}
+.cal-month button{border:none;background:var(--surface2);color:var(--sea);border-radius:8px;width:28px;height:28px;font-size:14px;cursor:pointer;}
+
+/* ── word of year ── */
+.woy-card{background:linear-gradient(135deg,var(--sea-bg),var(--lemon-bg));border-radius:22px;padding:32px;text-align:center;margin-bottom:18px;}
+.woy-word{font-family:var(--voice);font-size:48px;font-weight:400;color:var(--sea-deep);margin-bottom:10px;}
+.woy-sub{font-size:14px;color:var(--soft);max-width:400px;margin:0 auto;line-height:1.6;}
+
+/* ── examen steps ── */
+.examen-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px dashed var(--line);}
+.examen-step:last-child{border-bottom:none;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--sea);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.step-q{font-family:var(--voice);font-size:15px;line-height:1.5;margin-bottom:4px;}
+.step-hint{font-size:12px;color:var(--soft);}
+
+/* ── mood ── */
+.mood-pick{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.mood-btn{border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 14px;font-size:20px;cursor:pointer;text-align:center;}
+.mood-btn:hover,.mood-btn.on{border-color:var(--sea);background:var(--sea-bg);}
+.mood-label{font-size:11px;color:var(--soft);display:block;margin-top:3px;}
+
+/* ── section visibility ── */
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#274B6B;color:#fff;font-size:13px;padding:10px 20px;border-radius:30px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── input ── */
+.field-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.field-row label{font-size:13px;color:var(--soft);width:120px;flex-shrink:0;}
+.field-row input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;font-family:var(--sans);color:var(--ink);background:var(--surface);outline:none;}
+.field-row input:focus{border-color:var(--sea);}
+
+@media(max-width:860px){
+  .app{grid-template-columns:1fr;}
+  .rail{position:static;height:auto;}
+  .me{display:flex;align-items:center;gap:14px;padding-bottom:12px;}
+  .me .avatar{margin:0;}
+}
+</style>
+
+<div class="app">
+<!-- ═══════════════════════ RAIL ═══════════════════════ -->
+<aside class="rail" id="rail">
+  <div class="me">
+    <div class="avatar">D</div>
+    <div>
+      <h1>hello, Domenica</h1>
+      <span>He is a good father and He will give me everything I need</span>
+    </div>
+  </div>
+  <div id="nav-root"></div>
+</aside>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main" id="main-content">
+
+<!-- ── HOME ── -->
+<div class="section active" id="s-home">
+  <section class="card hero">
+    <svg class="branch" viewBox="0 0 220 150" id="branch"></svg>
+    <svg class="wave" viewBox="0 0 1200 42" preserveAspectRatio="none"><path d="M0,28 C150,6 300,6 450,22 C620,42 780,42 960,20 C1080,8 1140,10 1200,18 L1200,42 L0,42 Z" fill="currentColor"/></svg>
+    <div class="in">
+      <div class="litday" id="litday"></div>
+      <div id="feastwrap"></div>
+      <h2 id="greet">good morning, Domenica</h2>
+      <div class="sub">5 of 8 habits today · Mass 4/5 this week · examen waiting for tonight</div>
+      <div class="wx" id="wx"><span class="m">loading weather…</span></div>
+    </div>
+  </section>
+  <section class="card quote"><p id="qp">"Be who God meant you to be and you will set the world on fire."</p><cite>— St. Catherine of Siena</cite></section>
+  <div class="cards">
+    <section class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>habits <span class="weekhead"><button>‹</button><span id="wkrange">Aug 3–9</span><button>›</button></span></h3>
+      <table class="hw" id="hw-home"></table>
+      <div class="hfoot"><span class="streak">🔥 12-day streak</span><span>flip back anytime</span></div>
+    </section>
+    <div class="card wheelmini" style="cursor:pointer" onclick="navigate('goals-areas')">
+      <h3 class="lbl" style="align-self:stretch"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>life goals <span class="r">view wheel →</span></h3>
+      <svg id="mini-home" viewBox="0 0 200 200"></svg>
+      <span class="go">tap a slice to see the goals behind it</span>
+    </div>
+    <section class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg>on this day <span class="r">all →</span></h3>
+      <div class="collage"><div class="ph"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div><div class="ph"></div><div class="ph"></div></div>
+      <div class="memcap"><b>August, last year</b> — a few favorites from Amalfi. You pick the good ones each month.</div>
+    </section>
+    <section class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>coming up</h3>
+      <div class="up"><span>🎂 Mom's birthday</span><span class="when">in 6 days</span></div>
+      <div class="up"><span>✝️ Assumption of Mary</span><span class="when">Aug 15</span></div>
+      <div class="up"><span class="love">❤ Book a date or event</span><span class="when">this month</span></div>
+    </section>
+    <section class="card grat">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>grateful today <span class="r">log →</span></h3>
+      <p><span class="n">1</span>Slow rosary in the rain</p>
+      <p><span class="n">2</span>Mom called just to say hi</p>
+      <p><span class="n">3</span>Lemon &amp; olive oil on warm bread</p>
+    </section>
+    <section class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth <span class="r">update →</span></h3>
+      <div class="big">$48,600</div>
+      <div class="trend-up">▲ 5.2% since last month</div>
+      <div class="nwrow"><span>Retirement</span><span>$32,200</span></div>
+      <div class="nwrow"><span>Savings</span><span>$21,400</span></div>
+      <div class="nwrow"><span>Loans</span><span style="color:#B4532E">−$5,000</span></div>
+    </section>
+    <section class="card examen-card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>evening examen</h3>
+      <p>Where did I feel God's presence today? Where did I turn from it?</p>
+      <button class="btn" onclick="navigate('daily-examen')">Begin tonight's examen <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </section>
+  </div>
+</div>
+
+<!-- ── CALENDAR ── -->
+<div class="section" id="s-calendar">
+  <div class="page-title">Calendar</div>
+  <div class="page-sub">Your important dates, feast days &amp; birthdays.</div>
+  <div class="card" style="max-width:520px;margin-bottom:18px;">
+    <div class="cal-month">
+      <button>‹</button>
+      <h3>August 2026</h3>
+      <button>›</button>
+    </div>
+    <div class="cal-grid">
+      <div class="ch">M</div><div class="ch">T</div><div class="ch">W</div><div class="ch">T</div><div class="ch">F</div><div class="ch">S</div><div class="ch">S</div>
+      <div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd past">1</div><div class="cd past">2</div>
+      <div class="cd past">3</div><div class="cd past">4</div><div class="cd past">5</div><div class="cd past">6</div><div class="cd past">7</div><div class="cd today">8</div><div class="cd">9</div>
+      <div class="cd">10</div><div class="cd">11</div><div class="cd">12</div><div class="cd">13</div><div class="cd">14</div><div class="cd has-event">15</div><div class="cd">16</div>
+      <div class="cd">17</div><div class="cd">18</div><div class="cd">19</div><div class="cd">20</div><div class="cd">21</div><div class="cd">22</div><div class="cd">23</div>
+      <div class="cd has-event">24</div><div class="cd">25</div><div class="cd">26</div><div class="cd">27</div><div class="cd">28</div><div class="cd">29</div><div class="cd">30</div>
+      <div class="cd">31</div>
+    </div>
+  </div>
+  <div class="card" style="max-width:520px;">
+    <h3 class="lbl">upcoming</h3>
+    <div class="up"><span>✝️ Assumption of Mary</span><span class="when">Aug 15</span></div>
+    <div class="up"><span>🎂 Mom's birthday</span><span class="when">Aug 24</span></div>
+    <div class="up"><span>📖 Confession due</span><span class="when">Aug 22</span></div>
+    <div class="up"><span class="love">❤ Date or young-adult event</span><span class="when">by Aug 31</span></div>
+  </div>
+</div>
+
+<!-- ── DAILY: HABITS ── -->
+<div class="section" id="s-daily-habits">
+  <div class="page-title">Habits</div>
+  <div class="page-sub">Your daily &amp; weekly commitments across all 7 areas.</div>
+  <div class="card">
+    <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>this week <span class="weekhead"><button>‹</button><span id="wkrange2">Aug 3–9</span><button>›</button></span></h3>
+    <table class="hw" id="hw-full"></table>
+    <div class="hfoot"><span class="streak">🔥 12-day streak</span><span>swipe or use arrows to flip back</span></div>
+  </div>
+</div>
+
+<!-- ── DAILY: JOURNAL ── -->
+<div class="section" id="s-daily-journal">
+  <div class="page-title">Journal</div>
+  <div class="page-sub">Your private thoughts, one entry at a time.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>today — Aug 8</h3>
+      <div class="mood-pick" style="margin-bottom:12px;">
+        <div class="mood-btn on">😌<span class="mood-label">calm</span></div>
+        <div class="mood-btn">😊<span class="mood-label">happy</span></div>
+        <div class="mood-btn">😔<span class="mood-label">low</span></div>
+        <div class="mood-btn">🙏<span class="mood-label">grateful</span></div>
+        <div class="mood-btn">😤<span class="mood-label">stressed</span></div>
+        <div class="mood-btn">✨<span class="mood-label">joyful</span></div>
+      </div>
+      <textarea class="note-input" placeholder="What's on your heart today?">Today is my name day — St. Dominic. I lit a candle at morning Mass and thought about how he built the Dominicans because he genuinely loved people and wanted them to know truth. Something about that felt very personal today.</textarea>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button class="btn">Save entry</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>recent entries</h3>
+      <div class="j-entry">
+        <div class="j-date">Aug 7 · Friday</div>
+        <div class="j-text">Walked to the park after work. The city felt slow and golden, the way it does in late summer. Read Steinbeck on a bench and stayed until the fireflies came out.</div>
+        <span class="j-mood" style="background:var(--lemon-bg);color:#8a6a14;">✨ joyful</span>
+      </div>
+      <div class="j-entry">
+        <div class="j-date">Aug 5 · Wednesday</div>
+        <div class="j-text">Tired. But confession was really good — Fr. P. said something that clicked. Made pasta from scratch tonight.</div>
+        <span class="j-mood" style="background:var(--surface2);color:var(--soft);">😌 calm</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DAILY: GRATITUDE ── -->
+<div class="section" id="s-daily-gratitude">
+  <div class="page-title">Gratitude</div>
+  <div class="page-sub">Three things, every day. Your therapist was right.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>today — Aug 8</h3>
+      <div class="field-row"><label style="color:var(--lemon);font-weight:700;">1</label><input type="text" value="Slow rosary in the rain"></div>
+      <div class="field-row"><label style="color:var(--lemon);font-weight:700;">2</label><input type="text" value="Mom called just to say hi"></div>
+      <div class="field-row"><label style="color:var(--lemon);font-weight:700;">3</label><input type="text" value="Lemon &amp; olive oil on warm bread"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+        <span style="font-size:13px;color:var(--soft);">🔥 12-day streak</span>
+        <button class="btn">Save</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="lbl">recent</h3>
+      <div class="j-entry"><div class="j-date">Aug 7</div><div class="j-text" style="font-size:13px;line-height:1.7;">1. The smell of coffee at 6am<br>2. Adoration — full hour, total silence<br>3. Message from Giulia out of nowhere</div></div>
+      <div class="j-entry"><div class="j-date">Aug 6</div><div class="j-text" style="font-size:13px;line-height:1.7;">1. My body is healthy and strong<br>2. A really honest conversation at work<br>3. Good book + a good lamp</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DAILY: EXAMEN ── -->
+<div class="section" id="s-daily-examen">
+  <div class="page-title">Evening Examen</div>
+  <div class="page-sub">Five minutes at the end of the day, with God.</div>
+  <div class="card" style="max-width:620px;">
+    <div class="examen-step">
+      <div class="step-num">1</div>
+      <div><div class="step-q">Become aware of God's presence.</div><div class="step-hint">Take a breath. Rest in gratitude that He is here.</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What does His presence feel like right now?"></textarea></div>
+    </div>
+    <div class="examen-step">
+      <div class="step-num">2</div>
+      <div><div class="step-q">Review the day with gratitude.</div><div class="step-hint">Walk through the day's gifts — big and small.</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What am I most grateful for today?"></textarea></div>
+    </div>
+    <div class="examen-step">
+      <div class="step-num">3</div>
+      <div><div class="step-q">Notice your emotions.</div><div class="step-hint">Where did you feel consolation? Desolation?</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What stirred in me today?"></textarea></div>
+    </div>
+    <div class="examen-step">
+      <div class="step-num">4</div>
+      <div><div class="step-q">Choose one feature of the day and pray with it.</div><div class="step-hint">A moment that stood out — good or hard.</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="What do I want to sit with?"></textarea></div>
+    </div>
+    <div class="examen-step">
+      <div class="step-num">5</div>
+      <div><div class="step-q">Look toward tomorrow.</div><div class="step-hint">What is God asking of you tomorrow?</div><textarea class="note-input" style="margin-top:10px;min-height:70px;" placeholder="One intention for tomorrow..."></textarea></div>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px;">
+      <button class="btn">Save examen</button>
+      <button class="btn btn-ghost">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DAILY: PRAYER ── -->
+<div class="section" id="s-daily-prayer">
+  <div class="page-title">Prayer Intentions</div>
+  <div class="page-sub">Who and what you're carrying to God.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl">active intentions</h3>
+      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Mom's health</div><div class="days">praying 14 days</div></div></div>
+      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Friends finding their vocation</div><div class="days">praying 6 days</div></div></div>
+      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Peace in the world</div><div class="days">praying 30 days</div></div></div>
+      <div class="intent"><div class="cross">✦</div><div><div style="font-size:14px;">Direction on the career step</div><div class="days">praying 3 days</div></div></div>
+      <div style="margin-top:16px;display:flex;gap:10px;">
+        <input type="text" class="note-input" style="min-height:auto;padding:9px 12px;font-size:14px;font-family:var(--sans);" placeholder="Add an intention…">
+        <button class="btn" style="white-space:nowrap;">Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="lbl">sacraments log</h3>
+      <div class="row"><span>Last confession</span><span class="soft">Jul 26</span></div>
+      <div class="row"><span>Next due</span><span style="color:#B4532E;font-size:13px;">Aug 9 (overdue)</span></div>
+      <div class="row"><span>Mass this week</span><span class="soft">4 / 5</span></div>
+      <div class="row"><span>Adoration this week</span><span class="soft">4 / 5</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DAILY: BRAIN DUMP ── -->
+<div class="section" id="s-daily-brain">
+  <div class="page-title">Brain Dump</div>
+  <div class="page-sub">Get it out of your head. No structure, no pressure.</div>
+  <div class="card" style="max-width:640px;">
+    <textarea class="note-input" style="min-height:280px;" placeholder="Whatever's in your head — to-dos, worries, ideas, random thoughts. Just get it out.">Need to look up that book Caitlin recommended. Also want to find the specific verse Fr. James quoted on Sunday. Should probably call Grandma this week — it's been a while. What even IS the difference between imperfetto and passato prossimo again? Also maybe make that lemon pasta again this weekend.</textarea>
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:space-between;">
+      <span style="font-size:12px;color:var(--soft);">Saved automatically</span>
+      <button class="btn">Save note</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIFE GOALS: GOALS ── -->
+<div class="section" id="s-goals-list">
+  <div class="page-title">Goals</div>
+  <div class="page-sub">Your SMART goals, auto-linked to what you track.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl" style="color:#6E9A5E"><svg viewBox="0 0 24 24" style="stroke:#6E9A5E"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>Spiritual</h3>
+      <div class="goal-item"><div class="gtop"><b>Mass 5×/week</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:#6E9A5E"></i></div><div class="goal-note">4 of 5 this week · Sunday always</div></div>
+      <div class="goal-item"><div class="gtop"><b>Adoration 5×/week</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:#6E9A5E"></i></div><div class="goal-note">4 of 5 this week</div></div>
+      <div class="goal-item"><div class="gtop"><b>Rosary 1×/week</b><span class="gpct">100%</span></div><div class="bar"><i style="width:100%;background:#6E9A5E"></i></div><div class="goal-note">✓ done this week</div></div>
+      <div class="goal-item"><div class="gtop"><b>Confession every 2 weeks</b><span class="gpct">—</span></div><div class="bar"><i style="width:0%;background:#6E9A5E"></i></div><div class="goal-note" style="color:#B4532E">Last: Jul 26 · overdue</div></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl" style="color:#4FA3A0"><svg viewBox="0 0 24 24" style="stroke:#4FA3A0"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zM2 12h20"/><path d="M12 2a15 10 0 010 20 15 10 0 010-20"/></svg>Physical</h3>
+      <div class="goal-item"><div class="gtop"><b>Strength 5×/week (10 min)</b><span class="gpct">60%</span></div><div class="bar"><i style="width:60%;background:#4FA3A0"></i></div><div class="goal-note">3 sessions this week · arms, abs, legs rotation</div></div>
+      <div class="goal-item"><div class="gtop"><b>7,500 steps / day</b><span class="gpct">71%</span></div><div class="bar"><i style="width:71%;background:#4FA3A0"></i></div><div class="goal-note">5 of 7 days hit target</div></div>
+      <div class="goal-item"><div class="gtop"><b>Hold weight at 145 lb</b><span class="gpct">95%</span></div><div class="bar"><i style="width:95%;background:#4FA3A0"></i></div><div class="goal-note">Current: 147 lb · goal: 145 lb</div></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl" style="color:#4F7CA8"><svg viewBox="0 0 24 24" style="stroke:#4F7CA8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Mental</h3>
+      <div class="goal-item"><div class="gtop"><b>Italian — reach B1</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:#4F7CA8"></i></div><div class="goal-note">Presente ✓ · Passato prossimo 70% · Imperfetto next</div></div>
+      <div class="goal-item"><div class="gtop"><b>Harry Potter 1 in Italian by Dec 31</b><span class="gpct">12%</span></div><div class="bar"><i style="width:12%;background:#4F7CA8"></i></div><div class="goal-note">Chapter 3 of 17</div></div>
+      <div class="goal-item"><div class="gtop"><b>Read 12 books in 2026</b><span class="gpct">33%</span></div><div class="bar"><i style="width:33%;background:#4F7CA8"></i></div><div class="goal-note">4 of 12 · currently reading: Middlemarch</div></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl" style="color:#E0B24A"><svg viewBox="0 0 24 24" style="stroke:#E0B24A"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Financial</h3>
+      <div class="goal-item"><div class="gtop"><b>Retirement → $200k</b><span class="gpct">34%</span></div><div class="bar"><i style="width:34%;background:#E0B24A"></i></div><div class="goal-note">$32,200 of $200,000</div></div>
+      <div class="goal-item"><div class="gtop"><b>Savings → $25k</b><span class="gpct">52%</span></div><div class="bar"><i style="width:52%;background:#E0B24A"></i></div><div class="goal-note">$21,400 of $25,000 — almost there!</div></div>
+      <div class="goal-item"><div class="gtop"><b>Student loans → $0</b><span class="gpct">30%</span></div><div class="bar"><i style="width:30%;background:#E0B24A"></i></div><div class="goal-note">$5,000 remaining of $7,000</div></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl" style="color:#C77E92"><svg viewBox="0 0 24 24" style="stroke:#C77E92"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Relationships &amp; Love</h3>
+      <div class="goal-item"><div class="gtop"><b>Keep core people in touch</b><span class="gpct">75%</span></div><div class="bar"><i style="width:75%;background:#C77E92"></i></div><div class="goal-note">3 of 4 people contacted within their cadence</div></div>
+      <div class="goal-item"><div class="gtop"><b>1 date or young-adult Catholic event / month</b><span class="gpct">0%</span></div><div class="bar"><i style="width:0%;background:#C77E92"></i></div><div class="goal-note" style="color:#B4532E">Not yet this month — book something before Aug 31</div></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl" style="color:#D08A5A"><svg viewBox="0 0 24 24" style="stroke:#D08A5A"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Career</h3>
+      <div class="goal-item"><div class="gtop"><b>Director → Sr Director</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:#D08A5A"></i></div><div class="goal-note">Currently Director · 10/10 on promotion</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIFE GOALS: 7 AREAS ── -->
+<div class="section" id="s-goals-areas">
+  <div class="page-title">7 Areas of Life</div>
+  <div class="page-sub">Your balance at a glance — tap any slice to see the goals behind it.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;max-width:900px;">
+    <div class="card">
+      <div style="display:flex;justify-content:center;"><svg id="big-wheel" viewBox="-80 -14 560 428" style="width:100%;max-width:420px;overflow:visible;"></svg></div>
+      <div style="text-align:center;font-size:12px;color:var(--soft);margin-top:8px;">each slice fills from center to its score (out of 10)</div>
+    </div>
+    <div class="card" id="wheel-detail"></div>
+  </div>
+</div>
+
+<!-- ── LIFE GOALS: RELATIONSHIPS ── -->
+<div class="section" id="s-goals-relationships">
+  <div class="page-title">Relationships</div>
+  <div class="page-sub">Your core people. Never let them feel forgotten.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl">core circle</h3>
+      <div class="person"><div class="av" style="background:#DCEAF3;font-size:18px;">👩</div><div><div class="name">Mom</div><div class="last">Last talked: 2 days ago · weekly</div></div><span class="ok">✓ good</span></div>
+      <div class="person"><div class="av" style="background:#FBEEC2;font-size:18px;">👩‍🦱</div><div><div class="name">Giulia</div><div class="last">Last talked: 5 days ago · weekly</div></div><span class="ok">✓ good</span></div>
+      <div class="person"><div class="av" style="background:#EDE0F5;font-size:18px;">👨</div><div><div class="name">Dad</div><div class="last">Last talked: 12 days ago · bi-weekly</div></div><span class="nudge">reach out soon</span></div>
+      <div class="person"><div class="av" style="background:#D5EDDA;font-size:18px;">👩‍🦰</div><div><div class="name">Caitlin</div><div class="last">Last talked: 3 weeks ago · monthly</div></div><span class="nudge">overdue !</span></div>
+      <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;">+ Add person</button></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl">log a connection</h3>
+      <div class="field-row"><label>Who</label><input type="text" placeholder="Name…"></div>
+      <div class="field-row"><label>How</label><input type="text" placeholder="call, text, hangout…"></div>
+      <div class="field-row"><label>Note</label><input type="text" placeholder="What did you talk about?"></div>
+      <button class="btn" style="margin-top:4px;">Log it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIFE GOALS: BODY ── -->
+<div class="section" id="s-goals-body">
+  <div class="page-title">Body</div>
+  <div class="page-sub">Weight, exercise, and how you feel physically.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M3 12l2-2 4 4 8-8 4 4"/></svg>weight</h3>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;"><span style="font-size:28px;font-weight:700;">147</span><span style="font-size:16px;color:var(--soft);">lb</span><span style="font-size:13px;color:var(--soft);margin-left:6px;">goal: 145 lb</span></div>
+      <div class="chart-ph">📈 weight trend chart (last 30 days)</div>
+      <div class="field-row"><label>Log today</label><input type="number" placeholder="lb"></div>
+      <button class="btn" style="margin-top:4px;">Save</button>
+    </div>
+    <div class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>exercise log</h3>
+      <div class="row"><span>Aug 8</span><span class="soft">Arms · 12 min</span></div>
+      <div class="row"><span>Aug 6</span><span class="soft">Abs · 10 min</span></div>
+      <div class="row"><span>Aug 4</span><span class="soft">Legs · 15 min</span></div>
+      <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;">+ Log workout</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIFE GOALS: MONEY ── -->
+<div class="section" id="s-goals-money">
+  <div class="page-title">Money</div>
+  <div class="page-sub">Three numbers, updated monthly. Simple as that.</div>
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth</h3>
+      <div class="big">$48,600</div>
+      <div class="trend-up">▲ 5.2% since last month</div>
+      <div class="nwrow"><span>Retirement / Investments</span><span>$32,200</span></div>
+      <div class="nwrow"><span>Savings</span><span>$21,400</span></div>
+      <div class="nwrow"><span>Student Loans</span><span style="color:#B4532E">−$5,000</span></div>
+      <div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:16px;">
+        <h3 class="lbl" style="margin-bottom:14px;">update numbers</h3>
+        <div class="field-row"><label>Retirement</label><input type="number" placeholder="$"></div>
+        <div class="field-row"><label>Savings</label><input type="number" placeholder="$"></div>
+        <div class="field-row"><label>Loans</label><input type="number" placeholder="$"></div>
+        <button class="btn">Save for August</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="lbl">goal progress</h3>
+      <div class="goal-item"><div class="gtop"><b>Retirement → $200k</b><span class="gpct">34%</span></div><div class="bar"><i style="width:34%;background:#E0B24A"></i></div><div class="goal-note">$32,200 of $200,000</div></div>
+      <div class="goal-item"><div class="gtop"><b>Savings → $25k</b><span class="gpct">86%</span></div><div class="bar"><i style="width:86%;background:#E0B24A"></i></div><div class="goal-note">$21,400 of $25,000 — almost there!</div></div>
+      <div class="goal-item"><div class="gtop"><b>Loans → $0</b><span class="gpct">30%</span></div><div class="bar"><i style="width:30%;background:#E0B24A"></i></div><div class="goal-note">$5,000 remaining</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEMORIES: PHOTOS ── -->
+<div class="section" id="s-mem-photos">
+  <div class="page-title">Photos & Memories</div>
+  <div class="page-sub">Your curated moments — you pick the good ones each month.</div>
+  <div class="card" style="margin-bottom:18px;">
+    <h3 class="lbl">on this day, last year</h3>
+    <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:8px;height:200px;">
+      <div class="ph" style="grid-row:1/span 2;background:#CFE0D6;"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div>
+      <div class="ph" style="background:#EFDCC0;"></div>
+      <div class="ph" style="background:#DCE6EF;"></div>
+    </div>
+    <div class="memcap" style="margin-top:12px;"><b>August 2025 · Amalfi Coast.</b> You picked these three. Add photos from your camera roll for each month.</div>
+  </div>
+  <div class="card">
+    <h3 class="lbl">monthly albums <span class="r">+ add photos</span></h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;">
+      <div style="aspect-ratio:1;background:#CFE0D6;border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:#EFDCC0;border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:#DCE6EF;border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:#EDE0F5;border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:#D5EDDA;border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:var(--line);border-radius:12px;display:grid;place-items:center;color:var(--soft);font-size:22px;">+</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEMORIES: TRAVEL ── -->
+<div class="section" id="s-mem-travel">
+  <div class="page-title">Travel</div>
+  <div class="page-sub">Countries you've visited and places you're dreaming of.</div>
+
+  <div class="card" style="margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 class="lbl" style="margin:0;"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M2 12h20M12 2a15 10 0 010 20A15 10 0 0112 2z"/></svg>your world</h3>
+      <div style="display:flex;gap:16px;font-size:12px;color:var(--soft);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#6E9A5E;border-radius:3px;display:inline-block;"></span>visited</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#E7B12F;border-radius:3px;display:inline-block;"></span>wish list</span>
+      </div>
+    </div>
+    <svg id="travel-map" viewBox="0 0 1000 500" style="width:100%;border-radius:12px;background:var(--sea-bg);display:block;"></svg>
+    <div style="font-size:12px;color:var(--soft);text-align:center;margin-top:10px;">
+      <b id="tmap-vc">5</b> countries visited · <b id="tmap-wc">4</b> on your wish list
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3 class="lbl">been there</h3>
+      <div class="place"><span class="flag">🇮🇹</span><span>Italy — Amalfi, Rome, Florence</span><span class="been">✓ visited</span></div>
+      <div class="place"><span class="flag">🇫🇷</span><span>France — Paris</span><span class="been">✓ visited</span></div>
+      <div class="place"><span class="flag">🇺🇸</span><span>USA</span><span class="been">✓ visited</span></div>
+      <div class="place"><span class="flag">🇨🇦</span><span>Canada — Montreal, Quebec City</span><span class="been">✓ visited</span></div>
+      <div class="place"><span class="flag">🇲🇽</span><span>Mexico</span><span class="been">✓ visited</span></div>
+      <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;" onclick="addTravel('visited')">+ Add a country</button></div>
+    </div>
+    <div class="card">
+      <h3 class="lbl">wish list</h3>
+      <div class="place"><span class="flag">🇬🇷</span><span>Greece — Santorini</span><span class="wish">✦ someday</span></div>
+      <div class="place"><span class="flag">🇵🇹</span><span>Portugal — Lisbon, Fátima</span><span class="wish">✦ someday</span></div>
+      <div class="place"><span class="flag">🇮🇪</span><span>Ireland</span><span class="wish">✦ someday</span></div>
+      <div class="place"><span class="flag">🇯🇵</span><span>Japan</span><span class="wish">✦ someday</span></div>
+      <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;" onclick="addTravel('wishlist')">+ Add to wish list</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEMORIES: COLLECTIONS ── -->
+<div class="section" id="s-mem-collections">
+  <div class="page-title">Collections</div>
+  <div class="page-sub">Everything you've read, watched, and experienced.</div>
+  <div class="tab-row">
+    <button class="tab on" onclick="switchTab(this,'books')">📚 Books (4)</button>
+    <button class="tab" onclick="switchTab(this,'movies')">🎬 Movies</button>
+    <button class="tab" onclick="switchTab(this,'shows')">📺 Shows</button>
+    <button class="tab" onclick="switchTab(this,'live')">🎭 Live</button>
+    <button class="tab" onclick="switchTab(this,'career')">💼 Career</button>
+  </div>
+  <div class="card" id="tab-books">
+    <div class="book-item"><div class="book-cover" style="background:#4FA3A0;"></div><div><div class="book-title">East of Eden</div><div class="book-author">John Steinbeck</div><span class="book-status status-read">✓ read · Jan 2026</span></div></div>
+    <div class="book-item"><div class="book-cover" style="background:#C77E92;"></div><div><div class="book-title">Middlemarch</div><div class="book-author">George Eliot</div><span class="book-status status-reading">currently reading</span></div></div>
+    <div class="book-item"><div class="book-cover" style="background:#D08A5A;"></div><div><div class="book-title">The Brothers Karamazov</div><div class="book-author">Dostoevsky</div><span class="book-status status-read">✓ read · Mar 2026</span></div></div>
+    <div class="book-item"><div class="book-cover" style="background:#8A6BA8;"></div><div><div class="book-title">Interior Castle</div><div class="book-author">St. Teresa of Ávila</div><span class="book-status status-read">✓ read · May 2026</span></div></div>
+    <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;">+ Add book</button></div>
+  </div>
+  <div class="card" id="tab-movies" style="display:none;"><p style="color:var(--soft);font-size:14px;">No movies logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add movie</button></p></div>
+  <div class="card" id="tab-shows" style="display:none;"><p style="color:var(--soft);font-size:14px;">No shows logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add show</button></p></div>
+  <div class="card" id="tab-live" style="display:none;"><p style="color:var(--soft);font-size:14px;">No live events logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add event</button></p></div>
+  <div class="card" id="tab-career" style="display:none;"><p style="color:var(--soft);font-size:14px;">No milestones logged yet. <button class="btn btn-ghost" style="font-size:13px;margin-left:10px;">+ Add milestone</button></p></div>
+</div>
+
+<!-- ── YEAR: WORD ── -->
+<div class="section" id="s-year-word">
+  <div class="page-title">Word of the Year</div>
+  <div class="page-sub">Your theme and intention for 2026.</div>
+  <div class="woy-card">
+    <div class="woy-word">Roots</div>
+    <div class="woy-sub">This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.</div>
+  </div>
+  <div class="card" style="max-width:540px;">
+    <h3 class="lbl">update your word</h3>
+    <div class="field-row"><label>Word</label><input type="text" value="Roots"></div>
+    <div style="margin-bottom:12px;"><label style="font-size:13px;color:var(--soft);display:block;margin-bottom:6px;">What it means to you</label><textarea class="note-input" style="min-height:100px;">This year is about going deeper — faith, relationships, health, craft. Less scatter. More presence. Growing down before growing out.</textarea></div>
+    <button class="btn">Save</button>
+  </div>
+</div>
+
+<!-- ── YEAR: ANNUAL REVIEW ── -->
+<div class="section" id="s-year-review">
+  <div class="page-title">Annual Review</div>
+  <div class="page-sub">2026 at a glance — assembled from everything you've tracked.</div>
+  <div class="cards">
+    <div class="card"><h3 class="lbl">goals progress</h3><div class="goal-item"><div class="gtop"><b>Spiritual habits</b><span class="gpct">83%</span></div><div class="bar"><i style="width:83%;background:#6E9A5E"></i></div></div><div class="goal-item"><div class="gtop"><b>Physical</b><span class="gpct">70%</span></div><div class="bar"><i style="width:70%;background:#4FA3A0"></i></div></div><div class="goal-item"><div class="gtop"><b>Italian &amp; reading</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:#4F7CA8"></i></div></div><div class="goal-item"><div class="gtop"><b>Financial</b><span class="gpct">50%</span></div><div class="bar"><i style="width:50%;background:#E0B24A"></i></div></div></div>
+    <div class="card grat"><h3 class="lbl">gratitude highlights</h3><p><span class="n">1</span>Slow rosary in the rain</p><p><span class="n">2</span>Mom called just to say hi</p><p><span class="n">3</span>Lemon &amp; olive oil on warm bread</p><p style="font-size:12px;color:var(--soft);margin-top:10px;">+212 entries logged this year</p></div>
+    <div class="card"><h3 class="lbl">by the numbers</h3><div class="row"><span>Habits logged</span><span class="soft">847</span></div><div class="row"><span>Journal entries</span><span class="soft">63</span></div><div class="row"><span>Books read</span><span class="soft">4 of 12</span></div><div class="row"><span>Masses attended</span><span class="soft">142</span></div><div class="row"><span>Countries visited</span><span class="soft">1</span></div></div>
+  </div>
+</div>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════ NAV CONFIG ═══════
+const HUBS = [
+  {id:'home', label:'Home', icon:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'},
+  {id:'calendar', label:'Calendar', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
+  {id:'daily', label:'Daily', icon:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+    subs:[{id:'daily-habits',label:'Habits'},{id:'daily-journal',label:'Journal'},{id:'daily-gratitude',label:'Gratitude'},{id:'daily-examen',label:'Examen'},{id:'daily-prayer',label:'Prayer'},{id:'daily-brain',label:'Brain Dump'}]},
+  {id:'goals', label:'Life Goals', icon:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>',
+    subs:[{id:'goals-list',label:'Goals'},{id:'goals-areas',label:'7 Areas'},{id:'goals-relationships',label:'Relationships'},{id:'goals-body',label:'Body'},{id:'goals-money',label:'Money'}]},
+  {id:'mem', label:'Memories', icon:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/>',
+    subs:[{id:'mem-photos',label:'Photos'},{id:'mem-travel',label:'Travel'},{id:'mem-collections',label:'Collections'}]},
+  {id:'year', label:'Year', icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="M8 14h3"/>',
+    subs:[{id:'year-word',label:'Word of the Year'},{id:'year-review',label:'Annual Review'}]}
+];
+
+const caret = `<svg class="ca" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
+
+function buildNav(){
+  const root = document.getElementById('nav-root');
+  root.innerHTML = HUBS.map(h=>{
+    const hasSubs = h.subs && h.subs.length;
+    return `
+      <div class="nav-hub${h.id==='home'?' on':''}" data-hub="${h.id}" onclick="hubClick('${h.id}')">
+        <svg class="i" viewBox="0 0 24 24">${h.icon}</svg>${h.label}${hasSubs?caret:''}
+      </div>
+      ${hasSubs?`<div class="sub-items" id="sub-${h.id}">${h.subs.map(s=>`<div class="sub-item" data-page="${s.id}" onclick="navigate('${s.id}')">${s.label}</div>`).join('')}</div>`:''}
+    `;
+  }).join('');
+}
+
+let currentPage = 'home';
+
+function hubClick(hubId){
+  const hub = HUBS.find(h=>h.id===hubId);
+  if(!hub) return;
+  if(hub.subs && hub.subs.length){
+    // toggle sub-items
+    const subEl = document.getElementById('sub-'+hubId);
+    const hubEl = document.querySelector(`[data-hub="${hubId}"]`);
+    const isOpen = subEl.classList.contains('open');
+    subEl.classList.toggle('open', !isOpen);
+    hubEl.classList.toggle('open', !isOpen);
+    // navigate to first sub if not already on one
+    if(!isOpen) navigate(hub.subs[0].id);
+  } else {
+    navigate(hubId);
+  }
+}
+
+function navigate(pageId){
+  // hide all
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('s-'+pageId);
+  if(target) target.classList.add('active');
+  currentPage = pageId;
+  // update nav highlight
+  document.querySelectorAll('.nav-hub').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.sub-item').forEach(el=>el.classList.remove('on'));
+  // find which hub owns this page
+  const hub = HUBS.find(h=>h.id===pageId||(h.subs&&h.subs.find(s=>s.id===pageId)));
+  if(hub){
+    document.querySelector(`[data-hub="${hub.id}"]`).classList.add('on');
+    const subEl = document.getElementById('sub-'+hub.id);
+    if(subEl && hub.subs){
+      subEl.classList.add('open');
+      document.querySelector(`[data-hub="${hub.id}"]`).classList.add('open');
+      const sub = document.querySelector(`[data-page="${pageId}"]`);
+      if(sub) sub.classList.add('on');
+    }
+  }
+}
+
+buildNav();
+
+// ═══════ HABITS GRID ═══════
+const CK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
+const HB=[['Daily Mass',[1,1,1,0,1,1,0],0],['Adoration',[0,1,0,1,1,1,0],0],['Rosary',[0,0,0,0,0,1,0],0],['Strength',[1,0,1,0,1,0,0],1],['7,500 steps',[1,1,1,1,0,1,0],1],['Italian',[1,1,0,1,1,0,0],0],['Read',[0,1,0,0,1,0,0],0],['Gratitude',[1,1,1,1,1,1,0],0]];
+const todayCol=(new Date().getDay()+6)%7;
+function makeHW(){
+  let hw='<tr><th style="text-align:left"></th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr>';
+  HB.forEach(h=>{hw+='<tr><td class="first">'+h[0]+'</td>'+h[1].map((v,i)=>'<td class="c"><span class="dot '+(h[2]?'lem ':'')+(v?'on ':'')+(i===todayCol?'today':'')+'">'+(v?CK:'')+'</span></td>').join('')+'</tr>';});
+  return hw;
+}
+document.getElementById('hw-home').innerHTML = makeHW();
+const hwFull = document.getElementById('hw-full');
+if(hwFull) hwFull.innerHTML = makeHW();
+
+// ═══════ MINI WHEEL (home) ═══════
+(function(){
+  const A=[['#4FA3A0',6],['#4F7CA8',5],['#8A6BA8',7],['#D08A5A',8],['#E0B24A',5],['#C77E92',7],['#6E9A5E',8]];
+  const CX=100,CY=100,R=84,STEP=360/7;
+  function pt(r,d){const a=(d-90)*Math.PI/180;return [CX+r*Math.cos(a),CY+r*Math.sin(a)];}
+  function wedge(r,a0,a1){const[x0,y0]=pt(r,a0),[x1,y1]=pt(r,a1);return `M${CX},${CY} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z`;}
+  let s='';
+  A.forEach((a,i)=>{s+=`<path d="${wedge(R,i*STEP,(i+1)*STEP)}" fill="${a[0]}" opacity="0.13"/>`;});
+  A.forEach((a,i)=>{s+=`<path d="${wedge(R*a[1]/10,i*STEP,(i+1)*STEP)}" fill="${a[0]}" opacity="0.9"/>`;});
+  for(let i=0;i<7;i++){const[x,y]=pt(R,i*STEP);s+=`<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#274B6B" stroke-opacity="0.15"/>`;}
+  s+=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#274B6B" stroke-opacity="0.25"/>`;
+  document.getElementById('mini-home').innerHTML=s;
+})();
+
+// ═══════ BIG WHEEL (7 areas page) ═══════
+const AREAS=[
+  {name:'Physical',score:6,color:'#4FA3A0',note:'Strength training is building; steps are steady. Weight near goal.',goals:[['Fitness — strength 5×/wk + 7,500 steps',62],['Health — hold 145 lb',70]]},
+  {name:'Mental',score:5,color:'#4F7CA8',note:'Italian is the big lever this year. Reading picks up as the queue grows.',goals:[['Italian — reach B1 + Harry Potter 1',40],['Reading — 12 books in 2026',33]]},
+  {name:'Emotional',score:7,color:'#8A6BA8',note:'Gratitude and journaling are your steadiest anchors.',goals:[['Gratitude — 3 a day',80],['Journal — daily',70]]},
+  {name:'Career',score:8,color:'#D08A5A',note:'Director now — 10/10 lands with the Sr Director promotion.',goals:[['Director → Sr Director',80]]},
+  {name:'Financial',score:5,color:'#E0B24A',note:'Three clear targets: retirement, savings, clearing the loans.',goals:[['Retirement → $200k',34],['Savings → $25k',52],['Student loans → $0',30]]},
+  {name:'Relationships',score:7,color:'#C77E92',note:'Keeping your core people close and making room for love.',goals:[['Keep core people in touch',75],['Love — 1 date or event a month',0]]},
+  {name:'Spiritual',score:8,color:'#6E9A5E',note:'Your center. Daily Mass and adoration carry this one.',goals:[['Mass 5×/wk · Adoration 5×/wk',80],['Rosary + Divine Mercy weekly',85],['Confession every 2 weeks',60]]}
+];
+(function(){
+  const CX=200,CY=200,R=150,N=7,STEP=360/N;
+  function pt(r,deg){const a=(deg-90)*Math.PI/180;return [CX+r*Math.cos(a),CY+r*Math.sin(a)];}
+  function wedge(r,a0,a1){const[x0,y0]=pt(r,a0),[x1,y1]=pt(r,a1);return `M${CX},${CY} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z`;}
+  let sel=6;
+  function draw(){
+    let s='';
+    AREAS.forEach((a,i)=>{s+=`<path d="${wedge(R,i*STEP,(i+1)*STEP)}" fill="${a.color}" opacity="0.13"/>`;});
+    AREAS.forEach((a,i)=>{s+=`<path d="${wedge(R*a.score/10,i*STEP,(i+1)*STEP)}" fill="${a.color}" opacity="0.9"/>`;});
+    for(let k=1;k<=10;k++){s+=`<circle cx="${CX}" cy="${CY}" r="${R*k/10}" fill="none" stroke="#274B6B" stroke-opacity="0.10"/>`;}
+    for(let i=0;i<N;i++){const[x,y]=pt(R,i*STEP);s+=`<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#274B6B" stroke-opacity="0.18"/>`;}
+    s+=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#274B6B" stroke-opacity="0.25" stroke-width="1.5"/>`;
+    if(sel!=null){const a=AREAS[sel];s+=`<path d="${wedge(R,sel*STEP,(sel+1)*STEP)}" fill="none" stroke="${a.color}" stroke-width="4"/>`;}
+    AREAS.forEach((a,i)=>{const mid=i*STEP+STEP/2;const[lx,ly]=pt(R+26,mid);const anch=Math.cos((mid-90)*Math.PI/180)>0.25?'start':Math.cos((mid-90)*Math.PI/180)<-0.25?'end':'middle';s+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anch}" dominant-baseline="middle" font-size="13" font-weight="600" fill="${a.color}" font-family="'Avenir Next',sans-serif">${a.name}</text>`;});
+    AREAS.forEach((a,i)=>{s+=`<path class="seg" style="cursor:pointer" data-i="${i}" d="${wedge(R,i*STEP,(i+1)*STEP)}" fill="transparent"/>`;});
+    const wh=document.getElementById('big-wheel');
+    if(wh){wh.innerHTML=s;wh.querySelectorAll('.seg').forEach(el=>el.addEventListener('click',()=>{sel=+el.dataset.i;draw();detail();}));}
+  }
+  function detail(){
+    const a=AREAS[sel];
+    const el=document.getElementById('wheel-detail');
+    if(!el) return;
+    el.innerHTML=`<h2 style="font-family:var(--voice);font-weight:400;font-size:26px;margin:0"><span style="width:14px;height:14px;border-radius:50%;background:${a.color};display:inline-block;vertical-align:-2px;margin-right:8px;"></span>${a.name}</h2>`+
+      `<div style="font-size:15px;color:var(--soft);margin:4px 0 18px"><b style="font-size:22px;color:var(--ink)">${a.score}</b> / 10</div>`+
+      a.goals.map(g=>`<div style="display:flex;justify-content:space-between;font-size:14px;margin:14px 0 6px"><span>${g[0]}</span><b>${g[1]}%</b></div><div class="bar"><i style="width:${g[1]}%;background:${a.color}"></i></div>`).join('')+
+      `<div style="font-size:13px;color:var(--soft);line-height:1.6;margin:18px 0 0;background:var(--surface2);border-radius:12px;padding:12px 14px;">${a.note}</div>`+
+      `<button class="btn" style="margin-top:16px" onclick="navigate('goals-list')">Open ${a.name} goals <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
+  }
+  // Draw when section becomes visible (observe)
+  const obs=new MutationObserver(()=>{if(document.getElementById('s-goals-areas').classList.contains('active')){draw();detail();}});
+  obs.observe(document.getElementById('s-goals-areas'),{attributes:true,attributeFilter:['class']});
+  // also draw immediately if already active
+  if(document.getElementById('s-goals-areas').classList.contains('active')){draw();detail();}
+})();
+
+// ═══════ LEMON BRANCH ═══════
+const leaf=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="19" ry="8" fill="#6E9A5E"/><path d="M-17 0 L17 0" stroke="#4f7742" stroke-width="1.1"/></g>`;
+const lemon=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="17" ry="13" fill="#E7B12F"/><ellipse cx="-5" cy="-4" rx="5" ry="3" fill="#F3D06A"/><path d="M14 -2 q6 -1 8 3" stroke="#6E9A5E" stroke-width="3" fill="none" stroke-linecap="round"/></g>`;
+document.getElementById('branch').innerHTML='<path d="M205 4 C150 18 120 40 96 78 C80 104 60 120 34 128" stroke="#8a6a3a" stroke-width="4" fill="none" stroke-linecap="round"/>'+leaf(170,20,25)+leaf(196,40,-15)+leaf(120,52,40)+leaf(150,74,-10)+leaf(74,104,30)+lemon(104,92,15)+lemon(52,120,-8)+lemon(150,44,10);
+
+// ═══════ LITURGICAL + FEAST ═══════
+(function(){
+  const now=new Date();
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const ORD=['','First','Second','Third','Fourth','Fifth','Sixth','Seventh','Eighth','Ninth','Tenth','Eleventh','Twelfth','Thirteenth','Fourteenth','Fifteenth','Sixteenth','Seventeenth','Eighteenth','Nineteenth','Twentieth','Twenty-first','Twenty-second','Twenty-third','Twenty-fourth','Twenty-fifth','Twenty-sixth','Twenty-seventh','Twenty-eighth','Twenty-ninth','Thirtieth','Thirty-first','Thirty-second','Thirty-third','Thirty-fourth'];
+  function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da);}
+  function sundayOnOrBefore(d){const x=new Date(d);x.setDate(d.getDate()-d.getDay());x.setHours(0,0,0,0);return x;}
+  function litDay(d){
+    const y=d.getFullYear();const E=easter(y);
+    const ash=new Date(E);ash.setDate(E.getDate()-46);
+    const pent=new Date(E);pent.setDate(E.getDate()+49);
+    const fourthAdv=sundayOnOrBefore(new Date(y,11,24));const adv1=new Date(fourthAdv);adv1.setDate(fourthAdv.getDate()-21);
+    const ck=new Date(adv1);ck.setDate(adv1.getDate()-7);
+    if(d>=ash&&d<E) return 'Lent';if(d>=E&&d<=pent) return 'Eastertide';
+    if(d>=adv1&&d<new Date(y,11,25)) return 'Advent';if(d>=new Date(y,11,25)||d<=new Date(y,0,6)) return 'Christmas';
+    const wkSun=sundayOnOrBefore(d);const weeksToCK=Math.round((ck-wkSun)/(7*864e5));const otw=34-weeksToCK;
+    if(otw>=1&&otw<=34) return DAYS[d.getDay()]+' of the '+ORD[otw]+' Week in Ordinary Time';
+    return DAYS[d.getDay()]+' in Ordinary Time';
+  }
+  const FEASTS={'01-01':'Mary, Mother of God','03-19':'St. Joseph','03-25':'the Annunciation','06-29':'Sts. Peter and Paul','07-22':'St. Mary Magdalene','08-06':'the Transfiguration','08-08':'St. Dominic','08-15':'the Assumption of Mary','08-22':'the Queenship of Mary','09-29':'Sts. Michael, Gabriel & Raphael','10-07':'Our Lady of the Rosary','11-01':'All Saints','11-02':'All Souls','12-08':'the Immaculate Conception','12-25':'the Nativity of the Lord'};
+  const NAMEDAY={'08-08':true};
+  const mmdd=String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const litEl=document.getElementById('litday');if(litEl) litEl.textContent=litDay(now);
+  if(FEASTS[mmdd]){const fw=document.getElementById('feastwrap');if(fw) fw.innerHTML='<span class="feast">✦ '+(NAMEDAY[mmdd]?'<b>'+FEASTS[mmdd]+'</b> · your name day ✨':FEASTS[mmdd])+'</span>';}
+  const hr=now.getHours();const gEl=document.getElementById('greet');if(gEl) gEl.textContent=(hr<12?'good morning':hr<18?'good afternoon':'good evening')+', Domenica';
+  const wkSun=sundayOnOrBefore(now);const mon=new Date(wkSun);mon.setDate(wkSun.getDate()+1);const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  const MOA=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const wkr=MOA[mon.getMonth()]+' '+mon.getDate()+'–'+sun.getDate();
+  ['wkrange','wkrange2'].forEach(id=>{const el=document.getElementById(id);if(el) el.textContent=wkr;});
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current=temperature_2m,weather_code&temperature_unit=fahrenheit').then(r=>r.json()).then(j=>{const m={0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',51:'light drizzle',61:'light rain',63:'rain',80:'showers',95:'storm'}[j.current.weather_code]||'—';const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="t">'+Math.round(j.current.temperature_2m)+'°</span><span class="m">New York City<br>'+m+'</span>';}).catch(()=>{const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="m">weather offline</span>';});
+})();
+
+// ═══════ COLLECTIONS TABS ═══════
+function switchTab(btn, tabId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  ['books','movies','shows','live','career'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.style.display = t===tabId ? 'block' : 'none';
+  });
+}
+
+// ═══════ GOOGLE SHEETS SYNC ═══════
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWVMIeDgv4EOuA7oC3OnsK1hAHcUhQy2WYINmdonhKhazHGZ/exec';
+
+// Queue writes per sheet so same-tab requests never race
+const _writeQueue = {};
+function sendToSheets(sheetName, headers, row){
+  if(!_writeQueue[sheetName]) _writeQueue[sheetName] = Promise.resolve();
+  _writeQueue[sheetName] = _writeQueue[sheetName].then(()=>
+    fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({sheet:sheetName, headers, row})
+    }).catch(()=>{})
+  );
+  showToast('Saved to Google Sheets ✓');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function todayStr(){
+  return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+// — Journal —
+document.querySelector('#s-daily-journal .btn')?.addEventListener('click',()=>{
+  const mood=document.querySelector('#s-daily-journal .mood-btn.on .mood-label')?.textContent||'';
+  const entry=document.querySelector('#s-daily-journal textarea')?.value||'';
+  sendToSheets('Journal',['Date','Mood','Entry'],[todayStr(),mood,entry]);
+});
+
+// — Gratitude —
+document.querySelector('#s-daily-gratitude .btn')?.addEventListener('click',()=>{
+  const inputs=document.querySelectorAll('#s-daily-gratitude input');
+  sendToSheets('Gratitude',['Date','1','2','3'],[todayStr(),inputs[0]?.value,inputs[1]?.value,inputs[2]?.value]);
+});
+
+// — Examen —
+document.querySelector('#s-daily-examen .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
+  const ta=document.querySelectorAll('#s-daily-examen textarea');
+  sendToSheets('Examen',['Date','Presence','Gratitude','Emotions','Feature','Tomorrow'],
+    [todayStr(),ta[0]?.value,ta[1]?.value,ta[2]?.value,ta[3]?.value,ta[4]?.value]);
+});
+
+// — Prayer intention —
+document.querySelector('#s-daily-prayer .btn')?.addEventListener('click',()=>{
+  const val=document.querySelector('#s-daily-prayer input[type="text"]')?.value||'';
+  if(val) sendToSheets('Prayer',['Date','Intention'],[todayStr(),val]);
+});
+
+// — Brain Dump —
+document.querySelector('#s-daily-brain .btn')?.addEventListener('click',()=>{
+  const note=document.querySelector('#s-daily-brain textarea')?.value||'';
+  sendToSheets('BrainDump',['Date','Note'],[todayStr(),note]);
+});
+
+// — Body: weight —
+document.querySelector('#s-goals-body .card .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
+  const w=document.querySelector('#s-goals-body input[type="number"]')?.value||'';
+  if(w) sendToSheets('Body',['Date','Type','Value','Unit'],[todayStr(),'weight',w,'lb']);
+});
+
+// — Money —
+document.querySelector('#s-goals-money .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
+  const inputs=document.querySelectorAll('#s-goals-money input[type="number"]');
+  const ret=inputs[0]?.value||0, sav=inputs[1]?.value||0, loans=inputs[2]?.value||0;
+  const net=(parseFloat(ret)||0)+(parseFloat(sav)||0)-(parseFloat(loans)||0);
+  sendToSheets('Money',['Date','Retirement','Savings','Loans','NetWorth'],[todayStr(),ret,sav,loans,net]);
+});
+
+// — Relationships —
+document.querySelector('#s-goals-relationships .btn:not(.btn-ghost)')?.addEventListener('click',()=>{
+  const inputs=document.querySelectorAll('#s-goals-relationships input[type="text"]');
+  sendToSheets('Relationships',['Date','Person','How','Note'],
+    [todayStr(),inputs[0]?.value,inputs[1]?.value,inputs[2]?.value]);
+});
+
+// — Collections: book —
+document.querySelector('#tab-books .btn-ghost')?.addEventListener('click',()=>{
+  const title=prompt('Book title?'); if(!title) return;
+  const author=prompt('Author?')||'';
+  sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],
+    [todayStr(),'book',title,author,'want to read']);
+});
+
+// — Travel: add place —
+document.querySelectorAll('#s-mem-travel .btn-ghost').forEach((btn,i)=>{
+  btn.addEventListener('click',()=>{
+    const place=prompt(i===0?'Place visited?':'Place on wish list?'); if(!place) return;
+    sendToSheets('Travel',['Date','Place','Status'],[todayStr(),place,i===0?'visited':'wishlist']);
+  });
+});
+
+// ═══════ WORLD MAP ═══════
+(function(){
+  const VISITED=['Italy','France','Canada','Mexico','USA'];
+  const WISHLIST=['Greece','Portugal','Ireland','Japan'];
+  const FLAGS={'Italy':'🇮🇹','France':'🇫🇷','Canada':'🇨🇦','Mexico':'🇲🇽','USA':'🇺🇸','Greece':'🇬🇷','Portugal':'🇵🇹','Ireland':'🇮🇪','Japan':'🇯🇵','UK':'🇬🇧','Spain':'🇪🇸','Germany':'🇩🇪','Australia':'🇦🇺','Brazil':'🇧🇷','India':'🇮🇳','China':'🇨🇳','South Korea':'🇰🇷','Argentina':'🇦🇷','New Zealand':'🇳🇿'};
+  // Country polygons [lon, lat] — proper simplified outlines
+  const W={
+    'Canada':      [[-52,47],[-60,46],[-64,44],[-67,47],[-71,45],[-76,44],[-83,42],[-83,46],[-86,46],[-90,48],[-95,49],[-110,49],[-123,49],[-130,54],[-140,60],[-140,72],[-110,75],[-85,75],[-65,68],[-60,63],[-52,47]],
+    'USA':         [[-124,49],[-100,49],[-87,46],[-83,46],[-78,44],[-71,45],[-67,47],[-70,43],[-75,35],[-80,32],[-81,29],[-87,29],[-90,29],[-94,30],[-97,26],[-100,28],[-104,29],[-111,31],[-117,32],[-120,34],[-124,37],[-124,49]],
+    'Alaska':      [[-168,55],[-141,55],[-141,70],[-156,72],[-168,72],[-168,55]],
+    'Mexico':      [[-117,32],[-111,31],[-104,29],[-97,26],[-94,18],[-90,16],[-88,16],[-87,21],[-90,21],[-95,19],[-97,22],[-105,21],[-109,23],[-117,32]],
+    'Cuba':        [[-85,23],[-80,23],[-75,20],[-74,20],[-80,20],[-85,22],[-85,23]],
+    'Colombia':    [[-77,8],[-72,12],[-67,6],[-67,1],[-72,-1],[-77,1],[-77,8]],
+    'Venezuela':   [[-73,12],[-60,9],[-61,6],[-67,6],[-72,12],[-73,12]],
+    'Brazil':      [[-73,5],[-60,5],[-50,4],[-34,-4],[-35,-9],[-39,-12],[-40,-16],[-44,-18],[-48,-28],[-52,-34],[-57,-32],[-57,-22],[-60,-22],[-65,-28],[-68,-18],[-73,5]],
+    'Argentina':   [[-68,-22],[-60,-22],[-57,-32],[-56,-38],[-63,-42],[-66,-46],[-68,-54],[-72,-54],[-72,-42],[-66,-38],[-68,-28],[-68,-22]],
+    'Chile':       [[-68,-18],[-67,-20],[-69,-28],[-70,-38],[-72,-42],[-75,-52],[-68,-54],[-66,-46],[-63,-42],[-56,-38],[-57,-32],[-68,-18]],
+    'Peru':        [[-80,-2],[-73,0],[-70,2],[-68,0],[-70,-10],[-72,-14],[-70,-18],[-75,-16],[-80,-8],[-80,-2]],
+    'Iceland':     [[-24,66],[-14,66],[-13,63],[-18,63],[-24,64],[-24,66]],
+    'Norway':      [[5,58],[6,62],[5,70],[15,71],[28,71],[30,70],[28,65],[24,62],[18,59],[12,58],[5,58]],
+    'Sweden':      [[11,56],[12,56],[18,59],[20,60],[24,65],[24,68],[20,70],[15,70],[12,66],[11,64],[11,56]],
+    'Finland':     [[25,60],[28,60],[30,62],[30,70],[26,70],[22,68],[25,65],[28,62],[25,60]],
+    'UK':          [[-5,50],[-2,50],[1,51],[2,51],[0,56],[-2,57],[-4,58],[-6,58],[-5,55],[-3,54],[-3,51],[-5,50]],
+    'Ireland':     [[-10,52],[-8,51],[-6,52],[-6,55],[-8,55],[-10,54],[-10,52]],
+    'France':      [[2,51],[8,48],[7.5,47],[7,44],[3,43],[0,43],[-2,43],[-2,48],[-4,48],[-2,49],[2,51]],
+    'Spain':       [[-9,44],[-2,44],[3,43],[4,40],[2,40],[0,38],[-1,37],[-5,36],[-7,37],[-9,39],[-9,44]],
+    'Portugal':    [[-9,42],[-7,42],[-7,40],[-7,37],[-9,37],[-9,42]],
+    'Germany':     [[6,51],[8,55],[10,55],[12,54],[14,53],[15,51],[15,50],[13,48],[10,48],[8,48],[6,49],[6,51]],
+    'Poland':      [[14,54],[18,54],[24,54],[24,49],[22,49],[18,50],[14,51],[14,54]],
+    'Italy':       [[7.5,44],[10,44],[12,44],[13.5,44],[14,41],[14.5,41],[15.5,41.5],[16.2,41],[16.3,40],[17.5,40.5],[18.5,40],[16,38],[15.5,38],[15,39],[15.6,40.5],[15,41.5],[13.5,44.5],[10,45],[7.5,44]],
+    'Greece':      [[20,42],[22,41],[24,41],[26,41],[26,39],[24,37.5],[23,36.5],[22,36],[20,37],[20,38],[22,39],[20,42]],
+    'Switzerland': [[6,48],[10,48],[10,46],[6,46],[6,48]],
+    'Netherlands': [[4,53],[7,53],[7,51],[4,51],[4,53]],
+    'Austria':     [[10,48],[17,48],[17,47],[10,47],[10,48]],
+    'Denmark':     [[8,58],[12,56],[12,55],[10,55],[8,55],[8,58]],
+    'Russia':      [[27,55],[60,55],[90,53],[130,53],[141,46],[141,55],[180,68],[180,72],[100,72],[60,72],[30,72],[27,70],[27,55]],
+    'Turkey':      [[26,42],[28,42],[36,42],[44,38],[44,36],[38,36],[32,36],[28,37],[26,38],[26,42]],
+    'Morocco':     [[-6,36],[-1,36],[0,34],[-1,28],[-5,28],[-8,28],[-13,28],[-14,30],[-6,36]],
+    'Algeria':     [[-1,36],[8,37],[9,33],[9,19],[-1,19],[-8,19],[-8,28],[-1,28],[-1,36]],
+    'Nigeria':     [[3,14],[10,14],[15,12],[14,8],[10,5],[5,4],[3,6],[3,14]],
+    'Egypt':       [[25,31],[32,31],[35,29],[37,22],[33,22],[25,22],[25,31]],
+    'Kenya':       [[34,4],[41,4],[42,0],[41,-4],[37,-5],[34,0],[34,4]],
+    'South Africa':[[17,-28],[24,-28],[30,-22],[32,-24],[30,-32],[27,-34],[22,-34],[18,-32],[17,-28]],
+    'Saudi Arabia':[[37,30],[44,30],[50,26],[56,22],[56,16],[42,14],[37,16],[37,30]],
+    'Iran':        [[44,40],[50,40],[60,38],[63,36],[62,28],[58,22],[50,28],[44,36],[44,40]],
+    'India':       [[68,36],[72,34],[74,32],[76,32],[80,28],[88,28],[95,27],[97,28],[97,22],[90,22],[85,22],[82,15],[78,8],[77,8],[72,20],[68,23],[67,24],[68,28],[68,36]],
+    'China':       [[80,45],[95,46],[100,49],[110,52],[120,52],[130,47],[135,48],[135,40],[130,32],[121,30],[120,24],[108,22],[100,22],[100,28],[95,27],[88,28],[80,34],[80,45]],
+    'Japan':       [[130,31],[131,33],[133,34],[134,35],[136,36],[138,37],[140,40],[141,41],[141,44],[139,42],[136,36],[134,34],[132,33],[130,31]],
+    'South Korea': [[126,34],[128,34],[130,35],[130,38],[128,38],[125,38],[126,36],[126,34]],
+    'Thailand':    [[98,20],[100,18],[103,15],[105,12],[102,6],[100,6],[99,10],[97,14],[98,20]],
+    'Vietnam':     [[102,22],[106,22],[108,18],[108,14],[107,10],[104,10],[102,12],[102,22]],
+    'Indonesia':   [[96,5],[104,2],[108,-2],[114,-6],[120,-9],[130,-8],[135,-5],[141,-5],[141,-9],[130,-9],[120,-11],[110,-8],[104,-6],[96,0],[96,5]],
+    'Australia':   [[114,-22],[122,-18],[130,-12],[136,-12],[138,-15],[140,-18],[146,-18],[150,-23],[152,-25],[152,-32],[150,-38],[145,-38],[140,-36],[135,-35],[130,-33],[122,-34],[116,-34],[114,-22]],
+    'New Zealand': [[166,-34],[168,-44],[170,-46],[172,-44],[174,-36],[172,-34],[168,-34],[166,-34]],
+  };
+  function proj([lon,lat]){return [(lon+180)*(1000/360),(90-lat)*(500/180)];}
+  function mkPath(pts){return pts.map((p,i)=>(i?'L':'M')+proj(p).map(v=>v.toFixed(1)).join(',')).join(' ')+'Z';}
+
+  function renderMap(){
+    const svg=document.getElementById('travel-map');
+    if(!svg) return;
+    let html='';
+    Object.entries(W).forEach(([name,pts])=>{
+      const vis=VISITED.includes(name), wl=WISHLIST.includes(name);
+      const fill=vis?'#6E9A5E':wl?'#E7B12F':'#C8DCE8';
+      const op=vis||wl?'0.88':'0.55';
+      const sw=vis||wl?'1':'0.4';
+      html+=`<path d="${mkPath(pts)}" fill="${fill}" fill-opacity="${op}" stroke="#fff" stroke-width="${sw}"><title>${name}</title></path>`;
+    });
+    svg.innerHTML=html;
+    const vc=document.getElementById('tmap-vc'); if(vc) vc.textContent=VISITED.length;
+    const wc=document.getElementById('tmap-wc'); if(wc) wc.textContent=WISHLIST.length;
+  }
+
+  window.addTravel=function(status){
+    const country=prompt(status==='visited'?'Country you visited?':'Country on your wish list?');
+    if(!country) return;
+    const places=prompt('Specific places (optional)?')||'';
+    if(status==='visited') VISITED.push(country);
+    else WISHLIST.push(country);
+    renderMap();
+    sendToSheets('Travel',['Date','Country','Specific Places','Status'],[todayStr(),country,places,status]);
+  };
+
+  const obs=new MutationObserver(()=>{
+    if(document.getElementById('s-mem-travel')?.classList.contains('active')) renderMap();
+  });
+  const tEl=document.getElementById('s-mem-travel');
+  if(tEl){ obs.observe(tEl,{attributes:true,attributeFilter:['class']}); if(tEl.classList.contains('active')) renderMap(); }
+})();
+
+// — Word of Year —
+document.querySelector('#s-year-word .btn')?.addEventListener('click',()=>{
+  const word=document.querySelector('#s-year-word input[type="text"]')?.value||'';
+  const meaning=document.querySelector('#s-year-word textarea')?.value||'';
+  sendToSheets('WordOfYear',['Date','Word','Meaning'],[todayStr(),word,meaning]);
+});
+</script>

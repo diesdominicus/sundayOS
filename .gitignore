@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+
+# Secrets — never commit keys/credentials (for the future cloud phase)
+.env
+.env.*
+*.key
+*-service-account*.json
+service-account*.json
+
+# Local backups you export from the app
+life-dashboard-backup-*.json

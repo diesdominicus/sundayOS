@@ -1,0 +1,734 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Life</title>
+<style>
+  :root{
+    --ground:#ECE5D6; --surface:#FBF8F1; --surface-2:#F3EDE0;
+    --ink:#2A211C; --ink-soft:#6A5C51; --ink-faint:#9C8E80;
+    --line:#DCD2BF; --line-soft:#E6DDCB;
+    --plum:#5C2A48; --plum-bright:#7A3A60; --plum-bg:#EEDFE7;
+    --gold:#9C7A2E; --gold-bg:#F1E7CE;
+    --good:#4F6A3B; --good-bg:#E3E9D4;
+    --warn:#A9772B; --warn-bg:#F3E6CC;
+    --crit:#9B3B34;
+    --liturgy:#4F6A3B;
+    --radius:14px;
+    --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#171310; --surface:#221C18; --surface-2:#2A231D;
+      --ink:#EDE4D6; --ink-soft:#B6A796; --ink-faint:#847668;
+      --line:#362C24; --line-soft:#2E251F;
+      --plum:#D79BBF; --plum-bright:#E0AECD; --plum-bg:#3A2131;
+      --gold:#CDA85A; --gold-bg:#37301C;
+      --good:#9CB878; --good-bg:#2A3320;
+      --warn:#D7A55A; --warn-bg:#352A18;
+      --crit:#DB7A72;
+      --liturgy:#9CB878;
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#ECE5D6; --surface:#FBF8F1; --surface-2:#F3EDE0;
+    --ink:#2A211C; --ink-soft:#6A5C51; --ink-faint:#9C8E80;
+    --line:#DCD2BF; --line-soft:#E6DDCB;
+    --plum:#5C2A48; --plum-bright:#7A3A60; --plum-bg:#EEDFE7;
+    --gold:#9C7A2E; --gold-bg:#F1E7CE;
+    --good:#4F6A3B; --good-bg:#E3E9D4; --warn:#A9772B; --warn-bg:#F3E6CC; --crit:#9B3B34; --liturgy:#4F6A3B;
+  }
+  :root[data-theme="dark"]{
+    --ground:#171310; --surface:#221C18; --surface-2:#2A231D;
+    --ink:#EDE4D6; --ink-soft:#B6A796; --ink-faint:#847668;
+    --line:#362C24; --line-soft:#2E251F;
+    --plum:#D79BBF; --plum-bright:#E0AECD; --plum-bg:#3A2131;
+    --gold:#CDA85A; --gold-bg:#37301C;
+    --good:#9CB878; --good-bg:#2A3320; --warn:#D7A55A; --warn-bg:#352A18; --crit:#DB7A72; --liturgy:#9CB878;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  .app{font-family:var(--sans);color:var(--ink);background:var(--ground);min-height:100vh;display:grid;grid-template-columns:216px 1fr;letter-spacing:.1px;}
+  .num{font-variant-numeric:tabular-nums;}
+
+  .rail{border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:3px;position:sticky;top:0;height:100vh;overflow:auto;}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px;}
+  .brand .mark{width:26px;height:26px;border-radius:50%;background:var(--plum);display:grid;place-items:center;color:#FBF8F1;font-family:var(--voice);font-size:15px;}
+  :root[data-theme="dark"] .brand .mark{color:#171310;}
+  .brand b{font-weight:600;font-size:15px;}
+  .nav{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:10px;color:var(--ink-soft);font-size:14px;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:var(--sans);}
+  .nav svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .nav:hover{background:var(--surface-2);color:var(--ink);}
+  .nav.active{background:var(--plum-bg);color:var(--plum);font-weight:500;}
+  .rail .spacer{flex:1;min-height:10px;}
+  .rail .foot{font-size:12px;color:var(--ink-faint);padding:8px 11px;border-top:1px solid var(--line-soft);}
+
+  .main{padding:22px 30px 60px;max-width:1160px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .topbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;}
+  .tinybtn{font-size:12px;color:var(--ink-soft);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-family:var(--sans);display:inline-flex;gap:6px;align-items:center;}
+  .tinybtn:hover{border-color:var(--plum);color:var(--plum);}
+  .page-head{margin-bottom:20px;}
+  .page-head .eyebrow{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:13px;margin-bottom:5px;}
+  .page-head h1{font-family:var(--voice);font-weight:400;font-size:28px;margin:0;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:20px;background:var(--good-bg);color:var(--liturgy);font-weight:500;}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+
+  .masthead{display:grid;grid-template-columns:1.35fr 1fr;gap:26px;align-items:stretch;margin-bottom:22px;}
+  .greet h1{font-family:var(--voice);font-weight:400;font-size:30px;margin:2px 0 0;}
+  .greet .sub{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+  .weather{display:flex;align-items:center;gap:12px;margin-top:16px;}
+  .weather .t{font-size:26px;font-weight:600;}
+  .weather .m{font-size:13px;color:var(--ink-soft);}
+  .quote{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;justify-content:center;}
+  .quote .mark2{font-family:var(--voice);color:var(--gold);font-size:34px;line-height:.4;height:16px;}
+  .quote p{font-family:var(--voice);font-size:18px;line-height:1.5;margin:6px 0 10px;color:var(--ink);}
+  .quote cite{font-style:normal;color:var(--gold);font-size:13px;}
+
+  .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;}
+  .card.span2{grid-column:span 2;}
+  .card.span3{grid-column:span 3;}
+  .card h2{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .card h2 svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;}
+  .card h2.sacred{color:var(--gold);}
+  .card h2.sacred svg{stroke:var(--gold);}
+
+  .row{display:flex;gap:14px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line-soft);}
+  .row:last-child{border-bottom:none;}
+  .row .time{width:70px;color:var(--ink-faint);font-size:13px;}
+  .row .ev{font-size:14px;}
+  .row .ev small{display:block;color:var(--ink-soft);font-size:12px;}
+  .birthday{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--plum);background:var(--plum-bg);padding:8px 11px;border-radius:9px;}
+  .birthday svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0;}
+
+  .habits .hrow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:7px 0;}
+  .habits .hname{font-size:14px;}
+  .week{display:flex;gap:6px;}
+  .week span{width:20px;height:20px;border-radius:6px;border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;}
+  .week span.on{background:var(--good);border-color:var(--good);}
+  .week span.on svg{width:12px;height:12px;stroke:#FBF8F1;fill:none;stroke-width:2.4;}
+  :root[data-theme="dark"] .week span.on svg{stroke:#171310;}
+  .week span.today{outline:2px solid var(--plum);outline-offset:1px;}
+  .habits .foot{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:13px;color:var(--ink-soft);}
+  .streak{color:var(--warn);font-weight:500;}
+
+  .examen-card{background:var(--plum-bg);border-color:transparent;}
+  .examen-card h2{color:var(--plum);}
+  .examen-card h2 svg{stroke:var(--plum);}
+  .examen-card p{font-family:var(--voice);font-size:16px;line-height:1.5;color:var(--ink);margin:0 0 14px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--plum);color:#FBF8F1;border:none;padding:9px 15px;border-radius:9px;font-size:13px;font-family:var(--sans);cursor:pointer;}
+  :root[data-theme="dark"] .btn{color:#171310;}
+  .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
+  .btn.ghost{background:none;color:var(--plum);border:1px solid var(--plum);}
+
+  .life .larow{display:grid;grid-template-columns:80px 1fr 30px;align-items:center;gap:10px;padding:6px 0;font-size:13px;}
+  .bar{height:7px;border-radius:5px;background:var(--surface-2);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:5px;background:var(--plum);}
+  .life .val{text-align:right;color:var(--ink-soft);font-size:12px;}
+
+  .fin .big{font-size:26px;font-weight:600;}
+  .fin .cap{font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .nwrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px dashed var(--line-soft);}
+  .nwrow:last-child{border-bottom:none;}
+  .neg{color:var(--crit);}
+  .nwtrend{font-size:13px;margin:2px 0 10px;font-weight:500;}
+  .nwtrend.up{color:var(--good);} .nwtrend.down{color:var(--crit);}
+  .journal-teaser .stub{font-family:var(--voice);font-size:15px;color:var(--ink);margin:0 0 14px;line-height:1.5;}
+
+  .cal-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;}
+  .up-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:14px;gap:10px;}
+  .up-item:last-child{border-bottom:none;}
+  .up-item .when{color:var(--ink-soft);font-size:13px;white-space:nowrap;}
+
+  .heat{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:14px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
+  .heat:last-child{border-bottom:none;}
+  .heat .hn{font-size:14px;}
+  .dots{display:grid;grid-template-columns:repeat(30,1fr);gap:3px;}
+  .dots i{aspect-ratio:1;border-radius:3px;background:var(--surface-2);}
+  .dots i.on{background:var(--good);}
+  .heat .st{font-size:13px;color:var(--warn);white-space:nowrap;}
+
+  .jgrid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;}
+  textarea.entry{width:100%;min-height:220px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);color:var(--ink);font-family:var(--voice);font-size:16px;line-height:1.6;padding:14px;resize:vertical;}
+  textarea.entry:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+  .moodrow{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;}
+  .mood{padding:6px 12px;border-radius:20px;border:1px solid var(--line);font-size:13px;cursor:pointer;background:var(--surface);color:var(--ink-soft);}
+  .mood.sel{background:var(--plum-bg);border-color:var(--plum);color:var(--plum);}
+  .past-entry{padding:12px 0;border-bottom:1px solid var(--line-soft);}
+  .past-entry .pd{font-size:12px;color:var(--ink-faint);margin-bottom:4px;}
+  .past-entry .pt{font-family:var(--voice);font-size:14px;color:var(--ink);line-height:1.5;white-space:pre-wrap;}
+
+  .steps{display:flex;flex-direction:column;gap:14px;max-width:720px;}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;}
+  .step .snum{font-family:var(--voice);color:var(--gold);font-size:14px;}
+  .step h3{font-family:var(--voice);font-weight:400;font-size:19px;margin:4px 0 6px;}
+  .step p{font-size:14px;color:var(--ink-soft);line-height:1.6;margin:0 0 12px;}
+  .step textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);font-family:var(--sans);font-size:14px;padding:11px;resize:vertical;}
+  .step textarea:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+
+  .areas{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .area{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+  .area .ah{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .area .an{font-family:var(--voice);font-size:19px;}
+  .area .score{font-size:22px;font-weight:600;color:var(--plum);}
+  .area .note{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:10px;}
+  .spark{display:flex;align-items:flex-end;gap:3px;height:34px;margin-top:6px;}
+  .spark i{flex:1;background:var(--plum);opacity:.35;border-radius:2px;min-height:2px;}
+  .spark i.last{opacity:1;}
+
+  .hstats,.mny{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;}
+  .stat .sl{font-size:12px;color:var(--ink-soft);}
+  .stat .sv{font-size:24px;font-weight:600;margin-top:4px;}
+  .stat .sv.good{color:var(--good);}
+  .editwrap{font-size:24px;font-weight:600;margin-top:4px;color:var(--ink);}
+  .editwrap.neg{color:var(--crit);}
+  .editnum{font-size:24px;font-weight:600;font-family:var(--sans);border:none;background:none;color:inherit;width:7ch;border-bottom:1px dashed var(--line);padding:2px 0;}
+  .editnum:focus{outline:none;border-bottom-color:var(--plum);}
+  .networth{max-width:520px;}
+
+  .goals{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .goal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+  .goal .gh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+  .goal .gn{font-family:var(--voice);font-size:19px;}
+  .goal .gpct{font-size:15px;color:var(--plum);font-weight:600;}
+  .goal .gtarget{font-size:13px;color:var(--ink-soft);margin:6px 0 12px;}
+
+  .addrow{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .addfield{flex:1;min-width:160px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);font-family:var(--sans);font-size:14px;padding:10px 12px;}
+  .addfield:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+  .numin{border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);font-family:var(--sans);font-size:14px;padding:10px 12px;}
+  .numin:focus{outline:2px solid var(--plum);border-color:var(--plum);}
+
+  .pray-item{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line-soft);gap:10px;}
+  .pray-item:last-child{border-bottom:none;}
+  .pray-item .pt{font-size:15px;flex:1;}
+  .pray-item.answered .pt{color:var(--ink-faint);text-decoration:line-through;}
+  .pray-item .acts{display:flex;gap:6px;align-items:center;}
+  .badge-pray{font-size:11px;color:var(--plum);background:var(--plum-bg);padding:3px 9px;border-radius:12px;white-space:nowrap;cursor:pointer;}
+  .badge-ans{font-size:11px;color:var(--liturgy);background:var(--good-bg);padding:3px 9px;border-radius:12px;white-space:nowrap;cursor:pointer;}
+
+  .coll{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .cbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;cursor:pointer;}
+  .cbox:hover{border-color:var(--plum);}
+  .cbox h2{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint);display:flex;align-items:center;gap:8px;margin:0 0 8px;}
+  .cbox h2 svg{width:15px;height:15px;stroke:var(--gold);fill:none;stroke-width:1.7;}
+  .cbox .cc{font-size:24px;font-weight:600;}
+  .cbox .cl{font-size:13px;color:var(--ink-soft);}
+  .cbox ul{list-style:none;padding:0;margin:12px 0 0;}
+  .cbox ul li{font-size:13px;color:var(--ink-soft);padding:5px 0;border-top:1px solid var(--line-soft);}
+  .list-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft);gap:10px;}
+  .list-item:last-child{border-bottom:none;}
+
+  .grat-mini{margin:0;padding-left:20px;}
+  .grat-mini li{font-family:var(--voice);font-size:14px;color:var(--ink);padding:4px 0;line-height:1.4;}
+  .grat-mini li.empty{color:var(--ink-faint);}
+  .grat-in{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .gnum{width:24px;height:24px;border-radius:50%;background:var(--gold-bg);color:var(--gold);display:grid;place-items:center;font-family:var(--voice);font-size:14px;flex-shrink:0;}
+  .grat-log{margin-top:18px;border-top:1px solid var(--line-soft);padding-top:8px;}
+  .grat-day{padding:10px 0;border-bottom:1px solid var(--line-soft);}
+  .grat-day:last-child{border-bottom:none;}
+  .grat-day .gd{font-size:12px;color:var(--ink-faint);margin-bottom:6px;}
+  .grat-day ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;}
+  .grat-day li{font-size:13px;background:var(--surface-2);border-radius:8px;padding:5px 10px;color:var(--ink);}
+  .gbig{display:flex;align-items:baseline;gap:8px;margin-bottom:14px;}
+  .gbig .num{font-size:34px;font-weight:600;color:var(--gold);}
+  .gbig .glab{font-size:14px;color:var(--ink-soft);}
+
+  .x{cursor:pointer;color:var(--ink-faint);font-size:18px;background:none;border:none;padding:0 4px;line-height:1;}
+  .x:hover{color:var(--crit);}
+  .empty-note{font-size:13px;color:var(--ink-faint);padding:8px 0;}
+  .note-bar{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);background:var(--surface-2);border-radius:9px;padding:10px 12px;margin-bottom:16px;}
+  .note-bar svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0;}
+  .saved{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--plum);color:#FBF8F1;padding:9px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;}
+  :root[data-theme="dark"] .saved{color:#171310;}
+  .saved.show{opacity:1;}
+
+  @media (max-width:1000px){
+    .app{grid-template-columns:1fr;}
+    .rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;}
+    .rail .spacer,.rail .foot{display:none;}
+    .masthead,.bento,.cal-grid,.jgrid,.areas,.goals,.hstats,.mny,.coll{grid-template-columns:1fr !important;}
+    .card.span2,.card.span3{grid-column:span 1;}
+  }
+</style>
+
+<div class="app">
+  <aside class="rail" id="rail"></aside>
+  <main class="main" id="main"></main>
+</div>
+<div class="saved" id="saved">Saved</div>
+<input type="file" id="importFile" accept="application/json" style="display:none">
+
+<script>
+"use strict";
+
+/* ---------- storage ---------- */
+const KEY='life-dashboard-v1';
+function blankDay(){return {habits:{},grat:['','',''],journal:{mood:'',text:''},examen:{gratitude:'',petition:'',review:'',forgiveness:'',renewal:''}};}
+function seed(){
+  return {
+    v:1,
+    days:{},
+    habitDefs:['Daily Mass','Adoration','Rosary','5k steps','No alcohol','No smoking','No delivery'],
+    weight:{}, weightGoal:'',
+    workouts:[],
+    money:{sav:0,inv:0,debt:0,history:{}},
+    goals:[
+      {name:'Faith',target:'Daily Mass + weekly adoration',pct:0},
+      {name:'Health',target:'',pct:0},
+      {name:'Fitness',target:'',pct:0},
+      {name:'Career',target:'',pct:0},
+      {name:'Money',target:'',pct:0},
+      {name:'Love',target:'',pct:0},
+      {name:'Relationships',target:'',pct:0},
+      {name:'Italian',target:'',pct:0},
+      {name:'Home',target:'',pct:0}
+    ],
+    areas:[
+      {name:'Faith',score:3,note:''},{name:'Health',score:3,note:''},{name:'Career',score:3,note:''},
+      {name:'Love',score:3,note:''},{name:'Money',score:3,note:''},{name:'Home',score:3,note:''},{name:'Friends',score:3,note:''}
+    ],
+    prayer:[],
+    dates:[],
+    collections:{'Books':[],'Movies':[],'TV shows':[],'Live shows':[],'Travel':[],'Career milestones':[]}
+  };
+}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||seed();}catch(e){S=seed();}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+let flashT;
+function flash(msg){const el=document.getElementById('saved');el.textContent=msg||'Saved';el.classList.add('show');clearTimeout(flashT);flashT=setTimeout(()=>el.classList.remove('show'),1200);}
+
+/* ---------- date helpers ---------- */
+function iso(d){return d.toLocaleDateString('en-CA');}
+const TODAY=iso(new Date());
+function daysAgo(n){const d=new Date();d.setDate(d.getDate()-n);return iso(d);}
+function parseISO(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function prettyDate(s){const d=parseISO(s);return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '+['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]+' '+d.getDate();}
+function shortDate(s){const d=parseISO(s);return MO[d.getMonth()]+' '+d.getDate();}
+function day(d){d=d||TODAY;if(!S.days[d])S.days[d]=blankDay();return S.days[d];}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---------- liturgical season (accurate via Computus) ---------- */
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da);}
+function addDays(dt,n){const d=new Date(dt);d.setDate(d.getDate()+n);return d;}
+function season(){
+  const now=parseISO(TODAY),y=now.getFullYear();
+  const E=easter(y), ash=addDays(E,-46), palm=addDays(E,-7), pentecost=addDays(E,49);
+  const christmas=new Date(y,11,25);
+  // Advent: 4th Sunday before Christmas
+  let adv=new Date(christmas); adv.setDate(adv.getDate()-((christmas.getDay()||7)+21));
+  const epiphany=new Date(y,0,6);
+  if(now>=ash && now<addDays(E,0)) return {name:'Lent',color:'plum'};
+  if(now>=addDays(E,0) && now<=pentecost) return {name:'Easter',color:'gold'};
+  if(now>=adv && now<=new Date(y,11,24)) return {name:'Advent',color:'plum'};
+  if((now>=christmas)|| (now<=epiphany)) return {name:'Christmas',color:'gold'};
+  return {name:'Ordinary Time',color:'green'};
+}
+function seasonStyle(c){
+  if(c==='plum')return 'background:var(--plum-bg);color:var(--plum);';
+  if(c==='gold')return 'background:var(--gold-bg);color:var(--gold);';
+  return 'background:var(--good-bg);color:var(--liturgy);';
+}
+
+/* ---------- quotes ---------- */
+const QUOTES=[
+  ['Be who God meant you to be and you will set the world on fire.','St. Catherine of Siena'],
+  ["Start by doing what's necessary; then what's possible; and suddenly you are doing the impossible.",'St. Francis of Assisi'],
+  ['Pray as though everything depended on God. Work as though everything depended on you.','St. Augustine'],
+  ['Do small things with great love.','St. Teresa of Calcutta'],
+  ['Nothing is far from God.','St. Monica'],
+  ['You learn to speak by speaking, to pray by praying.','St. Francis de Sales'],
+  ['Let nothing disturb you. Whoever has God lacks nothing.','St. Teresa of Ávila'],
+  ['We must not be afraid of holiness.','St. John Paul II'],
+  ['Late have I loved you, beauty so ancient and so new.','St. Augustine'],
+  ['Charity is the sweet and holy bond which links the soul with its Creator.','St. Catherine of Siena'],
+  ['The one thing necessary is to love God and do His will.','St. Thérèse of Lisieux'],
+  ['Preach the Gospel always; when necessary, use words.','St. Francis of Assisi'],
+  ['Faith is to believe what you do not see; the reward is to see what you believe.','St. Augustine'],
+  ['God does not require that we be successful, only that we be faithful.','St. Teresa of Calcutta'],
+  ['Have patience with all things, but first of all with yourself.','St. Francis de Sales']
+];
+function quoteOfDay(){const d=parseISO(TODAY);const doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);return QUOTES[doy%QUOTES.length];}
+
+/* ---------- streaks ---------- */
+function habitDone(name,d){const x=S.days[d];return !!(x&&x.habits&&x.habits[name]);}
+function habitStreak(name){let i=habitDone(name,TODAY)?0:1,s=0;for(;;i++){if(habitDone(name,daysAgo(i)))s++;else break;}return s;}
+function gratDone(d){const x=S.days[d];return !!(x&&x.grat&&x.grat.some(v=>v&&v.trim()));}
+function gratStreak(){let i=gratDone(TODAY)?0:1,s=0;for(;;i++){if(gratDone(daysAgo(i)))s++;else break;}return s;}
+
+/* ---------- money ---------- */
+function netWorth(){return (+S.money.sav||0)+(+S.money.inv||0)-(+S.money.debt||0);}
+function lastMonthNW(){const keys=Object.keys(S.money.history).sort();const cur=TODAY.slice(0,7);const prev=keys.filter(k=>k<cur);return prev.length?S.money.history[prev[prev.length-1]]:null;}
+function usd(n){return '$'+Math.round(n).toLocaleString('en-US');}
+
+/* ---------- upcoming dates ---------- */
+const HOLYDAYS=[['01-01','Mary, Mother of God'],['08-15','Assumption of Mary'],['11-01','All Saints'],['12-08','Immaculate Conception'],['12-25','Christmas']];
+function daysUntil(mmdd){const now=parseISO(TODAY);const y=now.getFullYear();const[mm,dd]=mmdd.split('-').map(Number);let t=new Date(y,mm-1,dd);if(t<now)t=new Date(y+1,mm-1,dd);return Math.round((t-now)/864e5);}
+function untilLabel(n){return n===0?'today':n===1?'tomorrow':'in '+n+' days';}
+
+/* ---------- icons ---------- */
+const I={
+  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+  cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  habit:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>',
+  health:'<path d="M3 12h4l2 5 4-12 2 7h6"/>',
+  journal:'<path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+  heart:'<path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/>',
+  examen:'<path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/>',
+  pray:'<path d="M12 3c2 3 5 5 5 9a5 5 0 01-10 0c0-2 1-3 2-4 .5 2 2 2 2 2 0-3-1-5 1-7z"/>',
+  goal:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',
+  areas:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>',
+  money:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
+  coll:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  book:'<path d="M4 4h13l3 3v13H4z"/><path d="M12 7v10M8 12h8"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  list:'<path d="M4 6h16M4 12h16M4 18h10"/>',
+  check:'<path d="M5 12l5 5L20 7"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  cake:'<path d="M4 20h16v-6H4zM6 14v-3M12 14V9M18 14v-3M12 6V4"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  pencil:'<path d="M4 20h4L18 10l-4-4L4 16z"/>',
+  down:'<path d="M12 4v12M6 12l6 6 6-6M4 20h16"/>',
+  up:'<path d="M12 20V8M6 12l6-6 6 6M4 4h16"/>'
+};
+function svg(p){return '<svg viewBox="0 0 24 24">'+p+'</svg>';}
+
+/* ---------- nav ---------- */
+const NAV=[
+  ['home','Home',I.home],['calendar','Calendar',I.cal],['habits','Habits',I.habit],['health','Health',I.health],
+  ['journal','Journal',I.journal],['gratitude','Gratitude',I.heart],['examen','Examen',I.examen],['prayer','Prayer',I.pray],
+  ['goals','Goals',I.goal],['areas','7 Areas',I.areas],['money','Money',I.money],['collections','Collections',I.coll]
+];
+let current='home', openColl=null;
+function renderRail(){
+  document.getElementById('rail').innerHTML=
+    '<div class="brand"><span class="mark">✦</span><b>my life</b></div>'+
+    NAV.map(n=>`<button class="nav${n[0]===current?' active':''}" data-view="${n[0]}">${svg(n[2])}${n[1]}</button>`).join('')+
+    '<div class="spacer"></div>'+
+    '<div class="foot">Saved on this device</div>';
+}
+
+/* ---------- render dispatch ---------- */
+const topbar='<div class="topbar"><button class="tinybtn" data-act="export">'+svg(I.down)+'Backup</button><button class="tinybtn" data-act="import">'+svg(I.up)+'Restore</button></div>';
+function render(){
+  renderRail();
+  const m=document.getElementById('main');
+  const fn={home:vHome,calendar:vCal,habits:vHabits,health:vHealth,journal:vJournal,gratitude:vGrat,examen:vExamen,prayer:vPrayer,goals:vGoals,areas:vAreas,money:vMoney,collections:vColl}[current];
+  m.innerHTML='<section class="view active">'+topbar+fn()+'</section>';
+  if(current==='home')fillWeather();
+}
+
+/* ---------- HOME ---------- */
+function vHome(){
+  const q=quoteOfDay(), se=season();
+  const hr=new Date().getHours(); const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  const doneToday=S.habitDefs.filter(h=>habitDone(h,TODAY)).length;
+  // upcoming
+  const ups=S.dates.map(d=>({...d,n:daysUntil(d.mmdd)})).sort((a,b)=>a.n-b.n).slice(0,4);
+  const upHtml = ups.length? ups.map(u=>`<div class="up-item"><span>${esc(u.name)}</span><span class="when">${shortDate(mmddThisYear(u.mmdd))} · ${untilLabel(u.n)}</span></div>`).join('') : '<div class="empty-note">Add birthdays and dates in the Calendar tab.</div>';
+  // habits week
+  const habitRows=S.habitDefs.map(h=>{
+    let cells='';for(let i=6;i>=0;i--){const d=daysAgo(i);const on=habitDone(h,d);cells+=`<span class="${on?'on':''}${i===0?' today':''}" data-act="toggle" data-habit="${esc(h)}" data-date="${d}">${on?svg(I.check):''}</span>`;}
+    return `<div class="hrow"><span class="hname">${esc(h)}</span><span class="week">${cells}</span></div>`;
+  }).join('');
+  // areas mini
+  const areaMini=S.areas.map(a=>`<div class="larow"><span>${esc(a.name)}</span><span class="bar"><i style="width:${(a.score/5*100)}%"></i></span><span class="val num">${(+a.score).toFixed(1)}</span></div>`).join('');
+  // money
+  const nw=netWorth(), lm=lastMonthNW();
+  let trend='';if(lm){const p=(nw-lm)/lm*100;const up=p>=0;trend=`<div class="nwtrend ${up?'up':'down'}">${up?'▲ ':'▼ '}${Math.abs(p).toFixed(1)}% since last month</div>`;}
+  // journal + grat teasers
+  const jt=day(TODAY).journal.text|| (function(){for(let i=1;i<60;i++){const d=S.days[daysAgo(i)];if(d&&d.journal.text)return d.journal.text;}return '';})();
+  const g=day(TODAY).grat;
+  const gratMini=`<ol class="grat-mini">${[0,1,2].map(i=>g[i]&&g[i].trim()?`<li>${esc(g[i])}</li>`:`<li class="empty">Add ${['a first','a second','a third'][i]}…</li>`).join('')}</ol>`;
+
+  return `
+  <div class="masthead">
+    <div class="greet">
+      <div class="page-head eyebrow" style="margin:0 0 5px;"><span>${prettyDate(TODAY)}</span><span class="chip" style="${seasonStyle(se.color)}"><span class="dot"></span>${se.name}</span></div>
+      <h1>${greet}, Domenica</h1>
+      <div class="sub">${doneToday} of ${S.habitDefs.length} habits done today${ups.length?` · ${ups[0].name}'s ${ups[0].type||'date'} ${untilLabel(ups[0].n)}`:''}</div>
+      <div class="weather" id="weather"><span class="m">loading weather…</span></div>
+    </div>
+    <div class="quote"><span class="mark2">&ldquo;</span><p>${esc(q[0])}</p><cite>— ${esc(q[1])}</cite></div>
+  </div>
+  <div class="bento">
+    <div class="card"><h2 class="sacred">${svg(I.book)}Today's readings</h2>
+      <p style="font-size:14px;color:var(--ink-soft);line-height:1.6;margin:0 0 12px;">The daily Mass readings open on the USCCB site. Auto-feed arrives with the cloud migration.</p>
+      <a class="btn" href="https://bible.usccb.org/daily-bible-reading" target="_blank" rel="noopener">${svg(I.arrow)}Open today's readings</a>
+    </div>
+    <div class="card"><h2>${svg(I.cake)}Upcoming</h2>${upHtml}</div>
+    <div class="card examen-card"><h2>${svg(I.examen)}Evening examen</h2><p>Where did I feel God's presence today? Where did I turn from it?</p><button class="btn" data-act="goto" data-to="examen">${svg(I.arrow)}Begin tonight's examen</button></div>
+    <div class="card span2 habits"><h2>${svg(I.habit)}Habits · this week</h2>${habitRows}<div class="foot"><span>7 days · today outlined</span><span>${doneToday} of ${S.habitDefs.length} done today</span></div></div>
+    <div class="card life"><h2>${svg(I.areas)}7 areas of life</h2>${areaMini}</div>
+    <div class="card fin"><h2>${svg(I.money)}Net worth</h2><div class="big num">${usd(nw)}</div>${trend}<div class="cap">savings + investments − debt</div>
+      <div class="nwrow"><span>Savings</span><span class="num">${usd(+S.money.sav||0)}</span></div>
+      <div class="nwrow"><span>Investments</span><span class="num">${usd(+S.money.inv||0)}</span></div>
+      <div class="nwrow"><span>Debt</span><span class="num neg">−${usd(+S.money.debt||0)}</span></div>
+    </div>
+    <div class="card journal-teaser"><h2>${svg(I.journal)}Journal</h2><p class="stub">${jt?('"'+esc(jt.slice(0,90))+(jt.length>90?'…':'')+'"'):'Nothing written yet.'}</p><button class="btn" data-act="goto" data-to="journal">${svg(I.pencil)}Write today's entry</button></div>
+    <div class="card" data-act="goto" data-to="gratitude" style="cursor:pointer;"><h2 class="sacred">${svg(I.heart)}Grateful today</h2>${gratMini}</div>
+  </div>`;
+}
+function mmddThisYear(mmdd){return new Date().getFullYear()+'-'+mmdd;}
+
+async function fillWeather(){
+  const el=document.getElementById('weather');if(!el)return;
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&current=temperature_2m,weather_code&temperature_unit=fahrenheit');
+    const j=await r.json();const t=Math.round(j.current.temperature_2m);const desc=wcode(j.current.weather_code);
+    el.innerHTML=`<span class="t num">${t}°</span><span class="m">New York City<br>${desc}</span>`;
+  }catch(e){el.innerHTML='<span class="m">Weather unavailable offline</span>';}
+}
+function wcode(c){const m={0:'clear sky',1:'mainly clear',2:'partly cloudy',3:'overcast',45:'fog',48:'fog',51:'light drizzle',53:'drizzle',55:'heavy drizzle',61:'light rain',63:'rain',65:'heavy rain',71:'light snow',73:'snow',75:'heavy snow',80:'rain showers',81:'rain showers',82:'heavy showers',95:'thunderstorm'};return m[c]||'—';}
+
+/* ---------- CALENDAR ---------- */
+function vCal(){
+  const ups=S.dates.map((d,i)=>({...d,i,n:daysUntil(d.mmdd)})).sort((a,b)=>a.n-b.n);
+  const holy=HOLYDAYS.map(h=>({name:h[1],mmdd:h[0],n:daysUntil(h[0])})).sort((a,b)=>a.n-b.n).slice(0,4);
+  return `<div class="page-head"><div class="eyebrow"><span>Important dates &amp; reminders</span></div><h1>Calendar</h1></div>
+  <div class="note-bar">${svg(I.info)}Google Calendar events and auto Mass-readings connect when you migrate to the cloud. Birthdays &amp; dates below work now.</div>
+  <div class="cal-grid">
+    <div class="card"><h2>${svg(I.cake)}Birthdays &amp; dates</h2>
+      <div class="addrow">
+        <input class="addfield" id="dateName" placeholder="Name or occasion (e.g. Mom's birthday)">
+        <input class="numin" type="date" id="dateWhen">
+        <button class="btn" data-act="add-date">${svg(I.plus)}Add</button>
+      </div>
+      ${ups.length?ups.map(u=>`<div class="up-item"><span>${esc(u.name)}</span><span class="when">${shortDate(mmddThisYear(u.mmdd))} · ${untilLabel(u.n)} <button class="x" data-act="del-date" data-i="${u.i}">×</button></span></div>`).join(''):'<div class="empty-note">No dates yet — add your first above.</div>'}
+    </div>
+    <div class="card"><h2>${svg(I.pray)}Holy days ahead</h2>${holy.map(h=>`<div class="up-item"><span>${esc(h.name)}</span><span class="when">${shortDate(mmddThisYear(h.mmdd))}</span></div>`).join('')}</div>
+  </div>`;
+}
+
+/* ---------- HABITS ---------- */
+function vHabits(){
+  const rows=S.habitDefs.map(h=>{
+    let dots='';for(let i=29;i>=0;i--){dots+=`<i class="${habitDone(h,daysAgo(i))?'on':''}"></i>`;}
+    return `<div class="heat"><span class="hn">${esc(h)}</span><div class="dots">${dots}</div><span class="st">🔥 ${habitStreak(h)}</span></div>`;
+  }).join('');
+  return `<div class="page-head"><div class="eyebrow"><span>Last 30 days · tap this week on Home to check off</span></div><h1>Habits</h1></div>
+  <div class="card span3"><h2>${svg(I.habit)}30-day consistency</h2>${rows}</div>
+  <div class="card" style="margin-top:16px;max-width:520px;"><h2>${svg(I.plus)}Manage habits</h2>
+    <div class="addrow"><input class="addfield" id="habitName" placeholder="New habit"><button class="btn" data-act="add-habit">${svg(I.plus)}Add</button></div>
+    ${S.habitDefs.map((h,i)=>`<div class="list-item"><span>${esc(h)}</span><button class="x" data-act="del-habit" data-i="${i}">×</button></div>`).join('')}
+  </div>`;
+}
+
+/* ---------- HEALTH ---------- */
+function vHealth(){
+  const wkeys=Object.keys(S.weight).sort();
+  const cur=wkeys.length?S.weight[wkeys[wkeys.length-1]]:'';
+  const last8=wkeys.slice(-12);
+  const vals=last8.map(k=>+S.weight[k]);
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const spark=last8.length?`<div class="spark" style="height:120px;">${last8.map((k,idx)=>{const v=+S.weight[k];const h=max===min?60:((v-min)/(max-min)*80+15);return `<i class="${idx===last8.length-1?'last':''}" style="height:${h}%" title="${k}: ${v}"></i>`;}).join('')}</div>`:'<div class="empty-note">Log your weight to see the trend.</div>';
+  const weekStart=daysAgo(new Date().getDay());
+  const wcount=S.workouts.filter(w=>w.date>=weekStart).length;
+  return `<div class="page-head"><div class="eyebrow"><span>${MO[new Date().getMonth()]} ${new Date().getFullYear()}</span></div><h1>Health</h1></div>
+  <div class="hstats">
+    <div class="stat"><div class="sl">Today's weight</div><div class="editwrap"><input class="editnum num" data-bind="weight.${TODAY}" data-type="num" value="${cur||''}" placeholder="—"> lb</div></div>
+    <div class="stat"><div class="sl">Goal weight</div><div class="editwrap"><input class="editnum num" data-bind="weightGoal" data-type="num" value="${esc(S.weightGoal)}" placeholder="—"> lb</div></div>
+    <div class="stat"><div class="sl">Workouts this week</div><div class="sv good num">${wcount}</div></div>
+  </div>
+  <div class="cal-grid">
+    <div class="card"><h2>${svg(I.health)}Weight trend</h2>${spark}</div>
+    <div class="card"><h2>${svg(I.habit)}Workouts</h2>
+      <div class="addrow"><input class="addfield" id="woName" placeholder="e.g. Pilates, 3-mile run"><button class="btn" data-act="add-workout">${svg(I.plus)}Log</button></div>
+      ${S.workouts.slice().reverse().slice(0,10).map((w)=>`<div class="list-item"><span class="ev">${esc(w.name)}<small style="color:var(--ink-faint);">${shortDate(w.date)}</small></span><button class="x" data-act="del-workout" data-id="${w.id}">×</button></div>`).join('')||'<div class="empty-note">No workouts logged yet.</div>'}
+    </div>
+  </div>`;
+}
+
+/* ---------- JOURNAL ---------- */
+const MOODS=['Peaceful','Grateful','Anxious','Tired','Joyful'];
+function vJournal(){
+  const j=day(TODAY).journal;
+  const past=Object.keys(S.days).filter(d=>d!==TODAY&&S.days[d].journal.text).sort().reverse().slice(0,20);
+  return `<div class="page-head"><div class="eyebrow"><span>${prettyDate(TODAY)}</span></div><h1>Journal</h1></div>
+  <div class="jgrid">
+    <div class="card"><h2>${svg(I.pencil)}Today's entry</h2>
+      <div class="moodrow">${MOODS.map(m=>`<span class="mood ${j.mood===m?'sel':''}" data-act="mood" data-mood="${m}">${m}</span>`).join('')}</div>
+      <textarea class="entry" data-bind="day.journal.text" placeholder="What happened today, and where was God in it?">${esc(j.text)}</textarea>
+      <div style="margin-top:12px;"><button class="btn" data-act="flash">${svg(I.check)}Saved automatically</button></div>
+    </div>
+    <div class="card"><h2>${svg(I.list)}Recent entries</h2>
+      ${past.length?past.map(d=>`<div class="past-entry"><div class="pd">${shortDate(d)}${S.days[d].journal.mood?' · '+S.days[d].journal.mood:''}</div><div class="pt">${esc(S.days[d].journal.text.slice(0,140))}${S.days[d].journal.text.length>140?'…':''}</div></div>`).join(''):'<div class="empty-note">Past entries appear here.</div>'}
+    </div>
+  </div>`;
+}
+
+/* ---------- GRATITUDE ---------- */
+function vGrat(){
+  const g=day(TODAY).grat;
+  const logDays=Object.keys(S.days).filter(gratDone).sort().reverse();
+  const totalDays=logDays.length;
+  const thisMonth=logDays.filter(d=>d.slice(0,7)===TODAY.slice(0,7)).length;
+  const log=logDays.filter(d=>d!==TODAY).slice(0,30);
+  return `<div class="page-head"><div class="eyebrow"><span>Three things, every day</span></div><h1>Gratitude</h1></div>
+  <div class="jgrid">
+    <div class="card"><h2 class="sacred">${svg(I.heart)}Today — ${shortDate(TODAY)}</h2>
+      ${[0,1,2].map(i=>`<div class="grat-in"><span class="gnum">${i+1}</span><input class="addfield" data-bind="day.grat.${i}" value="${esc(g[i])}" placeholder="Something you're thankful for…"></div>`).join('')}
+      <button class="btn" style="margin-top:6px;" data-act="flash">${svg(I.check)}Saved automatically</button>
+    </div>
+    <div class="card"><h2>${svg(I.habit)}Your practice</h2>
+      <div class="gbig"><span class="num">${gratStreak()}</span><span class="glab">day streak</span></div>
+      <div class="nwrow"><span>Days logged this month</span><span class="num">${thisMonth}</span></div>
+      <div class="nwrow"><span>Days logged in total</span><span class="num">${totalDays}</span></div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:14px 0 0;line-height:1.5;">A little each day. It doesn't have to be profound — small counts.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px;"><h2>${svg(I.list)}Your gratitude log</h2>
+    ${log.length?`<div class="grat-log" style="margin-top:0;border-top:none;padding-top:0;">${log.map(d=>`<div class="grat-day"><div class="gd">${shortDate(d)}</div><ul>${S.days[d].grat.filter(x=>x&&x.trim()).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}</div>`:'<div class="empty-note">Your past days will collect here.</div>'}
+  </div>`;
+}
+
+/* ---------- EXAMEN ---------- */
+const STEPS=[['I · Gratitude','Give thanks for today\'s gifts','Look back over the day. What are you grateful for, big or small?','gratitude'],
+['II · Petition','Ask for light','Ask the Holy Spirit to help you see the day honestly.','petition'],
+['III · Review','Walk through the day','Where did you feel God\'s presence? Where did you turn away?','review'],
+['IV · Forgiveness','Ask pardon for failings','Name where you fell short, and ask for mercy.','forgiveness'],
+['V · Renewal','Resolve for tomorrow','What one thing will you do differently tomorrow?','renewal']];
+function vExamen(){
+  const e=day(TODAY).examen;
+  return `<div class="page-head"><div class="eyebrow"><span>Ignatian examen · ${prettyDate(TODAY)}</span></div><h1>Evening examen</h1></div>
+  <div class="steps">
+    ${STEPS.map(s=>`<div class="step"><div class="snum">${s[0]}</div><h3>${s[1]}</h3><p>${s[2]}</p><textarea data-bind="day.examen.${s[3]}" placeholder="…">${esc(e[s[3]])}</textarea></div>`).join('')}
+    <button class="btn" data-act="flash">${svg(I.check)}Saved automatically</button>
+  </div>`;
+}
+
+/* ---------- PRAYER ---------- */
+function vPrayer(){
+  return `<div class="page-head"><div class="eyebrow"><span>Who and what you're lifting up</span></div><h1>Prayer intentions</h1></div>
+  <div class="card" style="max-width:720px;">
+    <div class="addrow"><input class="addfield" id="prayText" placeholder="Add someone or something to pray for…"><button class="btn" data-act="add-pray">${svg(I.plus)}Add</button></div>
+    ${S.prayer.length?S.prayer.map((p,i)=>{const n=Math.round((parseISO(TODAY)-parseISO(p.since))/864e5);return `<div class="pray-item ${p.answered?'answered':''}"><span class="pt">${esc(p.text)}</span><span class="acts">${p.answered?'<span class="badge-ans" data-act="unanswer" data-i="'+i+'">✓ answered</span>':'<span class="badge-pray" data-act="answer" data-i="'+i+'">praying · '+n+'d</span>'}<button class="x" data-act="del-pray" data-i="${i}">×</button></span></div>`;}).join(''):'<div class="empty-note">Your intentions will appear here. Tap "praying" when a prayer is answered.</div>'}
+  </div>`;
+}
+
+/* ---------- GOALS ---------- */
+function vGoals(){
+  return `<div class="page-head"><div class="eyebrow"><span>${new Date().getFullYear()}</span></div><h1>Goals</h1></div>
+  <div class="addrow" style="max-width:520px;"><input class="addfield" id="goalName" placeholder="New goal"><button class="btn" data-act="add-goal">${svg(I.plus)}Add</button></div>
+  <div class="goals">
+    ${S.goals.map((g,i)=>`<div class="goal"><div class="gh"><span class="gn">${esc(g.name)}</span><span class="gpct num">${g.pct||0}%</span></div>
+      <input class="addfield" data-bind="goals.${i}.target" value="${esc(g.target)}" placeholder="What does progress look like?" style="margin:8px 0 12px;">
+      <input type="range" min="0" max="100" step="5" value="${g.pct||0}" data-bind="goals.${i}.pct" data-type="num" data-rerender="1">
+      <div style="text-align:right;"><button class="x" data-act="del-goal" data-i="${i}">×</button></div>
+    </div>`).join('')}
+  </div>`;
+}
+
+/* ---------- 7 AREAS ---------- */
+function vAreas(){
+  return `<div class="page-head"><div class="eyebrow"><span>Check in · rate each 1–5</span></div><h1>7 areas of life</h1></div>
+  <div class="areas">
+    ${S.areas.map((a,i)=>`<div class="area"><div class="ah"><span class="an">${esc(a.name)}</span><span class="score num">${(+a.score).toFixed(1)}</span></div>
+      <div class="bar"><i style="width:${a.score/5*100}%"></i></div>
+      <input type="range" min="1" max="5" step="0.5" value="${a.score}" data-bind="areas.${i}.score" data-type="num" data-rerender="1" style="margin-top:12px;">
+      <textarea class="step" style="width:100%;min-height:54px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--ink);font-family:var(--sans);font-size:13px;padding:10px;margin-top:10px;resize:vertical;" data-bind="areas.${i}.note" placeholder="A note for this area…">${esc(a.note)}</textarea>
+    </div>`).join('')}
+  </div>`;
+}
+
+/* ---------- MONEY ---------- */
+function vMoney(){
+  const nw=netWorth(), lm=lastMonthNW();
+  let trend='';if(lm){const p=(nw-lm)/lm*100;const up=p>=0;trend=`<div class="nwtrend ${up?'up':'down'}" id="nwtrend">${up?'▲ ':'▼ '}${Math.abs(p).toFixed(1)}% since last month</div>`;}else{trend='<div class="nwtrend" id="nwtrend" style="color:var(--ink-faint);">Save this month to start tracking change</div>';}
+  const hist=Object.keys(S.money.history).sort().reverse();
+  return `<div class="page-head"><div class="eyebrow"><span>Update these three numbers once a month</span></div><h1>Money</h1></div>
+  <div class="mny">
+    <div class="stat"><div class="sl">Savings</div><div class="editwrap">$<input class="editnum num" data-bind="money.sav" data-type="num" data-money="1" value="${(+S.money.sav||0).toLocaleString('en-US')}"></div></div>
+    <div class="stat"><div class="sl">Investments</div><div class="editwrap">$<input class="editnum num" data-bind="money.inv" data-type="num" data-money="1" value="${(+S.money.inv||0).toLocaleString('en-US')}"></div></div>
+    <div class="stat"><div class="sl">Debt</div><div class="editwrap neg">$<input class="editnum num" data-bind="money.debt" data-type="num" data-money="1" value="${(+S.money.debt||0).toLocaleString('en-US')}"></div></div>
+  </div>
+  <div class="card networth"><h2>${svg(I.money)}Net worth</h2><div class="big num" id="networth">${usd(nw)}</div>${trend}<div class="cap">savings + investments − debt</div>
+    <div style="margin-top:14px;"><button class="btn" data-act="save-month">${svg(I.check)}Save this month (${MO[new Date().getMonth()]})</button></div>
+    ${hist.length?`<div style="margin-top:16px;">${hist.slice(0,6).map(k=>{const[y,mm]=k.split('-');return `<div class="nwrow"><span>${MO[+mm-1]} ${y}</span><span class="num">${usd(S.money.history[k])}</span></div>`;}).join('')}</div>`:''}
+  </div>
+  <div class="note-bar" style="max-width:520px;margin-top:16px;">${svg(I.info)}No bank connection — just three numbers you edit each month.</div>`;
+}
+
+/* ---------- COLLECTIONS ---------- */
+const COLLICON={'Books':I.book,'Movies':I.coll,'TV shows':I.coll,'Live shows':I.pray,'Travel':I.areas,'Career milestones':I.goal};
+function vColl(){
+  if(openColl){
+    const items=S.collections[openColl]||[];
+    return `<div class="page-head"><div class="eyebrow"><span data-act="back-coll" style="cursor:pointer;color:var(--plum);">← Collections</span></div><h1>${esc(openColl)}</h1></div>
+    <div class="card" style="max-width:640px;">
+      <div class="addrow"><input class="addfield" id="itemText" placeholder="Add to ${esc(openColl)}…"><button class="btn" data-act="add-item">${svg(I.plus)}Add</button></div>
+      ${items.length?items.slice().reverse().map((it,ri)=>`<div class="list-item"><span>${esc(it)}</span><button class="x" data-act="del-item" data-i="${items.length-1-ri}">×</button></div>`).join(''):'<div class="empty-note">Nothing here yet — add your first.</div>'}
+    </div>`;
+  }
+  return `<div class="page-head"><div class="eyebrow"><span>Your logs · click any to open</span></div><h1>Collections</h1></div>
+  <div class="coll">
+    ${Object.keys(S.collections).map(c=>{const items=S.collections[c];return `<div class="cbox" data-act="open-coll" data-coll="${esc(c)}"><h2>${svg(COLLICON[c]||I.coll)}${esc(c)}</h2><div class="cc num">${items.length}</div><div class="cl">entries</div><ul>${items.slice(-3).reverse().map(x=>`<li>${esc(x)}</li>`).join('')||'<li style="color:var(--ink-faint);">empty</li>'}</ul></div>`;}).join('')}
+  </div>
+  <div class="addrow" style="max-width:420px;margin-top:18px;"><input class="addfield" id="collName" placeholder="New collection"><button class="btn" data-act="add-coll">${svg(I.plus)}Add</button></div>`;
+}
+
+/* ---------- path set ---------- */
+function setP(root,path,val){const ks=path.split('.');const last=ks.pop();let o=root;ks.forEach(k=>{o=o[k];});o[last]=val;}
+
+/* ---------- events ---------- */
+document.addEventListener('input',e=>{
+  const el=e.target.closest('[data-bind]');if(!el)return;
+  let path=el.dataset.bind,root=S;
+  if(path.startsWith('day.')){root=day();path=path.slice(4);}
+  let v=el.value;
+  if(el.dataset.type==='num')v=parseFloat((v||'').replace(/[^0-9.\-]/g,''))||0;
+  setP(root,path,v);save();
+  if(el.dataset.money){const nw=netWorth();const ne=document.getElementById('networth');if(ne)ne.textContent=usd(nw);const lm=lastMonthNW(),te=document.getElementById('nwtrend');if(te&&lm){const p=(nw-lm)/lm*100,up=p>=0;te.textContent=(up?'▲ ':'▼ ')+Math.abs(p).toFixed(1)+'% since last month';te.className='nwtrend '+(up?'up':'down');}}
+  if(el.dataset.rerender){ // update sibling % / score label live without losing slider focus
+    const wrap=el.closest('.goal, .area');
+    if(wrap){const pct=wrap.querySelector('.gpct');if(pct)pct.textContent=(el.value)+'%';const sc=wrap.querySelector('.score');if(sc)sc.textContent=(+el.value).toFixed(1);const bar=wrap.querySelector('.bar i');if(bar)bar.style.width=(el.dataset.bind.includes('areas')?(el.value/5*100):el.value)+'%';}
+  }
+});
+function val(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function clearIn(id){const el=document.getElementById(id);if(el)el.value='';}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]');if(!a)return;
+  const act=a.dataset.act;
+  switch(act){
+    case 'goto':current=a.dataset.to;render();window.scrollTo(0,0);break;
+    case 'toggle':{const d=day(a.dataset.date);d.habits[a.dataset.habit]=!d.habits[a.dataset.habit];save();render();break;}
+    case 'mood':{const j=day().journal;j.mood=j.mood===a.dataset.mood?'':a.dataset.mood;save();render();break;}
+    case 'flash':flash('Saved');break;
+    case 'add-date':{const nm=val('dateName'),w=val('dateWhen');if(!nm||!w)return;S.dates.push({name:nm,mmdd:w.slice(5),type:'date'});save();render();break;}
+    case 'del-date':S.dates.splice(+a.dataset.i,1);save();render();break;
+    case 'add-habit':{const n=val('habitName');if(!n)return;S.habitDefs.push(n);save();render();break;}
+    case 'del-habit':S.habitDefs.splice(+a.dataset.i,1);save();render();break;
+    case 'add-workout':{const n=val('woName');if(!n)return;S.workouts.push({id:Date.now(),name:n,date:TODAY});save();render();break;}
+    case 'del-workout':S.workouts=S.workouts.filter(w=>w.id!=a.dataset.id);save();render();break;
+    case 'add-pray':{const t=val('prayText');if(!t)return;S.prayer.unshift({text:t,since:TODAY,answered:false});save();render();break;}
+    case 'answer':S.prayer[+a.dataset.i].answered=true;save();render();break;
+    case 'unanswer':S.prayer[+a.dataset.i].answered=false;save();render();break;
+    case 'del-pray':S.prayer.splice(+a.dataset.i,1);save();render();break;
+    case 'add-goal':{const n=val('goalName');if(!n)return;S.goals.push({name:n,target:'',pct:0});save();render();break;}
+    case 'del-goal':S.goals.splice(+a.dataset.i,1);save();render();break;
+    case 'save-month':{S.money.history[TODAY.slice(0,7)]=netWorth();save();render();flash('Month saved');break;}
+    case 'open-coll':openColl=a.dataset.coll;render();window.scrollTo(0,0);break;
+    case 'back-coll':openColl=null;render();break;
+    case 'add-item':{const t=val('itemText');if(!t||!openColl)return;S.collections[openColl].push(t);save();render();break;}
+    case 'del-item':S.collections[openColl].splice(+a.dataset.i,1);save();render();break;
+    case 'add-coll':{const n=val('collName');if(!n||S.collections[n])return;S.collections[n]=[];save();render();break;}
+    case 'export':{const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a2=document.createElement('a');a2.href=url;a2.download='life-dashboard-backup-'+TODAY+'.json';a2.click();URL.revokeObjectURL(url);flash('Backup downloaded');break;}
+    case 'import':document.getElementById('importFile').click();break;
+  }
+});
+document.addEventListener('click',e=>{const n=e.target.closest('.nav');if(!n)return;current=n.dataset.view;if(current!=='collections')openColl=null;render();window.scrollTo(0,0);});
+document.getElementById('importFile').addEventListener('change',ev=>{
+  const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const data=JSON.parse(rd.result);if(!data.days)throw 0;if(confirm('Restore this backup? It replaces everything currently on this device.')){S=data;save();render();flash('Backup restored');}}catch(e){alert('That file could not be read as a backup.');}};
+  rd.readAsText(f);
+});
+
+render();
+</script>
