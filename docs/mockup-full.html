@@ -229,7 +229,7 @@ textarea.note-input:focus{border-color:var(--sea);}
 </style>
 
 <!-- ═══ SIGN-IN GATE ═══ -->
-<div id="signin-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--ground);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;">
+<div id="signin-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--ground);flex-direction:column;align-items:center;justify-content:center;gap:28px;">
   <div style="font-family:var(--voice);font-size:32px;color:var(--sea-deep);letter-spacing:.02em;">DOMENICA OS</div>
   <div style="font-size:14px;color:var(--soft);text-align:center;max-width:300px;">Sign in with your Google account to continue.</div>
   <div id="g_id_signin"></div>
@@ -2018,31 +2018,27 @@ function startApp(){
   const exp  = DB.get('gsi_exp', 0);
   const stillValid = cred && Date.now() < exp;
 
-  if(!GOOGLE_CLIENT_ID && !stillValid){
-    // No client ID configured yet — skip auth and just show app (dev mode)
+  if(stillValid){
     showApp();
     startApp();
     return;
   }
 
-  if(stillValid){
-    // Already signed in and token not expired
-    showApp();
-    startApp();
-  } else {
-    // Need to sign in
-    // Wait for GSI library to load then show sign-in
-    if(typeof google !== 'undefined'){
+  // Not signed in — show sign-in screen
+  // GSI library loads async; wait for it
+  function tryShowSignIn(){
+    if(typeof google !== 'undefined' && google.accounts){
       showSignIn();
     } else {
-      window.addEventListener('load', showSignIn);
-      // Fallback: if GSI fails to load (e.g. offline), show app anyway
-      setTimeout(()=>{
-        if(document.getElementById('app-shell').style.display==='none'){
-          showApp(); startApp();
-        }
-      }, 4000);
+      setTimeout(tryShowSignIn, 200);
     }
+  }
+
+  // If no Client ID yet, show setup screen immediately (no GSI needed)
+  if(!GOOGLE_CLIENT_ID){
+    showSignIn();
+  } else {
+    tryShowSignIn();
   }
 })();
 </script>
