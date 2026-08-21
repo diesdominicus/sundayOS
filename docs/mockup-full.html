@@ -305,17 +305,18 @@ textarea.note-input:focus{border-color:var(--sea);}
     <div class="cal-grid" id="cal-grid"></div>
   </div>
   <!-- Day detail panel — shown when a day is tapped -->
+  <!-- Day detail panel -->
   <div class="card" id="cal-day-detail" style="max-width:520px;display:none;">
     <h3 class="lbl" id="cal-detail-heading" style="font-size:16px;"></h3>
     <div id="cal-detail-feast" style="margin-bottom:8px;"></div>
-    <div id="cal-detail-events" style="margin-bottom:16px;"></div>
-    <button class="btn btn-ghost" style="font-size:13px;" onclick="addCalEventToday()">+ Add event to this day</button>
+    <div id="cal-detail-events"></div>
   </div>
+  <!-- Upcoming events -->
   <div class="card" style="max-width:520px;">
-    <h3 class="lbl">upcoming <span class="r" style="cursor:pointer" onclick="addCalEvent()">+ add event</span></h3>
+    <h3 class="lbl">upcoming</h3>
     <div id="cal-upcoming"></div>
   </div>
-  <!-- Google Calendar sync setup -->
+  <!-- Google Calendar connection -->
   <div class="card" style="max-width:520px;" id="gcal-setup-card">
     <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Google Calendar <span id="gcal-status" style="margin-left:auto;font-size:12px;color:var(--leaf);font-weight:600;"></span></h3>
     <div id="gcal-connected" style="display:none;">
@@ -323,13 +324,11 @@ textarea.note-input:focus{border-color:var(--sea);}
       <button class="btn btn-ghost" style="font-size:12px;" onclick="disconnectGCal()">Disconnect</button>
       <button class="btn btn-ghost" style="font-size:12px;margin-left:8px;" onclick="loadGCalEvents(true)">Refresh now</button>
     </div>
-    <div id="gcal-setup" style="">
-      <p style="font-size:13px;color:var(--soft);margin:0 0 12px;">Paste your Google Calendar ICS URL to pull your events in automatically.</p>
-      <div style="font-size:12px;color:var(--soft);margin-bottom:10px;">
-        <b>How to get it:</b> Google Calendar → ⚙ Settings → your calendar → "Secret address in iCal format" → copy the link
-      </div>
+    <div id="gcal-setup">
+      <p style="font-size:13px;color:var(--soft);margin:0 0 12px;">Connect Google Calendar — your events will appear here automatically.</p>
+      <div style="font-size:12px;color:var(--soft);margin-bottom:10px;"><b>To get the URL:</b> Google Calendar → ⚙ Settings → your calendar name → "Secret address in iCal format" → copy</div>
       <input type="url" id="gcal-url-input" placeholder="https://calendar.google.com/calendar/ical/..." style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--ink);margin-bottom:10px;">
-      <button class="btn" onclick="connectGCal()">Connect Google Calendar</button>
+      <button class="btn" onclick="connectGCal()">Connect</button>
     </div>
   </div>
 </div>
@@ -1666,18 +1665,9 @@ const FEAST_DATES = {
 };
 
 function getCalEvents(){
-  const stored = DB.get('cal_events', [
-    {date:'2026-08-15', label:'✝️ Assumption of Mary', type:'feast'},
-    {date:'2026-08-24', label:'🎂 Mom\'s birthday', type:'birthday'},
-  ]);
-  // Merge in Google Calendar events (cached)
+  // Google Calendar events only — no manual entries, no dummy data
   const gcache = DB.get('gcal_cache', null);
-  if(gcache && Array.isArray(gcache.events)){
-    gcache.events.forEach(ge=>{
-      if(!stored.some(e=>e.date===ge.date && e.label===ge.label)) stored.push(ge);
-    });
-  }
-  return stored;
+  return (gcache && Array.isArray(gcache.events)) ? gcache.events : [];
 }
 
 // ── Google Calendar ICS sync ──
@@ -1723,21 +1713,30 @@ function showGCalUI(){
 window.loadGCalEvents = async function(force=false){
   const icsUrl = DB.get('gcal_ics_url', null);
   if(!icsUrl) return;
-  // Use cache if fresh (< 60 min) and not forced
   const cache = DB.get('gcal_cache', null);
   if(!force && cache && cache.ts && (Date.now()-cache.ts) < 3600000){ showGCalUI(); return; }
   const badge = document.getElementById('sync-badge');
   if(badge) badge.textContent = '⟳ calendar…';
   try{
+    // Pass URL as-is — Apps Script receives it already decoded
     const proxyUrl = SCRIPT_URL+'?action=cal&url='+encodeURIComponent(icsUrl);
     const res = await fetch(proxyUrl, {redirect:'follow'});
-    const events = await res.json();
+    const text = await res.text();
+    let events;
+    try { events = JSON.parse(text); } catch(pe){
+      console.error('GCal parse error — raw response:', text.slice(0,300));
+      showToast('Calendar sync error — check console');
+      if(badge) badge.textContent='';
+      return;
+    }
     if(Array.isArray(events)){
       DB.set('gcal_cache', {ts: Date.now(), events});
       showGCalUI();
       renderCalendar();
       if(badge){ badge.textContent='✓'; setTimeout(()=>badge.textContent='',3000); }
-      showToast(`${events.length} Google Calendar events loaded`);
+      if(force) showToast(events.length ? `${events.length} events loaded` : 'No events found — check ICS URL');
+    } else {
+      console.warn('GCal: unexpected response', events);
     }
   } catch(e){
     console.warn('GCal fetch failed:',e);
@@ -1805,7 +1804,7 @@ function renderCalendar(){
   upcoming.sort((a,b)=>a.date.localeCompare(b.date));
 
   if(!upcoming.length){
-    upEl.innerHTML = '<div style="color:var(--soft);font-size:14px;">No upcoming events. Tap a day to add one.</div>';
+    upEl.innerHTML = '<div style="color:var(--soft);font-size:14px;">No upcoming events from Google Calendar.</div>';
   } else {
     upEl.innerHTML = upcoming.slice(0,8).map(e=>{
       const dt = new Date(e.date+'T00:00:00');
@@ -1847,10 +1846,7 @@ window.calDayClick = function(dk, day){
 
   if(dayEvents.length){
     eventsEl.innerHTML = dayEvents.map(e=>`
-      <div class="row" style="align-items:center;">
-        <span>${escHtml(e.label)}</span>
-        ${e.type==='personal' ? `<button onclick="deleteCalEvent('${e.date}','${escHtml(e.label)}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--soft);font-size:16px;">×</button>` : ''}
-      </div>`).join('');
+      <div class="row"><span>${escHtml(e.label)}</span></div>`).join('');
   } else {
     eventsEl.innerHTML = '<div style="color:var(--soft);font-size:13px;">No events on this day.</div>';
   }
@@ -1859,38 +1855,6 @@ window.calDayClick = function(dk, day){
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 };
 
-window.addCalEventToday = function(){
-  if(!_calSelectedDk) return;
-  const label = prompt('Add event:');
-  if(!label) return;
-  const events = getCalEvents();
-  events.push({date:_calSelectedDk, label, type:'personal'});
-  DB.set('cal_events', events);
-  renderCalendar();
-  calDayClick(_calSelectedDk, parseInt(_calSelectedDk.split('-')[2]));
-  sendToSheets('Calendar',['Date','EventDate','Event','Type'],[todayStr(),_calSelectedDk,label,'personal']);
-  saveAllToSheets();
-  showToast('Event added ✓');
-};
-
-window.deleteCalEvent = function(date, label){
-  const events = getCalEvents().filter(e=>!(e.date===date && e.label===label));
-  DB.set('cal_events', events);
-  renderCalendar();
-  calDayClick(date, parseInt(date.split('-')[2]));
-  saveAllToSheets();
-  showToast('Event removed');
-};
-
-window.addCalEvent = function(){
-  const dateStr = prompt('Date? (YYYY-MM-DD)'); if(!dateStr) return;
-  const label = prompt('Event name?'); if(!label) return;
-  const events = getCalEvents();
-  events.push({date:dateStr, label, type:'personal'});
-  DB.set('cal_events', events);
-  renderCalendar();
-  showToast('Event added ✓');
-};
 
 // Render calendar when navigated to
 const calObs = new MutationObserver(()=>{
