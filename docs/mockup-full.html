@@ -237,6 +237,10 @@ textarea.note-input:focus{border-color:var(--sea);}
     </div>
   </div>
   <div id="nav-root"></div>
+  <div style="padding:10px 12px 6px;font-size:11px;color:var(--soft);display:flex;align-items:center;gap:5px;margin-top:auto;">
+    <span id="sync-badge" style="color:var(--sea);font-weight:600;"></span>
+    <span style="opacity:.5;">syncs across devices</span>
+  </div>
 </aside>
 
 <!-- ═══════════════════════ MAIN ═══════════════════════ -->
@@ -693,6 +697,7 @@ window.toggleHabit = function(habitId, dk){
   renderHabitTable('hw-home', 0);
   renderHabitStats();
   updateStreaks();
+  saveAllToSheets();
 };
 
 function renderHabitTable(tableId, weekOffset){
@@ -1007,13 +1012,50 @@ window.addCollection = function(type){
   renderCollections();
   showToast('Added ✓');
   sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],[todayStr(),type,title,author,status]);
+  saveAllToSheets();
 };
 
 // ═══════ GOOGLE SHEETS SYNC ═══════
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWVMIeDgv4EOuA7oC3OnsK1hAHcUhQy2WYINmdonhKhazHGZ/exec';
 
+// ── Keys that travel between devices via Sheets ──
+const SYNC_KEYS=['habits_def','habit_logs','today_log','brain','body','money',
+                 'relationships','cal_events','collections','travel'];
+
+// Push full state to Sheets _AppSync tab — called after every save
+function saveAllToSheets(){
+  const data={};
+  SYNC_KEYS.forEach(k=>{ const v=DB.get(k,null); if(v!==null) data[k]=v; });
+  if(!_writeQueue['_AppSync']) _writeQueue['_AppSync']=Promise.resolve();
+  _writeQueue['_AppSync']=_writeQueue['_AppSync'].then(()=>
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'sync',data})
+    }).catch(()=>{})
+  );
+}
+
+// Pull full state from Sheets on startup — remote wins (it's the shared source of truth)
+async function loadFromSheets(){
+  const badge=document.getElementById('sync-badge');
+  if(badge) badge.textContent='⟳';
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=read',{redirect:'follow'});
+    const text=await res.text();
+    const remote=JSON.parse(text);
+    if(remote && typeof remote==='object' && Object.keys(remote).length>0){
+      SYNC_KEYS.forEach(k=>{ if(remote[k]!==undefined) DB.set(k,remote[k]); });
+      if(badge){ badge.textContent='✓'; setTimeout(()=>{ badge.textContent=''; },3000); }
+      renderAll();
+    } else { if(badge) badge.textContent=''; }
+  } catch(e){
+    console.warn('Sheets sync skipped:',e);
+    if(badge) badge.textContent='';
+  }
+}
+
 // Queue writes per sheet so same-tab requests never race
-const _writeQueue = {};
+const _writeQueue={};
 function sendToSheets(sheetName, headers, row){
   if(!_writeQueue[sheetName]) _writeQueue[sheetName] = Promise.resolve();
   _writeQueue[sheetName] = _writeQueue[sheetName].then(()=>
@@ -1023,7 +1065,7 @@ function sendToSheets(sheetName, headers, row){
       body:JSON.stringify({sheet:sheetName, headers, row})
     }).catch(()=>{})
   );
-  showToast('Saved to Google Sheets ✓');
+  // toast shown by the caller
 }
 
 function showToast(msg){
@@ -1049,6 +1091,7 @@ window.saveJournal = function(){
   renderJournalRecent();
   showToast('Journal entry saved ✓');
   sendToSheets('Journal',['Date','Mood','Entry'],[todayStr(),mood,entry]);
+  saveAllToSheets();
 };
 
 window.saveGratitude = function(){
@@ -1063,6 +1106,7 @@ window.saveGratitude = function(){
   updateStreaks();
   showToast('Gratitude saved ✓');
   sendToSheets('Gratitude',['Date','1','2','3'],[todayStr(),g1,g2,g3]);
+  saveAllToSheets();
 };
 
 window.saveExamen = function(){
@@ -1071,6 +1115,7 @@ window.saveExamen = function(){
   DB.push('examen', data);
   showToast('Examen saved ✓');
   sendToSheets('Examen',['Date','Presence','Gratitude','Emotions','Feature','Tomorrow'],[todayStr(),data.presence,data.gratitude,data.emotions,data.feature,data.tomorrow]);
+  saveAllToSheets();
 };
 
 window.savePrayer = function(){
@@ -1082,6 +1127,7 @@ window.savePrayer = function(){
   renderPrayerList();
   showToast('Intention added ✓');
   sendToSheets('Prayer',['Date','Intention'],[todayStr(),val]);
+  saveAllToSheets();
 };
 
 window.removePrayer = function(i){
@@ -1096,6 +1142,7 @@ window.saveBody = function(){
   document.getElementById('body-weight-input').value = '';
   showToast('Weight logged ✓');
   sendToSheets('Body',['Date','Type','Value','Unit'],[todayStr(),'weight',w,'lb']);
+  saveAllToSheets();
 };
 
 window.saveMoney = function(){
@@ -1107,6 +1154,7 @@ window.saveMoney = function(){
   renderMoneyDisplay();
   showToast('Numbers saved ✓');
   sendToSheets('Money',['Date','Retirement','Savings','Loans','NetWorth'],[todayStr(),ret,sav,loans,net]);
+  saveAllToSheets();
 };
 
 window.saveRelationship = function(){
@@ -1118,6 +1166,7 @@ window.saveRelationship = function(){
   ['rel-person','rel-how','rel-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   showToast('Connection logged ✓');
   sendToSheets('Relationships',['Date','Person','How','Note'],[todayStr(),person,how,note]);
+  saveAllToSheets();
 };
 
 window.saveWordOfYear = function(){
@@ -1127,6 +1176,7 @@ window.saveWordOfYear = function(){
   renderWordOfYear();
   showToast('Word saved ✓');
   sendToSheets('WordOfYear',['Date','Word','Meaning'],[todayStr(),word,meaning]);
+  saveAllToSheets();
 };
 
 // ═══════ RENDER FUNCTIONS ═══════
@@ -1390,6 +1440,7 @@ function renderTravelLists(){
     renderTravelLists();
     showToast('Travel saved ✓');
     sendToSheets('Travel',['Date','Country','Specific Places','Status'],[todayStr(),country,places,status]);
+    saveAllToSheets();
   };
 
   window._renderTravelMap = renderMap;
@@ -1426,6 +1477,7 @@ window.saveToday = function(){
   renderToday();
   showToast('Day logged ✓');
   sendToSheets('DayLog',['Date','Entry','Mood'],[today,text,selectedMood||3]);
+  saveAllToSheets();
 };
 
 function renderToday(){
@@ -1513,6 +1565,7 @@ window.saveBrain = function(){
   renderBrainBoard();
   showToast('Note posted ✓');
   sendToSheets('BrainDump',['Date','Note'],[todayStr(),note]);
+  saveAllToSheets();
 };
 
 window.deleteBrain = function(id){
@@ -1703,6 +1756,7 @@ window.calDayClick = function(dk, day){
   DB.set('cal_events', events);
   renderCalendar();
   sendToSheets('Calendar',['Date','EventDate','Event','Type'],[todayStr(),dk,label,'personal']);
+  saveAllToSheets();
   showToast('Event added ✓');
 };
 
@@ -1731,11 +1785,10 @@ document.querySelectorAll('.mood-btn').forEach(btn=>{
   });
 });
 
-// ═══════ INIT — render everything from localStorage ═══════
-(function init(){
+// ═══════ RENDER ALL — called on init and after remote sync ═══════
+function renderAll(){
   renderHomeHabits();
   renderHabits();
-  renderJournalRecent();
   renderBodyDisplay();
   renderMoneyDisplay();
   renderCollections();
@@ -1744,5 +1797,11 @@ document.querySelectorAll('.mood-btn').forEach(btn=>{
   updateStreaks();
   renderToday();
   renderBrainBoard();
+}
+
+// ═══════ INIT ═══════
+(function init(){
+  renderAll();          // render immediately from localStorage (instant)
+  loadFromSheets();     // then pull remote data and re-render (async)
 })();
 </script>
