@@ -974,8 +974,7 @@ document.getElementById('branch').innerHTML='<path d="M205 4 C150 18 120 40 96 7
   if(FEASTS[mmdd]){const fw=document.getElementById('feastwrap');if(fw) fw.innerHTML='<span class="feast">✦ '+(NAMEDAY[mmdd]?'<b>'+FEASTS[mmdd]+'</b> · your name day ✨':FEASTS[mmdd])+'</span>';}
   // Greeting
   const hr=now.getHours();const gEl=document.getElementById('greet');if(gEl) gEl.textContent=(hr<12?'good morning':hr<18?'good afternoon':'good evening')+', Domenica';
-  // Full date in hero subtitle
-  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  // Full date in hero subtitle (DAYS already declared above — reuse it)
   const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const ordinal=n=>n+(n%10===1&&n!==11?'st':n%10===2&&n!==12?'nd':n%10===3&&n!==13?'rd':'th');
   const heroSub=document.getElementById('hero-sub');
