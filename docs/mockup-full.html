@@ -182,6 +182,7 @@ textarea.note-input:focus{border-color:var(--sea);}
 .cal-grid .cd.has-event::after{content:'·';display:block;color:var(--lemon);font-size:18px;line-height:0;margin-top:2px;}
 .cal-grid .cd.past{color:var(--soft);}
 .cal-grid .cd.empty{color:transparent;}
+.cal-grid .cd.sel{outline:2px solid var(--sea);outline-offset:1px;}
 .cal-month{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .cal-month h3{font-family:var(--voice);font-weight:400;font-size:20px;}
 .cal-month button{border:none;background:var(--surface2);color:var(--sea);border-radius:8px;width:28px;height:28px;font-size:14px;cursor:pointer;}
@@ -255,18 +256,18 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="litday" id="litday"></div>
       <div id="feastwrap"></div>
       <h2 id="greet">good morning, Domenica</h2>
-      <div class="sub">5 of 8 habits today · Mass 4/5 this week · examen waiting for tonight</div>
+      <div class="sub" id="hero-sub">5 of 8 habits today · Mass 4/5 this week</div>
       <div class="wx" id="wx"><span class="m">loading weather…</span></div>
     </div>
   </section>
   <section class="card quote"><p id="qp">"Be who God meant you to be and you will set the world on fire."</p><cite>— St. Catherine of Siena</cite></section>
   <div class="cards">
     <section class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>habits <span class="weekhead"><button>‹</button><span id="wkrange">Aug 3–9</span><button>›</button></span></h3>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>habits <span class="weekhead"><button onclick="homeHabitWeekOffset--;renderHabitTable('hw-home',homeHabitWeekOffset)">‹</button><span id="wkrange">Aug 3–9</span><button onclick="homeHabitWeekOffset++;renderHabitTable('hw-home',homeHabitWeekOffset)">›</button></span></h3>
       <table class="hw" id="hw-home"></table>
-      <div class="hfoot"><span class="streak">🔥 12-day streak</span><span>flip back anytime</span></div>
+      <div class="hfoot"><span class="streak" id="home-streak-label">🔥 —</span><span>flip back anytime</span></div>
     </section>
-    <div class="card wheelmini" style="cursor:pointer" onclick="navigate('goals-areas')">
+    <div class="card wheelmini" style="cursor:pointer" onclick="navigate('life-goals')">
       <h3 class="lbl" style="align-self:stretch"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>life goals <span class="r">view wheel →</span></h3>
       <svg id="mini-home" viewBox="0 0 200 200"></svg>
       <span class="go">tap a slice to see the goals behind it</span>
@@ -278,26 +279,15 @@ textarea.note-input:focus{border-color:var(--sea);}
     </section>
     <section class="card">
       <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>coming up</h3>
-      <div class="up"><span>🎂 Mom's birthday</span><span class="when">in 6 days</span></div>
-      <div class="up"><span>✝️ Assumption of Mary</span><span class="when">Aug 15</span></div>
-      <div class="up"><span class="love">❤ Book a date or event</span><span class="when">this month</span></div>
-    </section>
-    <section class="card grat">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 9 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23 9 21.5 12 19 16.5 12 21 12 21z"/></svg>grateful today <span class="r" onclick="navigate('daily-gratitude')" style="cursor:pointer">log →</span></h3>
-      <div id="home-grat"><p style="color:var(--soft);font-size:14px;">Log your gratitude today →</p></div>
+      <div id="home-upcoming"><div class="up"><span>✝️ Assumption of Mary</span><span class="when">Aug 15</span></div></div>
     </section>
     <section class="card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>net worth <span class="r" onclick="navigate('goals-money')" style="cursor:pointer">update →</span></h3>
+      <h3 class="lbl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>finance <span class="r" onclick="navigate('goals-money')" style="cursor:pointer">update →</span></h3>
       <div class="big" id="home-nw">$48,600</div>
       <div class="trend-up" id="home-trend">▲ 5.2% since last month</div>
       <div class="nwrow"><span>Retirement</span><span id="home-ret">$32,200</span></div>
       <div class="nwrow"><span>Savings</span><span id="home-sav">$21,400</span></div>
       <div class="nwrow"><span>Loans</span><span id="home-loan" style="color:#B4532E">−$5,000</span></div>
-    </section>
-    <section class="card examen-card">
-      <h3 class="lbl"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>evening examen</h3>
-      <p>Where did I feel God's presence today? Where did I turn from it?</p>
-      <button class="btn" onclick="navigate('daily-examen')">Begin tonight's examen <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     </section>
   </div>
 </div>
@@ -313,6 +303,13 @@ textarea.note-input:focus{border-color:var(--sea);}
       <button onclick="calNext()">›</button>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <!-- Day detail panel — shown when a day is tapped -->
+  <div class="card" id="cal-day-detail" style="max-width:520px;display:none;">
+    <h3 class="lbl" id="cal-detail-heading" style="font-size:16px;"></h3>
+    <div id="cal-detail-feast" style="margin-bottom:8px;"></div>
+    <div id="cal-detail-events" style="margin-bottom:16px;"></div>
+    <button class="btn btn-ghost" style="font-size:13px;" onclick="addCalEventToday()">+ Add event to this day</button>
   </div>
   <div class="card" style="max-width:520px;">
     <h3 class="lbl">upcoming <span class="r" style="cursor:pointer" onclick="addCalEvent()">+ add event</span></h3>
@@ -601,8 +598,8 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="page-sub">2026 at a glance — assembled from everything you've tracked.</div>
   <div class="cards">
     <div class="card"><h3 class="lbl">goals progress</h3><div class="goal-item"><div class="gtop"><b>Spiritual habits</b><span class="gpct">83%</span></div><div class="bar"><i style="width:83%;background:#6E9A5E"></i></div></div><div class="goal-item"><div class="gtop"><b>Physical</b><span class="gpct">70%</span></div><div class="bar"><i style="width:70%;background:#4FA3A0"></i></div></div><div class="goal-item"><div class="gtop"><b>Italian &amp; reading</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:#4F7CA8"></i></div></div><div class="goal-item"><div class="gtop"><b>Financial</b><span class="gpct">50%</span></div><div class="bar"><i style="width:50%;background:#E0B24A"></i></div></div></div>
-    <div class="card grat"><h3 class="lbl">gratitude highlights</h3><p><span class="n">1</span>Slow rosary in the rain</p><p><span class="n">2</span>Mom called just to say hi</p><p><span class="n">3</span>Lemon &amp; olive oil on warm bread</p><p style="font-size:12px;color:var(--soft);margin-top:10px;">+212 entries logged this year</p></div>
-    <div class="card"><h3 class="lbl">by the numbers</h3><div class="row"><span>Habits logged</span><span class="soft">847</span></div><div class="row"><span>Journal entries</span><span class="soft">63</span></div><div class="row"><span>Books read</span><span class="soft">4 of 12</span></div><div class="row"><span>Masses attended</span><span class="soft">142</span></div><div class="row"><span>Countries visited</span><span class="soft">1</span></div></div>
+    <div class="card"><h3 class="lbl">daybook highlights</h3><div id="yr-daybook-highlights"><div style="color:var(--soft);font-size:13px;">Log days in Daybook to see highlights here.</div></div></div>
+    <div class="card"><h3 class="lbl">by the numbers</h3><div class="row"><span>Habit check-ins</span><span class="soft" id="yr-habits-count">—</span></div><div class="row"><span>Days logged</span><span class="soft" id="yr-days-count">—</span></div><div class="row"><span>Books read</span><span class="soft">4 of 12</span></div><div class="row"><span>Masses attended</span><span class="soft" id="yr-mass-count">—</span></div><div class="row"><span>Countries visited</span><span class="soft">1</span></div></div>
   </div>
 </div>
 
@@ -666,10 +663,11 @@ const DEFAULT_HABITS = [
   {id:'steps',   name:'7,500 steps', isLemon:true},
   {id:'italian', name:'Italian',     isLemon:false},
   {id:'read',    name:'Read',        isLemon:false},
-  {id:'grat',    name:'Gratitude',   isLemon:false},
+  {id:'daybook', name:'Daybook',     isLemon:false},
 ];
 const CK='<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:3"><path d="M5 12l5 5L20 7"/></svg>';
 let habitWeekOffset = 0;
+let homeHabitWeekOffset = 0;
 
 function getHabits(){ return DB.get('habits_def', DEFAULT_HABITS); }
 function getLogs(){ return DB.get('habit_logs', {}); }
@@ -694,7 +692,7 @@ window.toggleHabit = function(habitId, dk){
   logs[dk][habitId] = !logs[dk][habitId];
   DB.set('habit_logs', logs);
   renderHabitTable('hw-full', habitWeekOffset);
-  renderHabitTable('hw-home', 0);
+  renderHabitTable('hw-home', homeHabitWeekOffset);
   renderHabitStats();
   updateStreaks();
   saveAllToSheets();
@@ -855,7 +853,7 @@ function renderHabits(){
   updateStreaks();
 }
 function renderHomeHabits(){
-  renderHabitTable('hw-home', 0);
+  renderHabitTable('hw-home', homeHabitWeekOffset);
 }
 
 // ═══════ MINI WHEEL (home) ═══════
@@ -1690,7 +1688,7 @@ function renderCalendar(){
     if(isToday) cls += ' today';
     else if(isPast) cls += ' past';
     if(hasEvent) cls += ' has-event';
-    html += `<div class="${cls}" onclick="calDayClick('${dk}',${d})" style="cursor:pointer">${d}</div>`;
+    html += `<div class="${cls}" data-dk="${dk}" onclick="calDayClick('${dk}',${d})" style="cursor:pointer">${d}</div>`;
   }
   grid.innerHTML = html;
 
@@ -1734,30 +1732,64 @@ function renderCalendar(){
 window.calPrev = function(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); };
 window.calNext = function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); };
 
+let _calSelectedDk = null;
+
 window.calDayClick = function(dk, day){
+  _calSelectedDk = dk;
   const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const feast = FEAST_DATES[String(calMonth+1).padStart(2,'0')+'-'+String(day).padStart(2,'0')];
   const events = getCalEvents();
   const dayEvents = events.filter(e=>e.date===dk);
 
-  // Build display message with existing events
-  let msg = `📅 ${MON[calMonth]} ${day}\n`;
-  if(feast) msg += `✝ ${feast}\n`;
+  // Highlight selected day
+  document.querySelectorAll('.cal-grid .cd').forEach(el=>el.classList.remove('sel'));
+  const clickedEl = document.querySelector(`.cal-grid .cd[data-dk="${dk}"]`);
+  if(clickedEl) clickedEl.classList.add('sel');
+
+  // Render detail panel
+  const panel = document.getElementById('cal-day-detail');
+  const heading = document.getElementById('cal-detail-heading');
+  const feastEl = document.getElementById('cal-detail-feast');
+  const eventsEl = document.getElementById('cal-detail-events');
+
+  heading.textContent = `${MON[calMonth]} ${day}`;
+  feastEl.innerHTML = feast ? `<span class="feast">${feast}</span>` : '';
+
   if(dayEvents.length){
-    msg += '\nEvents:\n' + dayEvents.map(e=>`• ${e.label}`).join('\n');
-    msg += '\n\nAdd another event? (or cancel to close)';
+    eventsEl.innerHTML = dayEvents.map(e=>`
+      <div class="row" style="align-items:center;">
+        <span>${escHtml(e.label)}</span>
+        ${e.type==='personal' ? `<button onclick="deleteCalEvent('${e.date}','${escHtml(e.label)}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--soft);font-size:16px;">×</button>` : ''}
+      </div>`).join('');
   } else {
-    msg += feast ? '\nAdd your own event?' : '\nNo events. Add one?';
+    eventsEl.innerHTML = '<div style="color:var(--soft);font-size:13px;">No events on this day.</div>';
   }
 
-  const label = prompt(msg);
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+};
+
+window.addCalEventToday = function(){
+  if(!_calSelectedDk) return;
+  const label = prompt('Add event:');
   if(!label) return;
-  events.push({date:dk, label, type:'personal'});
+  const events = getCalEvents();
+  events.push({date:_calSelectedDk, label, type:'personal'});
   DB.set('cal_events', events);
   renderCalendar();
-  sendToSheets('Calendar',['Date','EventDate','Event','Type'],[todayStr(),dk,label,'personal']);
+  calDayClick(_calSelectedDk, parseInt(_calSelectedDk.split('-')[2]));
+  sendToSheets('Calendar',['Date','EventDate','Event','Type'],[todayStr(),_calSelectedDk,label,'personal']);
   saveAllToSheets();
   showToast('Event added ✓');
+};
+
+window.deleteCalEvent = function(date, label){
+  const events = getCalEvents().filter(e=>!(e.date===date && e.label===label));
+  DB.set('cal_events', events);
+  renderCalendar();
+  calDayClick(date, parseInt(date.split('-')[2]));
+  saveAllToSheets();
+  showToast('Event removed');
 };
 
 window.addCalEvent = function(){
@@ -1785,6 +1817,36 @@ document.querySelectorAll('.mood-btn').forEach(btn=>{
   });
 });
 
+// ═══════ ANNUAL REVIEW ═══════
+function renderAnnualReview(){
+  const year = new Date().getFullYear();
+
+  // Daybook highlights — pick 3 random entries from this year
+  const dayEntries = (DB.get('today_log',[]) || []).filter(e=>(e.date||'').includes(String(year)));
+  const hlEl = document.getElementById('yr-daybook-highlights');
+  if(hlEl){
+    if(!dayEntries.length){
+      hlEl.innerHTML='<div style="color:var(--soft);font-size:13px;">Log days in Daybook to see highlights here.</div>';
+    } else {
+      const sample = [...dayEntries].sort(()=>Math.random()-.5).slice(0,3);
+      const MOOD_E=['','😞','😕','😐','😊','🌟'];
+      hlEl.innerHTML = sample.map(e=>`<div class="j-entry" style="margin-bottom:8px;"><div class="j-date">${e.date} ${MOOD_E[e.mood]||''}</div><div style="font-size:13px;">${escHtml(e.text)}</div></div>`).join('');
+    }
+  }
+
+  // Stats
+  const logs = DB.get('habit_logs',{});
+  let habitCount=0, massCount=0;
+  Object.entries(logs).forEach(([dk,day])=>{
+    if(!dk.startsWith(String(year).slice(2))) {} // skip old years — simple check on dateKey
+    Object.entries(day||{}).forEach(([hid,done])=>{ if(done){ habitCount++; if(hid==='mass') massCount++; } });
+  });
+  const el=id=>document.getElementById(id);
+  if(el('yr-habits-count')) el('yr-habits-count').textContent=habitCount||'—';
+  if(el('yr-days-count')) el('yr-days-count').textContent=dayEntries.length||'—';
+  if(el('yr-mass-count')) el('yr-mass-count').textContent=massCount||'—';
+}
+
 // ═══════ RENDER ALL — called on init and after remote sync ═══════
 function renderAll(){
   renderHomeHabits();
@@ -1797,6 +1859,7 @@ function renderAll(){
   updateStreaks();
   renderToday();
   renderBrainBoard();
+  renderAnnualReview();
 }
 
 // ═══════ INIT ═══════
