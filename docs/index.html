@@ -340,9 +340,19 @@ textarea.note-input:focus{border-color:var(--sea);}
       <button class="btn btn-ghost" style="font-size:12px;margin-left:8px;" onclick="loadGCalEvents(true)">Refresh now</button>
     </div>
     <div id="gcal-setup">
-      <p style="font-size:13px;color:var(--soft);margin:0 0 12px;">Connect Google Calendar — your events will appear here automatically.</p>
-      <div style="font-size:12px;color:var(--soft);margin-bottom:10px;"><b>To get the URL:</b> Google Calendar → ⚙ Settings → your calendar name → "Secret address in iCal format" → copy</div>
-      <input type="url" id="gcal-url-input" placeholder="https://calendar.google.com/calendar/ical/..." style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--ink);margin-bottom:10px;">
+      <p style="font-size:13px;color:var(--soft);margin:0 0 14px;">Connect your Google Calendar to see events here. Needs the <b>secret ICS link</b> — not the regular Google Calendar link.</p>
+      <div style="background:var(--sea-bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;line-height:1.8;color:var(--ink);">
+        <b>How to get the correct URL:</b><br>
+        1. Go to <a href="https://calendar.google.com" target="_blank" style="color:var(--sea);">calendar.google.com</a><br>
+        2. On the left, find your calendar name → click the <b>⋮ three-dot menu</b><br>
+        3. Click <b>"Settings and sharing"</b><br>
+        4. Scroll down to <b>"Integrate calendar"</b><br>
+        5. Copy <b>"Secret address in iCal format"</b> — it ends in <code style="background:#fff;padding:1px 4px;border-radius:4px;">.ics</code><br>
+        <span style="color:#b04040;font-size:12px;">⚠ Not the "public URL" or any link that doesn't end in .ics</span>
+      </div>
+      <input type="url" id="gcal-url-input" placeholder="https://calendar.google.com/calendar/ical/…/private-…/basic.ics" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--ink);margin-bottom:6px;">
+      <div style="font-size:12px;color:var(--soft);margin-bottom:10px;">For birthdays too: add your <b>Birthdays calendar</b> ICS the same way (it's a separate calendar in Google Calendar settings)</div>
+      <input type="url" id="gcal-url-input2" placeholder="Optional: second calendar ICS URL (e.g. Birthdays)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--ink);margin-bottom:10px;">
       <button class="btn" onclick="connectGCal()">Connect</button>
     </div>
   </div>
@@ -1139,7 +1149,7 @@ const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWV
 
 // ── Keys that travel between devices via Sheets ──
 const SYNC_KEYS=['habits_def','habit_logs','today_log','brain','body','money',
-                 'relationships','cal_events','collections','travel','gcal_ics_url'];
+                 'relationships','cal_events','collections','travel','gcal_ics_url','gcal_ics_url2'];
 
 // Push full state to Sheets _AppSync tab — called after every save
 function saveAllToSheets(){
@@ -1818,9 +1828,17 @@ function getCalEvents(){
 
 // ── Google Calendar ICS sync ──
 window.connectGCal = function(){
-  const url = document.getElementById('gcal-url-input')?.value?.trim();
-  if(!url || !url.includes('calendar.google.com')){ showToast('Paste a valid Google Calendar ICS URL'); return; }
+  const url  = document.getElementById('gcal-url-input')?.value?.trim();
+  const url2 = document.getElementById('gcal-url-input2')?.value?.trim();
+  function isICS(u){ return u && u.includes('calendar.google.com') && u.includes('.ics'); }
+  if(!isICS(url)){
+    showToast('⚠ URL must end in .ics — see instructions above');
+    document.getElementById('gcal-url-input').style.borderColor='#b04040';
+    return;
+  }
+  document.getElementById('gcal-url-input').style.borderColor='';
   DB.set('gcal_ics_url', url);
+  DB.set('gcal_ics_url2', isICS(url2) ? url2 : null);
   showGCalUI();
   loadGCalEvents(true);
 };
@@ -1857,24 +1875,27 @@ function showGCalUI(){
 }
 
 window.loadGCalEvents = async function(force=false){
-  const icsUrl = DB.get('gcal_ics_url', null);
+  const icsUrl  = DB.get('gcal_ics_url', null);
   if(!icsUrl) return;
+  const icsUrl2 = DB.get('gcal_ics_url2', null);
   const cache = DB.get('gcal_cache', null);
   if(!force && cache && cache.ts && (Date.now()-cache.ts) < 3600000){ showGCalUI(); return; }
   const badge = document.getElementById('sync-badge');
   if(badge) badge.textContent = '⟳ calendar…';
   try{
-    // Pass URL as-is — Apps Script receives it already decoded
-    const proxyUrl = SCRIPT_URL+'?action=cal&url='+encodeURIComponent(icsUrl);
-    const res = await fetch(proxyUrl, {redirect:'follow'});
-    const text = await res.text();
-    let events;
-    try { events = JSON.parse(text); } catch(pe){
-      console.error('GCal parse error — raw response:', text.slice(0,300));
-      showToast('Calendar sync error — check console');
-      if(badge) badge.textContent='';
-      return;
+    async function fetchCal(url){
+      const proxyUrl = SCRIPT_URL+'?action=cal&url='+encodeURIComponent(url);
+      const res = await fetch(proxyUrl, {redirect:'follow'});
+      const text = await res.text();
+      try{ return JSON.parse(text); } catch{ return []; }
     }
+    const [ev1, ev2] = await Promise.all([fetchCal(icsUrl), icsUrl2 ? fetchCal(icsUrl2) : []]);
+    // Merge and deduplicate by title+date
+    const seen = new Set();
+    const events = [...(Array.isArray(ev1)?ev1:[]), ...(Array.isArray(ev2)?ev2:[])].filter(e=>{
+      const k = (e.title||'')+'|'+(e.date||'');
+      if(seen.has(k)) return false; seen.add(k); return true;
+    });
     if(Array.isArray(events)){
       DB.set('gcal_cache', {ts: Date.now(), events});
       showGCalUI();
@@ -2117,6 +2138,12 @@ function showError(){
 }
 
 function startApp(){
+  // Clear any stored ICS URL that isn't actually an ICS file
+  const storedUrl = DB.get('gcal_ics_url', null);
+  if(storedUrl && !storedUrl.includes('.ics')){
+    DB.set('gcal_ics_url', null);
+    DB.set('gcal_cache', null);
+  }
   renderAll();
   showGCalUI();
   loadFromSheets();
