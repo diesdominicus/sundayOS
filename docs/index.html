@@ -985,6 +985,7 @@ window.toggleHabit = function(habitId, dk){
   renderHabitStats();
   updateStreaks();
   saveAllToSheets();
+  writeHabitsTable();
 };
 
 function renderHabitTable(tableId, weekOffset){
@@ -1447,7 +1448,7 @@ window.submitCollection = function(ev){
   collFilter = '';   // make sure the new item is actually on screen
   renderCollections();
   showToast('Added ✓');
-  sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],[date,type,title,author,status]);
+  writeCollectionsTable();
   saveAllToSheets();
 };
 
@@ -1535,6 +1536,84 @@ async function loadFromSheets(){
     console.warn('Sheets sync skipped:',e);
     if(badge) badge.textContent='';
   }
+}
+
+// ── Readable sheet tabs (two-way) ──────────────────────────────────────
+// The _AppSync tab holds one blob of JSON — fine for machines, useless to
+// read or edit. These are the tabs you actually open, so they're kept in
+// sync both directions: the app rewrites them on every change, and reads
+// them back on load so edits made in Sheets land in the app.
+
+const COLL_HEADERS=['Date','Type','Title','Author/Details','Status'];
+
+// Replace a whole tab (not append) so edits and deletions propagate
+function writeTable(name, headers, rows){
+  if(!_writeQueue[name]) _writeQueue[name]=Promise.resolve();
+  _writeQueue[name]=_writeQueue[name].then(()=>
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'table',name,headers,rows})
+    }).catch(()=>{})
+  );
+}
+
+function writeCollectionsTable(){
+  const rows=(DB.get('collections',[])||[])
+    .map(c=>[c.date||'',c.type||'',c.title||'',c.author||'',c.status||'']);
+  writeTable('Collections', COLL_HEADERS, rows);
+}
+
+// One row per day, one column per habit — readable as a grid in Sheets
+function writeHabitsTable(){
+  const habits=getHabits(), logs=getLogs();
+  const rows=Object.keys(logs).sort()
+    .map(d=>[d, ...habits.map(h=>logs[d]&&logs[d][h.id] ? '✓' : '')]);
+  writeTable('Habits', ['Date', ...habits.map(h=>h.name)], rows);
+}
+
+// Pull the readable tabs back in. Returns false when the Apps Script
+// predates this feature, so an old script degrades instead of wiping data.
+async function loadTablesFromSheets(){
+  let data;
+  try{
+    const res=await fetch(SCRIPT_URL+'?action=tables',{redirect:'follow'});
+    data=JSON.parse(await res.text());
+  }catch(e){ console.warn('Readable tabs unavailable:',e); return false; }
+  if(!data || !Array.isArray(data.Collections)) return false; // old script
+
+  // Collections — the sheet wins, so deleting a row there actually removes it.
+  // But an empty sheet with items locally means the tab was never written yet;
+  // bootstrap it from local rather than treating "empty" as "delete everything".
+  const fromSheet=data.Collections.map(r=>({
+    date:  r['Date']||'',
+    type:  String(r['Type']||'book').toLowerCase(),
+    title: r['Title']||'',
+    author:r['Author/Details']||'',
+    status:String(r['Status']||'').toLowerCase()
+  })).filter(c=>c.title);
+  const localColl=DB.get('collections',null);
+  if(fromSheet.length)                    DB.set('collections', fromSheet);
+  else if(localColl && localColl.length)  writeCollectionsTable();
+
+  // Habits — any non-empty cell counts as done. Skip an empty tab for the
+  // same reason as above.
+  if(Array.isArray(data.Habits) && data.Habits.length){
+    const byName={}; getHabits().forEach(h=>byName[h.name]=h.id);
+    const logs={};
+    data.Habits.forEach(row=>{
+      const d=row['Date']; if(!d) return;
+      logs[d]={};
+      Object.keys(row).forEach(k=>{
+        if(k==='Date') return;
+        const id=byName[k];
+        if(id && String(row[k]).trim()!=='') logs[d][id]=true;
+      });
+    });
+    DB.set('habit_logs', logs);
+  } else if(Object.keys(getLogs()).length){
+    writeHabitsTable();
+  }
+  return true;
 }
 
 // Queue writes per sheet so same-tab requests never race
@@ -2546,10 +2625,12 @@ function startApp(){
   }
   renderAll();
   showGCalUI();
-  loadFromSheets().then(()=>{
+  loadFromSheets().then(async ()=>{
     // Make sure this browser's Client ID is in the shared blob, so signing in
     // on a new browser doesn't hit the setup prompt again.
     if(getClientId()) saveAllToSheets();
+    // Then let the readable tabs override — they're the ones she edits.
+    if(await loadTablesFromSheets()) renderAll();
   });
   loadGCalEvents();
 }
