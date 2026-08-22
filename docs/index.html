@@ -17,6 +17,8 @@
   --rail-ink:#F0E8DB;--rail-dim:#C1B0AA;--rail-on:rgba(240,232,219,.15);--rail-deco:rgba(240,232,219,.26);
   --leaf:#4E6046;--rose:#AF7D91;--coral:#A5624A;--purple:#6E5B87;--teal:#4E6E6B;--gold:#A8813F;
   /* decorative tints — photo placeholders, sticky notes, avatars */
+  --cov1:#4E6E6B;--cov2:#8E5F70;--cov3:#9A5A44;--cov4:#6E5B87;--cov5:#86682F;--cov6:#3D3858;--cov7:#4E6046;
+  --cover-ink:#F8F4EF;--cover-rule:rgba(255,255,255,.28);
   --map-land:#BEB2B2;--map-sea:#E9E5EF;--tint1:#C9C1B5;--tint2:#DAC8B9;--tint3:#C6C2CE;--tint4:#D5CCDE;--tint5:#D8E0D2;--tint6:#E5D9DE;
   --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
   --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
@@ -29,6 +31,8 @@
   --accent:#AF9BB6;--accent-bg:#4A3140;--accent-ink:#E3CBD4;--neg:#E7A596;
   --rail-ink:#E8DDD0;--rail-dim:#B5ACAC;--rail-on:rgba(175,155,182,.18);--rail-deco:rgba(175,155,182,.32);
   --leaf:#A8C098;--rose:#C79AA8;--coral:#C58468;--purple:#9384AD;--teal:#709894;--gold:#C3A063;
+  --cov1:#8FB3AF;--cov2:#D3A9B6;--cov3:#D19A80;--cov4:#A99BC0;--cov5:#CFAE79;--cov6:#B9A8C4;--cov7:#A8C098;
+  --cover-ink:#1A1216;--cover-rule:rgba(0,0,0,.18);
   --map-land:#43262C;--map-sea:#2E2A40;--tint1:#3B342D;--tint2:#40332C;--tint3:#302E3B;--tint4:#38303F;--tint5:#333A31;--tint6:#3F3037;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -195,13 +199,40 @@ textarea.note-input:focus{border-color:var(--sea-text);}
 .status-read{background:var(--accent-bg);color:var(--accent-ink);}
 .status-reading{background:var(--accent-bg);color:var(--accent-ink);}
 .status-want{background:var(--surface2);color:var(--soft);}
-.coll-add{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:8px;}
-.coll-add input,.coll-add select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:8px 11px;font-size:13px;font-family:var(--sans);color:var(--ink);background:var(--surface2);outline:none;}
+/* ── collections: browsable shelf ── */
+.coll-bar{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.coll-bar .tab-row{flex:1;flex-wrap:wrap;margin-bottom:0;}
+.coll-add-toggle{white-space:nowrap;flex-shrink:0;}
+.tab-n{opacity:.6;font-size:11px;margin-left:2px;}
+.coll-add-card{max-width:520px;margin-bottom:18px;}
+.coll-add{display:flex;flex-direction:column;gap:10px;}
+.coll-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.coll-add label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--soft);}
+.coll-add input,.coll-add select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13.5px;font-family:var(--sans);color:var(--ink);background:var(--surface2);outline:none;}
 .coll-add input:focus,.coll-add select:focus{border-color:var(--sea-text);}
 .coll-add-row{display:flex;gap:8px;align-items:center;}
-.coll-add-row select{flex:1;}
-.coll-err{font-size:12px;color:var(--neg);min-height:0;}
+.coll-err{font-size:12px;color:var(--neg);}
 .coll-err:empty{display:none;}
+
+.coll-section{margin-bottom:26px;}
+.coll-section-head{font-family:var(--voice);font-weight:400;font-size:18px;color:var(--ink);margin:0 0 12px;display:flex;align-items:center;gap:9px;}
+.coll-section-n{font-family:var(--sans);font-size:11px;color:var(--soft);background:var(--surface);border-radius:20px;padding:2px 9px;}
+.coll-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:16px;}
+.coll-card{display:flex;flex-direction:column;gap:9px;}
+.coll-cover{position:relative;aspect-ratio:2/3;border-radius:8px;background:var(--cover);
+  box-shadow:0 6px 16px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;
+  padding:14px 12px;overflow:hidden;}
+/* the spine — a bound-book cue, since there are no real cover images */
+.coll-cover::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:var(--cover-rule);}
+.coll-cover::after{content:'';position:absolute;inset:5px;border:1px solid var(--cover-rule);border-radius:4px;pointer-events:none;}
+/* Covers are mid-dark in light mode and pastel in dark mode, so the ink flips
+   with the theme — the title lives only here, it has to stay readable. */
+.coll-cover-title{font-family:var(--voice);font-size:13px;line-height:1.35;color:var(--cover-ink);text-align:center;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;}
+.coll-cover-icon{position:absolute;bottom:7px;right:8px;font-size:11px;opacity:.75;}
+.coll-meta{display:flex;flex-direction:column;gap:3px;}
+.coll-author{font-size:12px;color:var(--soft);line-height:1.3;}
+.coll-meta .book-status{margin-top:2px;align-self:flex-start;}
 .tab-row{display:flex;gap:8px;margin-bottom:18px;}
 .tab{padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--soft);font-family:var(--sans);}
 .tab.on{background:var(--sea);color:var(--on-sea);border-color:var(--sea);}
@@ -783,18 +814,29 @@ textarea.note-input:focus{border-color:var(--sea-text);}
 <div class="section" id="s-mem-collections">
   <div class="page-title">Collections</div>
   <div class="page-sub">Everything you've read, watched, and experienced.</div>
-  <div class="tab-row" id="coll-tabs">
-    <button class="tab on" onclick="switchCollTab(this,'books')">📚 Books</button>
-    <button class="tab" onclick="switchCollTab(this,'movies')">🎬 Movies</button>
-    <button class="tab" onclick="switchCollTab(this,'shows')">📺 Shows</button>
-    <button class="tab" onclick="switchCollTab(this,'live')">🎭 Live</button>
-    <button class="tab" onclick="switchCollTab(this,'career')">💼 Career</button>
+  <div class="coll-bar">
+    <div class="tab-row" id="coll-tabs"></div>
+    <button class="btn btn-ghost coll-add-toggle" onclick="toggleCollForm()" id="coll-add-toggle">+ Add</button>
   </div>
-  <div class="card" id="tab-books"></div>
-  <div class="card" id="tab-movies" style="display:none;"></div>
-  <div class="card" id="tab-shows" style="display:none;"></div>
-  <div class="card" id="tab-live" style="display:none;"></div>
-  <div class="card" id="tab-career" style="display:none;"></div>
+
+  <!-- Add panel — hidden until asked for, so it never crowds the shelf -->
+  <div class="card coll-add-card" id="coll-add-card" style="display:none;">
+    <form class="coll-add" onsubmit="submitCollection(event)">
+      <div class="coll-add-grid">
+        <label>Type<select id="coll-type" onchange="syncCollStatusOptions()"></select></label>
+        <label>Status<select id="coll-status"></select></label>
+      </div>
+      <input id="coll-title" type="text" placeholder="Title" autocomplete="off">
+      <input id="coll-extra" type="text" placeholder="Author / details (optional)" autocomplete="off">
+      <div class="coll-add-row">
+        <button type="submit" class="btn">Add to collection</button>
+        <button type="button" class="btn btn-ghost" onclick="toggleCollForm(false)">Cancel</button>
+      </div>
+      <div class="coll-err" id="coll-err"></div>
+    </form>
+  </div>
+
+  <div id="coll-shelf"></div>
 </div>
 
 <!-- ── YEAR: ANNUAL REVIEW ── -->
@@ -1250,7 +1292,7 @@ applyTheme(localStorage.getItem('sos_theme') || 'light');
 })();
 
 // ═══════ COLLECTIONS ═══════
-const COLL_COLORS=['var(--teal)','var(--rose)','var(--coral)','var(--rose)','var(--gold)','var(--purple)','var(--leaf)'];
+const COLL_COLORS=['var(--cov1)','var(--cov2)','var(--cov3)','var(--cov4)','var(--cov5)','var(--cov6)','var(--cov7)'];
 const STATUS_CSS={'read':'status-read','currently reading':'status-reading','want to read':'status-want','watched':'status-read','want to watch':'status-want','attended':'status-read','want to see':'status-want','milestone':'status-reading'};
 const STATUS_LABEL={'read':'✓ read','currently reading':'currently reading','currently watching':'currently watching','want to read':'want to read','watched':'✓ watched','want to watch':'want to watch','attended':'✓ attended','want to see':'want to see','milestone':'milestone'};
 STATUS_CSS['currently watching']='status-reading';
@@ -1264,14 +1306,50 @@ const COLL_FORM={
   career:{title:'Milestone',   extra:'Details',          opts:['milestone']},
 };
 
-function switchCollTab(btn, tabId){
-  document.querySelectorAll('#coll-tabs .tab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  ['books','movies','shows','live','career'].forEach(t=>{
-    const el=document.getElementById('tab-'+t);
-    if(el) el.style.display = t===tabId ? 'block' : 'none';
-  });
-}
+const COLL_TYPES=[
+  {type:'book',  label:'Books',  icon:'📚'},
+  {type:'movie', label:'Movies', icon:'🎬'},
+  {type:'show',  label:'Shows',  icon:'📺'},
+  {type:'live',  label:'Live',   icon:'🎭'},
+  {type:'career',label:'Career', icon:'💼'},
+];
+
+// '' means "everything" — the shelf shows all types until she narrows it
+let collFilter = '';
+
+window.filterCollections = function(type){
+  collFilter = type;
+  renderCollections();
+};
+
+window.toggleCollForm = function(show){
+  const card = document.getElementById('coll-add-card');
+  const btn  = document.getElementById('coll-add-toggle');
+  if(!card) return;
+  const open = show===undefined ? card.style.display==='none' : show;
+  card.style.display = open ? '' : 'none';
+  if(btn) btn.textContent = open ? '× Close' : '+ Add';
+  if(open){
+    // Default the type to whatever shelf she's looking at
+    const sel=document.getElementById('coll-type');
+    if(sel && collFilter) sel.value = collFilter;
+    syncCollStatusOptions();
+    document.getElementById('coll-title')?.focus();
+  }
+};
+
+// Status options depend on the type — a book isn't "attended"
+window.syncCollStatusOptions = function(){
+  const type = document.getElementById('coll-type')?.value || 'book';
+  const sel  = document.getElementById('coll-status');
+  if(!sel) return;
+  const opts = (COLL_FORM[type]||COLL_FORM.book).opts;
+  sel.innerHTML = opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  const extra = document.getElementById('coll-extra');
+  if(extra) extra.placeholder = (COLL_FORM[type]||COLL_FORM.book).extra + ' (optional)';
+  const title = document.getElementById('coll-title');
+  if(title) title.placeholder = (COLL_FORM[type]||COLL_FORM.book).title;
+};
 
 function renderCollections(){
   const items = DB.get('collections', [
@@ -1281,49 +1359,73 @@ function renderCollections(){
     {date:'',type:'book',title:'Middlemarch',author:'George Eliot',status:'currently reading'},
   ]);
 
-  const typeMap={books:'book',movies:'movie',shows:'show',live:'live',career:'career'};
-  const labels={books:'📚 Books',movies:'🎬 Movies',shows:'📺 Shows',live:'🎭 Live',career:'💼 Career'};
+  // Filter chips — "All" first, each with a live count
+  const tabs = document.getElementById('coll-tabs');
+  if(tabs){
+    const chip=(t,label,n,active)=>
+      `<button class="tab${active?' on':''}" onclick="filterCollections('${t}')">${label}${n?` <span class="tab-n">${n}</span>`:''}</button>`;
+    tabs.innerHTML =
+      chip('', 'All', items.length, collFilter==='') +
+      COLL_TYPES.map(c=>chip(c.type, c.icon+' '+c.label,
+        items.filter(i=>i.type===c.type).length, collFilter===c.type)).join('');
+  }
 
-  Object.entries(typeMap).forEach(([tabKey, typeVal]) => {
-    const tabItems = items.filter(i=>i.type===typeVal);
-    const tabBtn = document.querySelector(`#coll-tabs .tab[onclick*="'${tabKey}'"]`);
-    if(tabBtn) tabBtn.textContent = labels[tabKey] + (tabItems.length ? ` (${tabItems.length})` : '');
+  // Populate the add form's type select once
+  const typeSel=document.getElementById('coll-type');
+  if(typeSel && !typeSel.options.length){
+    typeSel.innerHTML = COLL_TYPES.map(c=>`<option value="${c.type}">${c.icon} ${c.label}</option>`).join('');
+    syncCollStatusOptions();
+  }
 
-    const el = document.getElementById('tab-'+tabKey);
-    if(!el) return;
-    let html = tabItems.map((item,i) => `
-      <div class="book-item">
-        <div class="book-cover" style="background:${COLL_COLORS[i%COLL_COLORS.length]};"></div>
-        <div style="flex:1">
-          <div class="book-title">${escHtml(item.title)}</div>
-          ${item.author?`<div class="book-author">${escHtml(item.author)}</div>`:''}
-          <span class="book-status ${STATUS_CSS[item.status]||'status-want'}">${STATUS_LABEL[item.status]||item.status}${item.date?' · '+item.date:''}</span>
+  const shelf = document.getElementById('coll-shelf');
+  if(!shelf) return;
+
+  // Newest first, but keep each type's run together when showing everything
+  const shown = collFilter ? items.filter(i=>i.type===collFilter) : items;
+
+  if(!shown.length){
+    shelf.innerHTML = `<div class="card" style="color:var(--soft);font-size:14px;">
+      Nothing here yet. Hit <b>+ Add</b> to start the shelf.</div>`;
+    return;
+  }
+
+  const card = (item, i) => {
+    const accent = COLL_COLORS[i % COLL_COLORS.length];
+    const meta   = [STATUS_LABEL[item.status]||item.status, item.date].filter(Boolean).join(' · ');
+    const icon   = (COLL_TYPES.find(c=>c.type===item.type)||{}).icon || '';
+    return `
+      <article class="coll-card">
+        <div class="coll-cover" style="--cover:${accent};">
+          <span class="coll-cover-title">${escHtml(item.title)}</span>
+          <span class="coll-cover-icon">${icon}</span>
         </div>
-      </div>`).join('');
-    // Inline form. This used to be a chain of three native prompt() dialogs —
-    // if any one was dismissed or the browser suppressed them, the add silently
-    // did nothing, which is indistinguishable from "it didn't save".
-    const f = COLL_FORM[typeVal] || COLL_FORM.book;
-    html += `
-      <form class="coll-add" onsubmit="submitCollection(event,'${typeVal}')">
-        <input id="coll-title-${typeVal}" type="text" placeholder="${f.title}" autocomplete="off">
-        <input id="coll-extra-${typeVal}" type="text" placeholder="${f.extra} (optional)" autocomplete="off">
-        <div class="coll-add-row">
-          <select id="coll-status-${typeVal}">
-            ${f.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}
-          </select>
-          <button type="submit" class="btn" style="font-size:13px;">Add</button>
+        <div class="coll-meta">
+          ${item.author?`<div class="coll-author">${escHtml(item.author)}</div>`:''}
+          <span class="book-status ${STATUS_CSS[item.status]||'status-want'}">${escHtml(meta)}</span>
         </div>
-        <div class="coll-err" id="coll-err-${typeVal}"></div>
-      </form>`;
-    el.innerHTML = html;
-  });
+      </article>`;
+  };
+
+  if(collFilter){
+    shelf.innerHTML = `<div class="coll-grid">${shown.map(card).join('')}</div>`;
+  } else {
+    // Everything: one titled shelf per type, so browsing has landmarks
+    shelf.innerHTML = COLL_TYPES.map(c=>{
+      const group = items.filter(i=>i.type===c.type);
+      if(!group.length) return '';
+      return `
+        <section class="coll-section">
+          <h3 class="coll-section-head">${c.icon} ${c.label}<span class="coll-section-n">${group.length}</span></h3>
+          <div class="coll-grid">${group.map(card).join('')}</div>
+        </section>`;
+    }).join('');
+  }
 }
 
-window.submitCollection = function(ev, type){
+window.submitCollection = function(ev){
   ev.preventDefault();
-  const titleEl = document.getElementById('coll-title-'+type);
-  const errEl   = document.getElementById('coll-err-'+type);
+  const titleEl = document.getElementById('coll-title');
+  const errEl   = document.getElementById('coll-err');
   const title   = titleEl?.value?.trim() || '';
   if(!title){
     if(errEl) errEl.textContent = 'Enter a title first';
@@ -1331,11 +1433,18 @@ window.submitCollection = function(ev, type){
     return;
   }
   if(errEl) errEl.textContent = '';
-  const author = document.getElementById('coll-extra-'+type)?.value?.trim() || '';
-  const status = document.getElementById('coll-status-'+type)?.value || '';
+  const type   = document.getElementById('coll-type')?.value || 'book';
+  const author = document.getElementById('coll-extra')?.value?.trim() || '';
+  const status = document.getElementById('coll-status')?.value || '';
   const date   = todayStr();
 
   if(DB.push('collections', {date, type, title, author, status}) === null) return; // storage blocked; DB warned
+  // Clear the form but leave it open — adding several in a row is the common case
+  if(titleEl) titleEl.value='';
+  const extraEl=document.getElementById('coll-extra');
+  if(extraEl) extraEl.value='';
+  titleEl?.focus();
+  collFilter = '';   // make sure the new item is actually on screen
   renderCollections();
   showToast('Added ✓');
   sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],[date,type,title,author,status]);
