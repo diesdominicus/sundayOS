@@ -12,11 +12,19 @@
  * WHICH TABS MATTER
  *   Habits       one row per day, one column per habit — edit ticks here
  *   Collections  one row per item — edit, reorder, or delete rows here
+ *   Quotes       read-only from the app's side; you own this tab entirely
  *   _AppSync     machine-readable JSON blob. Ignore it; don't edit by hand.
  *
  * Habits and Collections are two-way: the app rewrites them whenever you change
  * something in the app, and reads them back on load, so edits you make in the
  * spreadsheet show up in the app.
+ *
+ * Quotes is one-way (sheet → app); the app never writes it. Columns:
+ *   Quote          the text, without surrounding quotation marks
+ *   Author         e.g. St. Faustina Kowalska
+ *   Feast Date     OPTIONAL. If set, that quote is pinned to that day every
+ *                  year. "Oct 5", "October 5", and "10/5" all work. Leave it
+ *                  blank and the quote simply joins the year-round rotation.
  */
 
 var BLOB_SHEET = '_AppSync';
@@ -44,7 +52,8 @@ function doGet(e) {
   if (action === 'tables') {
     return jsonOut({
       Collections: readTable('Collections'),
-      Habits:      readTable('Habits')
+      Habits:      readTable('Habits'),
+      Quotes:      readTable('Quotes')
     });
   }
 

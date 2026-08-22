@@ -1273,24 +1273,80 @@ applyTheme(localStorage.getItem('sos_theme') || 'light');
     const wx=document.getElementById('wx');
     if(wx) wx.innerHTML=`<span style="font-size:28px;line-height:1;">${emoji}</span><span class="t">${Math.round(j.current.temperature_2m)}°</span><span class="m">New York City${desc?'<br>'+desc:''}</span>`;
   }).catch(()=>{const wx=document.getElementById('wx');if(wx) wx.innerHTML='<span class="m">weather offline</span>';});
-  // Rotating quotes — add yours to the Quotes tab in your Google Sheet
-  const QUOTES=[
-    {q:'Be who God meant you to be and you will set the world on fire.',a:'St. Catherine of Siena'},
-    {q:'You have made us for yourself, O Lord, and our heart is restless until it rests in you.',a:'St. Augustine'},
-    {q:'Start by doing what\'s necessary, then what\'s possible, and suddenly you are doing the impossible.',a:'St. Francis of Assisi'},
-    {q:'God does not ask about our ability or our inability, but our availability.',a:'Mary Kay Ash'},
-    {q:'To fall in love with God is the greatest romance; to seek him, the greatest adventure.',a:'St. Augustine'},
-    {q:'Don\'t pray when you feel like it. Have an appointment with the Lord and keep it.',a:'Corrie ten Boom'},
-    {q:'A saint is not someone who never sins, but one who sins less and less and gets up faster and faster.',a:'St. Francis de Sales'},
-    {q:'If you are what you should be, you will set the whole world ablaze.',a:'St. Catherine of Siena'},
-  ];
-  // Pick quote by day-of-year so it changes daily but is consistent all day
-  const doy=Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);
-  const q=QUOTES[doy%QUOTES.length];
-  const qEl=document.getElementById('qp');const qCite=document.querySelector('.quote cite');
-  if(qEl) qEl.textContent='“'+q.q+'”';
-  if(qCite) qCite.textContent='— '+q.a;
 })();
+
+// ═══════ QUOTE OF THE DAY ═══════
+// Seed quotes, used until the Quotes tab in Sheets is readable.
+const FALLBACK_QUOTES=[
+  {text:'Be who God meant you to be and you will set the world on fire.',author:'St. Catherine of Siena',md:''},
+  {text:'You have made us for yourself, O Lord, and our heart is restless until it rests in you.',author:'St. Augustine',md:''},
+  {text:'Start by doing what\'s necessary, then what\'s possible, and suddenly you are doing the impossible.',author:'St. Francis of Assisi',md:''},
+  {text:'To fall in love with God is the greatest romance; to seek him, the greatest adventure.',author:'St. Augustine',md:''},
+  {text:'Don\'t pray when you feel like it. Have an appointment with the Lord and keep it.',author:'Corrie ten Boom',md:''},
+  {text:'A saint is not someone who never sins, but one who sins less and less and gets up faster and faster.',author:'St. Francis de Sales',md:''},
+];
+
+// "Oct 5" / "October 5" / "10/5" / "2026-10-05" / "5 Oct"  →  "10-05"
+const _MONTHS={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',
+               jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
+function toMonthDay(raw){
+  if(!raw) return '';
+  const s=String(raw).trim();
+  const pad=n=>String(n).padStart(2,'0');
+  let m=s.match(/^\d{4}-(\d{2})-(\d{2})$/);            if(m) return m[1]+'-'+m[2];
+  m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})$/);            if(m) return pad(m[1])+'-'+pad(m[2]); // US order
+  m=s.match(/^([A-Za-z]{3,})\.?\s+(\d{1,2})/);
+  if(m){ const mo=_MONTHS[m[1].slice(0,3).toLowerCase()]; if(mo) return mo+'-'+pad(m[2]); }
+  m=s.match(/^(\d{1,2})\s+([A-Za-z]{3,})/);
+  if(m){ const mo=_MONTHS[m[2].slice(0,3).toLowerCase()]; if(mo) return mo+'-'+pad(m[1]); }
+  return '';
+}
+
+// Deterministic shuffle — same seed always yields the same order, so every
+// device shows the same quote on the same day with nothing stored.
+function seededShuffle(arr, seed){
+  const a=arr.slice();
+  let s=(seed>>>0)||1;
+  const rnd=()=>{ s=(s*1664525+1013904223)>>>0; return s/4294967296; };
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function getQuotes(){
+  const q=DB.get('quotes',null);
+  return (Array.isArray(q) && q.length) ? q : FALLBACK_QUOTES;
+}
+
+function pickQuoteFor(date){
+  const quotes=getQuotes();
+  if(!quotes.length) return null;
+  const pad=n=>String(n).padStart(2,'0');
+  const md=pad(date.getMonth()+1)+'-'+pad(date.getDate());
+
+  // A saint's own words on their feast day always win
+  const feast=quotes.filter(q=>q.md===md);
+  if(feast.length) return feast[date.getFullYear()%feast.length];
+
+  // Otherwise walk a shuffled deck. Not Math.random(): with ~100 quotes over
+  // 265 days, random leaves ~7 never shown while another repeats 13 times.
+  // A deck reshuffled once a year shows every quote 2–3 times, ~100 days apart.
+  const doy=Math.floor((date-new Date(date.getFullYear(),0,0))/864e5);
+  const deck=seededShuffle(quotes, date.getFullYear()*2654435761);
+  return deck[doy % deck.length];
+}
+
+function renderQuote(){
+  const q=pickQuoteFor(new Date());
+  if(!q) return;
+  const qEl=document.getElementById('qp');
+  const qCite=document.querySelector('.quote cite');
+  if(qEl)   qEl.textContent='“'+q.text+'”';
+  if(qCite) qCite.textContent=q.author?('— '+q.author):'';
+}
+
+// Called here, not from the block above — the consts it reads are declared in
+// this section, so calling it any earlier throws and kills the rest of the file.
+renderQuote();
 
 // ═══════ COLLECTIONS ═══════
 const COLL_COLORS=['var(--cov1)','var(--cov2)','var(--cov3)','var(--cov4)','var(--cov5)','var(--cov6)','var(--cov7)'];
@@ -1461,7 +1517,7 @@ const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWV
 // setup that was already done on another one.
 const SYNC_KEYS=['habits_def','habit_logs','today_log','brain','body','money',
                  'relationships','cal_events','collections','travel','gcal_ics_url','gcal_ics_url2',
-                 'gcid'];
+                 'gcid','quotes'];
 
 // Push full state to Sheets _AppSync tab — called after every save
 function saveAllToSheets(){
@@ -1612,6 +1668,23 @@ async function loadTablesFromSheets(){
     DB.set('habit_logs', logs);
   } else if(Object.keys(getLogs()).length){
     writeHabitsTable();
+  }
+
+  // Quotes — one-way, sheet owns it. Column names are matched loosely so the
+  // tab works whether the headers say Quote/Text, Author/Saint, Feast Date/Date.
+  if(Array.isArray(data.Quotes)){
+    const pick=(row,names)=>{
+      for(const k of Object.keys(row)){
+        if(names.includes(k.trim().toLowerCase())) return String(row[k]||'').trim();
+      }
+      return '';
+    };
+    const quotes=data.Quotes.map(r=>({
+      text:   pick(r,['quote','text','saying']).replace(/^["“”']+|["“”']+$/g,''),
+      author: pick(r,['author','saint','who','by']),
+      md:     toMonthDay(pick(r,['feast date','feast','date','day']))
+    })).filter(q=>q.text);
+    if(quotes.length) DB.set('quotes', quotes);
   }
   return true;
 }
@@ -2630,7 +2703,7 @@ function startApp(){
     // on a new browser doesn't hit the setup prompt again.
     if(getClientId()) saveAllToSheets();
     // Then let the readable tabs override — they're the ones she edits.
-    if(await loadTablesFromSheets()) renderAll();
+    if(await loadTablesFromSheets()){ renderAll(); renderQuote(); }
   });
   loadGCalEvents();
 }
