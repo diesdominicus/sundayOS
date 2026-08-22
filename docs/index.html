@@ -195,6 +195,13 @@ textarea.note-input:focus{border-color:var(--sea-text);}
 .status-read{background:var(--accent-bg);color:var(--accent-ink);}
 .status-reading{background:var(--accent-bg);color:var(--accent-ink);}
 .status-want{background:var(--surface2);color:var(--soft);}
+.coll-add{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:8px;}
+.coll-add input,.coll-add select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:8px 11px;font-size:13px;font-family:var(--sans);color:var(--ink);background:var(--surface2);outline:none;}
+.coll-add input:focus,.coll-add select:focus{border-color:var(--sea-text);}
+.coll-add-row{display:flex;gap:8px;align-items:center;}
+.coll-add-row select{flex:1;}
+.coll-err{font-size:12px;color:var(--neg);min-height:0;}
+.coll-err:empty{display:none;}
 .tab-row{display:flex;gap:8px;margin-bottom:18px;}
 .tab{padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--soft);font-family:var(--sans);}
 .tab.on{background:var(--sea);color:var(--on-sea);border-color:var(--sea);}
@@ -807,10 +814,24 @@ textarea.note-input:focus{border-color:var(--sea-text);}
 
 <script>
 // ═══════ DB — localStorage wrapper ═══════
+let _storageWarned = false;
 const DB = {
   get(k, def=null){ try{ const v=localStorage.getItem('sos_'+k); return v!==null ? JSON.parse(v) : def; } catch{ return def; } },
-  set(k, v){ try{ localStorage.setItem('sos_'+k, JSON.stringify(v)); } catch{} },
-  push(k, item, max=500){ const arr=this.get(k,[]); arr.unshift(item); if(arr.length>max) arr.pop(); this.set(k,arr); return arr; }
+  has(k){ try{ return localStorage.getItem('sos_'+k)!==null; } catch{ return false; } },
+  // Returns false when the write failed. Never fail silently: a swallowed
+  // error here looks exactly like "I saved it and it vanished".
+  set(k, v){
+    try{ localStorage.setItem('sos_'+k, JSON.stringify(v)); return true; }
+    catch(e){
+      console.error('Could not save "'+k+'" to localStorage:', e);
+      if(!_storageWarned){
+        _storageWarned = true;
+        try{ showToast("⚠ Can't save — private browsing or storage is full"); }catch{}
+      }
+      return false;
+    }
+  },
+  push(k, item, max=500){ const arr=this.get(k,[]); arr.unshift(item); if(arr.length>max) arr.pop(); return this.set(k,arr) ? arr : null; }
 };
 
 // ═══════ NAV CONFIG ═══════
@@ -1231,7 +1252,17 @@ applyTheme(localStorage.getItem('sos_theme') || 'light');
 // ═══════ COLLECTIONS ═══════
 const COLL_COLORS=['var(--teal)','var(--rose)','var(--coral)','var(--rose)','var(--gold)','var(--purple)','var(--leaf)'];
 const STATUS_CSS={'read':'status-read','currently reading':'status-reading','want to read':'status-want','watched':'status-read','want to watch':'status-want','attended':'status-read','want to see':'status-want','milestone':'status-reading'};
-const STATUS_LABEL={'read':'✓ read','currently reading':'currently reading','want to read':'want to read','watched':'✓ watched','want to watch':'want to watch','attended':'✓ attended','want to see':'want to see','milestone':'milestone'};
+const STATUS_LABEL={'read':'✓ read','currently reading':'currently reading','currently watching':'currently watching','want to read':'want to read','watched':'✓ watched','want to watch':'want to watch','attended':'✓ attended','want to see':'want to see','milestone':'milestone'};
+STATUS_CSS['currently watching']='status-reading';
+
+// Per-type copy for the inline add form
+const COLL_FORM={
+  book:  {title:'Book title',  extra:'Author',           opts:['want to read','currently reading','read']},
+  movie: {title:'Movie title', extra:'Director',         opts:['want to watch','watched']},
+  show:  {title:'Show title',  extra:'Creator / network',opts:['want to watch','currently watching','watched']},
+  live:  {title:'Event name',  extra:'Venue / artist',   opts:['want to see','attended']},
+  career:{title:'Milestone',   extra:'Details',          opts:['milestone']},
+};
 
 function switchCollTab(btn, tabId){
   document.querySelectorAll('#coll-tabs .tab').forEach(t=>t.classList.remove('on'));
@@ -1269,23 +1300,45 @@ function renderCollections(){
           <span class="book-status ${STATUS_CSS[item.status]||'status-want'}">${STATUS_LABEL[item.status]||item.status}${item.date?' · '+item.date:''}</span>
         </div>
       </div>`).join('');
-    html += `<div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;" onclick="addCollection('${typeVal}')">+ Add</button></div>`;
+    // Inline form. This used to be a chain of three native prompt() dialogs —
+    // if any one was dismissed or the browser suppressed them, the add silently
+    // did nothing, which is indistinguishable from "it didn't save".
+    const f = COLL_FORM[typeVal] || COLL_FORM.book;
+    html += `
+      <form class="coll-add" onsubmit="submitCollection(event,'${typeVal}')">
+        <input id="coll-title-${typeVal}" type="text" placeholder="${f.title}" autocomplete="off">
+        <input id="coll-extra-${typeVal}" type="text" placeholder="${f.extra} (optional)" autocomplete="off">
+        <div class="coll-add-row">
+          <select id="coll-status-${typeVal}">
+            ${f.opts.map(o=>`<option value="${o}">${o}</option>`).join('')}
+          </select>
+          <button type="submit" class="btn" style="font-size:13px;">Add</button>
+        </div>
+        <div class="coll-err" id="coll-err-${typeVal}"></div>
+      </form>`;
     el.innerHTML = html;
   });
 }
 
-window.addCollection = function(type){
-  const prmpt={book:'Book title?',movie:'Movie title?',show:'Show title?',live:'Event name?',career:'Milestone?'};
-  const title = prompt(prmpt[type]||'Title?'); if(!title) return;
-  const auth2={book:'Author?',movie:'Director (optional)',show:'Creator / Network',live:'Venue / Artist',career:'Details'};
-  const author = prompt(auth2[type]||'Details?') || '';
-  const opts={book:['want to read','currently reading','read'],movie:['want to watch','watched'],show:['want to watch','currently reading','watched'],live:['want to see','attended'],career:['milestone']};
-  const o = opts[type]||[''];
-  const status = o.length===1 ? o[0] : (prompt('Status? ('+o.join(' / ')+')') || o[0]);
-  DB.push('collections', {date:todayStr(), type, title, author, status});
+window.submitCollection = function(ev, type){
+  ev.preventDefault();
+  const titleEl = document.getElementById('coll-title-'+type);
+  const errEl   = document.getElementById('coll-err-'+type);
+  const title   = titleEl?.value?.trim() || '';
+  if(!title){
+    if(errEl) errEl.textContent = 'Enter a title first';
+    titleEl?.focus();
+    return;
+  }
+  if(errEl) errEl.textContent = '';
+  const author = document.getElementById('coll-extra-'+type)?.value?.trim() || '';
+  const status = document.getElementById('coll-status-'+type)?.value || '';
+  const date   = todayStr();
+
+  if(DB.push('collections', {date, type, title, author, status}) === null) return; // storage blocked; DB warned
   renderCollections();
   showToast('Added ✓');
-  sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],[todayStr(),type,title,author,status]);
+  sendToSheets('Collections',['Date','Type','Title','Author/Details','Status'],[date,type,title,author,status]);
   saveAllToSheets();
 };
 
@@ -1326,8 +1379,12 @@ function mergeRemote(remote){
     collections:   e=>e.date+e.title,
   };
   Object.entries(arrayKeys).forEach(([k,sig])=>{
-    const local = DB.get(k,[]);
     const rem = remote[k]||[];
+    // Nothing on either side? Leave the key absent rather than writing [].
+    // Writing an empty array here permanently masks the seeded defaults,
+    // because those only apply when the key has never been stored.
+    if(!DB.has(k) && rem.length===0) return;
+    const local = DB.get(k,[]);
     const seen = new Set(local.map(sig));
     const merged = [...local, ...rem.filter(e=>!seen.has(sig(e)))];
     DB.set(k, merged);
