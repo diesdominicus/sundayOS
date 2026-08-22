@@ -1293,8 +1293,12 @@ window.addCollection = function(type){
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxwpnKolo9iqWN_MVvsJWVMIeDgv4EOuA7oC3OnsK1hAHcUhQy2WYINmdonhKhazHGZ/exec';
 
 // ── Keys that travel between devices via Sheets ──
+// 'gcid' is the Google OAuth *Client ID* — public by design (it ships in this
+// page's source), not a secret. It travels so a new browser doesn't re-ask for
+// setup that was already done on another one.
 const SYNC_KEYS=['habits_def','habit_logs','today_log','brain','body','money',
-                 'relationships','cal_events','collections','travel','gcal_ics_url','gcal_ics_url2'];
+                 'relationships','cal_events','collections','travel','gcal_ics_url','gcal_ics_url2',
+                 'gcid'];
 
 // Push full state to Sheets _AppSync tab — called after every save
 function saveAllToSheets(){
@@ -1339,6 +1343,12 @@ function mergeRemote(remote){
   // Scalar / object keys: take remote only if local hasn't been modified since last sync
   ['habits_def','travel'].forEach(k=>{
     if(remote[k]!==undefined) DB.set(k, remote[k]);
+  });
+  // Setup keys: adopt the remote value when this browser has none of its own.
+  // Without this a fresh browser would merge, find nothing locally, then push a
+  // blob missing these keys — dropping them for every other device.
+  ['gcal_ics_url','gcal_ics_url2','gcid'].forEach(k=>{
+    if(remote[k]!==undefined && remote[k]!==null && DB.get(k,null)===null) DB.set(k, remote[k]);
   });
 }
 
@@ -2271,7 +2281,23 @@ function renderAll(){
 // ═══════ GOOGLE SIGN-IN ═══════
 const ALLOWED_EMAIL = 'domenicadottavio@gmail.com';
 // Paste your OAuth Client ID here once you have it (see instructions below)
-const GOOGLE_CLIENT_ID = DB.get('gcid', null) || '';
+// Read lazily — init() may pull the Client ID from Sheets before sign-in,
+// so this must not be captured once at load.
+function getClientId(){ return DB.get('gcid', null) || ''; }
+
+// Fetch just the Client ID from the Sheets blob. This read needs no auth,
+// which is what lets a brand-new browser sign in without re-doing setup.
+async function fetchClientIdFromSheets(){
+  try{
+    const res    = await fetch(SCRIPT_URL+'?action=read',{redirect:'follow'});
+    const remote = JSON.parse(await res.text());
+    if(remote && typeof remote.gcid==='string' && remote.gcid.trim()){
+      DB.set('gcid', remote.gcid.trim());
+      return true;
+    }
+  }catch(e){ console.warn('Could not fetch Client ID from Sheets:', e); }
+  return false;
+}
 
 function parseJwt(token){
   try{ return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); }
@@ -2286,10 +2312,10 @@ function showApp(){
 function showSignIn(){
   document.getElementById('signin-overlay').style.display = 'flex';
   document.getElementById('app-shell').style.display = 'none';
-  if(GOOGLE_CLIENT_ID){
+  if(getClientId()){
     // Render Google button
     google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
+      client_id: getClientId(),
       callback: onGoogleSignIn,
       auto_select: true,
       cancel_on_tap_outside: false,
@@ -2300,17 +2326,22 @@ function showSignIn(){
   } else {
     // Client ID not set — show setup prompt
     document.getElementById('g_id_signin').innerHTML =
-      `<div style="font-size:13px;color:var(--soft);text-align:center;max-width:300px;">
-        <b>One-time setup needed:</b><br>Enter your Google OAuth Client ID below to enable sign-in.
+      `<div style="font-size:13px;color:var(--soft-ground);text-align:center;max-width:320px;">
+        <b>Paste your Google Client ID to sign in.</b><br>
+        Couldn't find one saved here or on your other devices.
         <br><br>
         <input id="gcid-input" type="text" placeholder="xxxx.apps.googleusercontent.com"
           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);
           border-radius:10px;font-size:13px;margin-bottom:10px;">
         <button onclick="saveClientId()" style="padding:10px 22px;background:var(--sea);color:var(--on-sea);
-          border:none;border-radius:20px;font-size:14px;cursor:pointer;">Save & continue</button>
-        <br><br><span style="font-size:11px;opacity:.6;">
-          Get it at console.cloud.google.com → APIs & Services → Credentials → OAuth 2.0 Client ID (Web).<br>
-          Add https://diesdominicus.github.io as an authorized JavaScript origin.
+          border:none;border-radius:20px;font-size:14px;cursor:pointer;">Save &amp; continue</button>
+        <br><br><span style="font-size:11px;opacity:.75;">
+          Already signed in on another browser? Open sundayOS there once — it'll
+          share the ID and this screen won't come back.
+          <br><br>
+          Otherwise: console.cloud.google.com → APIs &amp; Services → Credentials →
+          OAuth 2.0 Client ID (Web). Add https://diesdominicus.github.io as an
+          authorized JavaScript origin.
         </span>
       </div>`;
   }
@@ -2320,7 +2351,8 @@ window.saveClientId = function(){
   const id = document.getElementById('gcid-input')?.value?.trim();
   if(!id){ alert('Paste your Client ID first'); return; }
   DB.set('gcid', id);
-  location.reload(); // reload so the new client ID takes effect
+  saveAllToSheets();   // share it so other browsers never have to ask again
+  location.reload();   // reload so the new client ID takes effect
 };
 
 function onGoogleSignIn(response){
@@ -2348,12 +2380,16 @@ function startApp(){
   }
   renderAll();
   showGCalUI();
-  loadFromSheets();
+  loadFromSheets().then(()=>{
+    // Make sure this browser's Client ID is in the shared blob, so signing in
+    // on a new browser doesn't hit the setup prompt again.
+    if(getClientId()) saveAllToSheets();
+  });
   loadGCalEvents();
 }
 
 // ═══════ INIT ═══════
-(function init(){
+(async function init(){
   const cred = DB.get('gsi_cred', null);
   const exp  = DB.get('gsi_exp', 0);
   const stillValid = cred && Date.now() < exp;
@@ -2363,6 +2399,10 @@ function startApp(){
     startApp();
     return;
   }
+
+  // New browser with no stored Client ID? Pull it from Sheets before giving up
+  // and asking for setup — it was almost certainly already entered elsewhere.
+  if(!getClientId()) await fetchClientIdFromSheets();
 
   // Not signed in — show sign-in screen
   // GSI library loads async; wait for it
@@ -2375,7 +2415,7 @@ function startApp(){
   }
 
   // If no Client ID yet, show setup screen immediately (no GSI needed)
-  if(!GOOGLE_CLIENT_ID){
+  if(!getClientId()){
     showSignIn();
   } else {
     tryShowSignIn();
