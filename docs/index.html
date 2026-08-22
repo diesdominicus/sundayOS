@@ -2,70 +2,96 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DOMENICA OS</title>
+<!-- Set the theme before first paint so there's no flash of the wrong palette -->
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('sos_theme')||'light');</script>
 <script src="https://accounts.google.com/gsi/client" async></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 <style>
+/* ═══ AUTUMN PALETTE — light (default) ═══ */
 :root{
-  --ground:#EFE9D8;--panel:#D7E7F0;--surface:#FCFAF2;--surface2:#EAF2F8;
-  --ink:#274B6B;--soft:#6E8093;--line:#E5DDCA;
-  --sea:#3E7CA8;--sea-deep:#2C5D82;--sea-bg:#DCEAF3;
-  --lemon:#E7B12F;--lemon-bg:#FBEEC2;--leaf:#6E9A5E;--cream:#FCFAF2;
-  --rose:#C77E92;--coral:#D08A5A;--purple:#8A6BA8;--teal:#4FA3A0;--gold:#E0B24A;
+  --ground:#A79494;--panel:#603A40;--surface:#EFE9E7;--surface2:#DDD2D2;
+  --ink:#2A1A1E;--soft:#6B5158;--soft-ground:#3E2A30;--line:#D6C8C8;
+  --sea:#3D3858;--sea-text:#3D3858;--sea-deep:#2C2843;--sea-bg:#DFDBE8;--on-sea:#F5F0EA;
+  --accent:#84596B;--accent-bg:#E5D9DE;--accent-ink:#5A3A48;--neg:#8C3A32;
+  /* rail is dark in both themes, so it carries its own text tokens */
+  --rail-ink:#F0E8DB;--rail-dim:#C1B0AA;--rail-on:rgba(240,232,219,.15);--rail-deco:rgba(240,232,219,.26);
+  --leaf:#4E6046;--rose:#AF7D91;--coral:#A5624A;--purple:#6E5B87;--teal:#4E6E6B;--gold:#A8813F;
+  /* decorative tints — photo placeholders, sticky notes, avatars */
+  --map-land:#BEB2B2;--map-sea:#E9E5EF;--tint1:#C9C1B5;--tint2:#DAC8B9;--tint3:#C6C2CE;--tint4:#D5CCDE;--tint5:#D8E0D2;--tint6:#E5D9DE;
   --voice:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
   --sans:'Avenir Next','Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+/* ═══ AUTUMN PALETTE — dark ═══ */
+[data-theme="dark"]{
+  --ground:#12100E;--panel:#3D3858;--surface:#603A40;--surface2:#43262C;
+  --ink:#F0EBE5;--soft:#D8BAC1;--soft-ground:#C9A8B0;--line:rgba(240,232,219,.22);
+  --sea:#554C73;--sea-text:#C9B8D2;--sea-deep:#AF9BB6;--sea-bg:#2E2A40;--on-sea:#F5F0EA;
+  --accent:#AF9BB6;--accent-bg:#4A3140;--accent-ink:#E3CBD4;--neg:#E7A596;
+  --rail-ink:#E8DDD0;--rail-dim:#B5ACAC;--rail-on:rgba(175,155,182,.18);--rail-deco:rgba(175,155,182,.32);
+  --leaf:#A8C098;--rose:#C79AA8;--coral:#C58468;--purple:#9384AD;--teal:#709894;--gold:#C3A063;
+  --map-land:#43262C;--map-sea:#2E2A40;--tint1:#3B342D;--tint2:#40332C;--tint3:#302E3B;--tint4:#38303F;--tint5:#333A31;--tint6:#3F3037;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--sans);color:var(--ink);background:var(--ground);}
 
 /* ── LAYOUT ── */
 .app{min-height:100vh;display:grid;grid-template-columns:238px 1fr;}
-.rail{background:var(--panel);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;}
+.rail{background:var(--panel);padding:22px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;}
 .main{padding:22px;min-width:0;overflow-y:auto;}
 
 /* ── SIDEBAR ── */
 .me{padding:6px 10px 18px;}
-.avatar{width:48px;height:48px;border-radius:50%;background:var(--sea);display:grid;place-items:center;color:#fff;font-family:var(--voice);font-size:20px;margin-bottom:10px;}
-.me h1{font-family:var(--voice);font-weight:400;font-size:21px;white-space:nowrap;}
-.me span{font-size:12px;color:var(--soft);font-style:italic;line-height:1.4;display:block;margin-top:4px;}
-.nav-hub{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:13px;color:var(--sea-deep);font-size:14px;cursor:pointer;margin-bottom:1px;user-select:none;}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--rail-on);display:grid;place-items:center;color:var(--rail-ink);font-family:var(--voice);font-size:20px;margin-bottom:10px;border:1px solid var(--rail-deco);}
+.me h1{font-family:var(--voice);font-weight:400;font-size:21px;white-space:nowrap;color:var(--rail-ink);}
+.me span{font-size:12px;color:var(--rail-dim);font-style:italic;line-height:1.4;display:block;margin-top:4px;}
+.nav-hub{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:13px;color:var(--rail-dim);font-size:14px;cursor:pointer;margin-bottom:1px;user-select:none;transition:background .15s,color .15s;}
 .nav-hub svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
-.nav-hub:hover{background:rgba(255,255,255,.45);}
-.nav-hub.on{background:var(--cream);font-weight:600;box-shadow:0 3px 10px rgba(40,75,107,.10);}
+.nav-hub:hover{background:var(--rail-on);color:var(--rail-ink);}
+.nav-hub.on{background:var(--rail-on);color:var(--rail-ink);font-weight:600;}
 .nav-hub.group-label{pointer-events:auto;}
-.nav-sub{display:flex;align-items:center;gap:9px;padding:6px 10px 6px 32px;border-radius:10px;color:var(--sea-deep);font-size:13px;cursor:pointer;margin-bottom:1px;user-select:none;opacity:.85;}
+.nav-sub{display:flex;align-items:center;gap:9px;padding:6px 10px 6px 32px;border-radius:10px;color:var(--rail-dim);font-size:13px;cursor:pointer;margin-bottom:1px;user-select:none;opacity:.8;transition:color .15s,opacity .15s;}
 .nav-sub svg.i{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0;}
-.nav-sub:hover{background:rgba(255,255,255,.38);}
-.nav-sub.on{background:var(--cream);font-weight:600;opacity:1;box-shadow:0 2px 8px rgba(40,75,107,.08);}
+.nav-sub:hover{color:var(--rail-ink);opacity:1;}
+.nav-sub.on{color:var(--rail-ink);font-weight:600;opacity:1;}
+
+/* ── RAIL ornament + footer ── */
+.rail-ornament{margin-top:auto;padding:18px 14px 6px;display:flex;justify-content:center;color:var(--rail-deco);}
+.rail-ornament svg{width:100%;max-width:132px;height:auto;}
+.rail-foot{padding:4px 6px 2px;}
+.theme-toggle{display:flex;align-items:center;gap:8px;width:100%;background:transparent;border:1px solid var(--rail-deco);color:var(--rail-dim);border-radius:10px;padding:7px 11px;font-size:12px;font-family:var(--sans);cursor:pointer;transition:color .15s,border-color .15s;}
+.theme-toggle:hover{color:var(--rail-ink);border-color:var(--rail-ink);}
+.theme-toggle svg{width:15px;height:15px;flex-shrink:0;}
+.sync-line{padding:9px 5px 4px;font-size:11px;color:var(--rail-dim);display:flex;align-items:center;gap:5px;}
+.sync-line #sync-badge{font-weight:600;color:var(--rail-ink);}
 
 /* ── CARDS ── */
 .card{background:var(--surface);border-radius:22px;padding:20px 22px;}
 .cards{columns:300px;column-gap:18px;}
 .cards>.card{break-inside:avoid;margin:0 0 18px;display:inline-block;width:100%;}
 h3.lbl{font-size:13px;letter-spacing:.03em;color:var(--soft);margin:0 0 14px;display:flex;align-items:center;gap:9px;font-weight:600;}
-h3.lbl svg{width:16px;height:16px;stroke:var(--sea);fill:none;stroke-width:1.8;}
-h3.lbl .r{margin-left:auto;font-size:12px;color:var(--sea);font-weight:500;cursor:pointer;}
+h3.lbl svg{width:16px;height:16px;stroke:var(--sea-text);fill:none;stroke-width:1.8;}
+h3.lbl .r{margin-left:auto;font-size:12px;color:var(--sea-text);font-weight:500;cursor:pointer;}
 .page-title{font-family:var(--voice);font-weight:400;font-size:28px;margin-bottom:6px;}
-.page-sub{color:var(--soft);font-size:14px;margin-bottom:22px;}
+.page-sub{color:var(--soft-ground);font-size:14px;margin-bottom:22px;}
 
 /* ── HOME hero ── */
-.hero{position:relative;overflow:hidden;background:linear-gradient(160deg,#DCEAF3 0%,#EAF2F8 55%,#FCFAF2 100%);margin-bottom:18px;}
-.hero .branch{position:absolute;top:-4px;right:12px;width:190px;}
-.hero .wave{position:absolute;left:0;right:0;bottom:-2px;height:42px;color:var(--sea-bg);}
+.hero{position:relative;overflow:hidden;background:var(--surface);margin-bottom:18px;}
+.hero .branch{position:absolute;top:16px;right:22px;width:44px;height:auto;color:var(--accent);opacity:.9;}
 .hero .in{position:relative;z-index:1;}
-.litday{font-size:13px;color:var(--sea);font-weight:500;}
-.feast{display:inline-block;margin-top:7px;background:var(--lemon-bg);color:#8a6a14;font-size:12px;padding:3px 11px;border-radius:20px;}
+.litday{font-size:13px;color:var(--sea-text);font-weight:500;}
+.feast{display:inline-block;margin-top:7px;background:var(--accent-bg);color:var(--accent-ink);font-size:12px;padding:3px 11px;border-radius:20px;}
 .feast b{font-weight:700;}
 .hero h2{font-family:var(--voice);font-weight:400;font-size:33px;margin:10px 0 0;}
 .hero .sub{color:var(--soft);font-size:14px;margin-top:6px;}
 .wx{display:flex;align-items:center;gap:10px;margin-top:14px;}
 .wx .t{font-size:24px;font-weight:700;}.wx .m{font-size:13px;color:var(--soft);}
-.quote{background:var(--sea);color:#fff;margin-bottom:18px;}
+.quote{background:var(--sea);color:var(--on-sea);margin-bottom:18px;}
 .quote p{font-family:var(--voice);font-size:19px;line-height:1.5;margin:0 0 8px;}
 .quote cite{font-style:normal;font-size:13px;opacity:.85;}
 
 /* ── HABITS ── */
 .weekhead{display:flex;align-items:center;gap:10px;margin-left:auto;font-size:12px;color:var(--soft);}
-.weekhead button{border:none;background:var(--surface2);color:var(--sea);border-radius:7px;width:22px;height:22px;cursor:pointer;font-size:13px;}
+.weekhead button{border:none;background:var(--surface2);color:var(--sea-text);border-radius:7px;width:22px;height:22px;cursor:pointer;font-size:13px;}
 table.hw{width:100%;border-collapse:collapse;}
 table.hw th{font-size:11px;color:var(--soft);font-weight:600;padding:0 0 8px;text-align:center;}
 table.hw td{padding:6px 0;font-size:13.5px;}
@@ -74,19 +100,19 @@ table.hw td.c{text-align:center;padding:3px 2px;}
 .dot{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:var(--surface2);display:inline-grid;place-items:center;cursor:pointer;-webkit-appearance:none;font-family:inherit;touch-action:manipulation;transition:background .12s,border-color .12s;}
 .dot:active{transform:scale(.9);}
 .dot.on{background:var(--sea);border-color:var(--sea);}
-.dot.on svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3;}
-.dot.lem.on{background:var(--lemon);border-color:var(--lemon);}
-.dot.today{outline:2px solid var(--lemon);outline-offset:2px;}
+.dot.on svg{width:12px;height:12px;stroke:var(--on-sea);fill:none;stroke-width:3;}
+.dot.acc.on{background:var(--accent);border-color:var(--accent);}
+.dot.today{outline:2px solid var(--accent);outline-offset:2px;}
 .hfoot{display:flex;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);font-size:13px;color:var(--soft);}
-.hfoot .streak{color:var(--lemon);font-weight:600;}
+.hfoot .streak{color:var(--accent);font-weight:600;}
 
 /* ── COLLAGE ── */
 .collage{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:6px;height:150px;}
 .ph{border-radius:10px;background:var(--sea-bg);position:relative;overflow:hidden;}
-.ph:nth-child(1){grid-row:1/span 2;background:#CFE0D6;}
-.ph:nth-child(2){background:#EFDCC0;}
-.ph:nth-child(3){background:#DCE6EF;}
-.ph svg{position:absolute;inset:0;margin:auto;width:26px;height:26px;stroke:#274B6B;opacity:.3;fill:none;stroke-width:1.6;}
+.ph:nth-child(1){grid-row:1/span 2;background:var(--tint1);}
+.ph:nth-child(2){background:var(--tint2);}
+.ph:nth-child(3){background:var(--tint3);}
+.ph svg{position:absolute;inset:0;margin:auto;width:26px;height:26px;stroke:var(--ink);opacity:.3;fill:none;stroke-width:1.6;}
 .memcap{font-size:12.5px;color:var(--soft);margin-top:10px;line-height:1.5;}
 .memcap b{color:var(--ink);font-weight:600;}
 
@@ -94,34 +120,34 @@ table.hw td.c{text-align:center;padding:3px 2px;}
 .up{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px;gap:10px;}
 .up:last-child{border-bottom:none;}
 .up .when{color:var(--soft);font-size:13px;white-space:nowrap;}
-.up .love{color:var(--lemon);font-weight:500;}
+.up .love{color:var(--accent);font-weight:500;}
 .row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;border-bottom:1px dashed var(--line);}
 .row:last-child{border-bottom:none;}
 .row .soft{color:var(--soft);font-size:13px;}
 
 /* ── grat ── */
 .grat p{font-family:var(--voice);font-size:15px;line-height:1.5;margin:7px 0;}
-.grat .n{color:var(--lemon);font-weight:700;margin-right:8px;}
+.grat .n{color:var(--accent);font-weight:700;margin-right:8px;}
 
 /* ── net worth ── */
 .big{font-size:25px;font-weight:700;}
 .nwrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px dashed var(--line);}
 .nwrow:last-child{border-bottom:none;}
 .trend-up{font-size:13px;color:var(--leaf);font-weight:600;margin:2px 0 10px;}
-.trend-dn{font-size:13px;color:#B4532E;font-weight:600;margin:2px 0 10px;}
+.trend-dn{font-size:13px;color:var(--neg);font-weight:600;margin:2px 0 10px;}
 
 /* ── wheel mini ── */
 .wheelmini{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;}
 .wheelmini svg{width:158px;height:158px;}
-.wheelmini .go{font-size:12px;color:var(--sea);margin-top:8px;font-weight:500;}
+.wheelmini .go{font-size:12px;color:var(--sea-text);margin-top:8px;font-weight:500;}
 
 /* ── examen ── */
-.examen-card{background:var(--lemon-bg);}
-.examen-card h3.lbl{color:#8a6a14;}.examen-card h3.lbl svg{stroke:#8a6a14;}
+.examen-card{background:var(--accent-bg);}
+.examen-card h3.lbl{color:var(--accent-ink);}.examen-card h3.lbl svg{stroke:var(--accent-ink);}
 .examen-card p{font-family:var(--voice);font-size:16px;line-height:1.5;margin:0 0 14px;}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--sea);color:#fff;border:none;padding:9px 15px;border-radius:10px;font-size:13px;cursor:pointer;font-family:var(--sans);text-decoration:none;}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--sea);color:var(--on-sea);border:none;padding:9px 15px;border-radius:10px;font-size:13px;cursor:pointer;font-family:var(--sans);text-decoration:none;}
 .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;}
-.btn-ghost{background:transparent;color:var(--sea);border:1.5px solid var(--sea);}
+.btn-ghost{background:transparent;color:var(--sea-text);border:1.5px solid var(--sea);}
 
 /* ── progress bars ── */
 .goal-item{margin-bottom:18px;}
@@ -138,7 +164,7 @@ table.hw td.c{text-align:center;padding:3px 2px;}
 .person .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:15px;flex-shrink:0;}
 .person .name{font-size:14px;font-weight:600;}
 .person .last{font-size:12px;color:var(--soft);margin-top:2px;}
-.person .nudge{margin-left:auto;font-size:11px;background:var(--lemon-bg);color:#8a6a14;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.person .nudge{margin-left:auto;font-size:11px;background:var(--accent-bg);color:var(--accent-ink);padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .person .ok{margin-left:auto;font-size:11px;color:var(--leaf);font-weight:600;}
 
 /* ── weight chart placeholder ── */
@@ -151,12 +177,12 @@ table.hw td.c{text-align:center;padding:3px 2px;}
 .j-text{font-family:var(--voice);font-size:15px;line-height:1.55;color:var(--ink);}
 .j-mood{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;margin-top:6px;}
 textarea.note-input{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-family:var(--voice);font-size:15px;color:var(--ink);background:var(--surface);resize:vertical;min-height:100px;outline:none;}
-textarea.note-input:focus{border-color:var(--sea);}
+textarea.note-input:focus{border-color:var(--sea-text);}
 
 /* ── prayer ── */
 .intent{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);}
 .intent:last-child{border-bottom:none;}
-.intent .cross{color:var(--sea);font-size:16px;margin-top:1px;}
+.intent .cross{color:var(--sea-text);font-size:16px;margin-top:1px;}
 .intent .days{font-size:12px;color:var(--soft);margin-top:3px;}
 
 /* ── collections ── */
@@ -166,18 +192,18 @@ textarea.note-input:focus{border-color:var(--sea);}
 .book-title{font-size:14px;font-weight:600;}
 .book-author{font-size:12px;color:var(--soft);margin-top:2px;}
 .book-status{font-size:11px;margin-top:5px;padding:2px 8px;border-radius:20px;display:inline-block;}
-.status-read{background:#D5EDDA;color:#2d7a3a;}
-.status-reading{background:var(--lemon-bg);color:#8a6a14;}
+.status-read{background:var(--accent-bg);color:var(--accent-ink);}
+.status-reading{background:var(--accent-bg);color:var(--accent-ink);}
 .status-want{background:var(--surface2);color:var(--soft);}
 .tab-row{display:flex;gap:8px;margin-bottom:18px;}
 .tab{padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid var(--line);background:transparent;color:var(--soft);font-family:var(--sans);}
-.tab.on{background:var(--sea);color:#fff;border-color:var(--sea);}
+.tab.on{background:var(--sea);color:var(--on-sea);border-color:var(--sea);}
 
 /* ── travel ── */
 .place{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;}
 .place:last-child{border-bottom:none;}
 .place .flag{font-size:20px;width:32px;text-align:center;}
-.place .wish{color:var(--lemon);font-size:12px;margin-left:auto;}
+.place .wish{color:var(--accent);font-size:12px;margin-left:auto;}
 .place .been{color:var(--leaf);font-size:12px;margin-left:auto;}
 
 /* ── calendar ── */
@@ -185,31 +211,31 @@ textarea.note-input:focus{border-color:var(--sea);}
 .cal-grid .ch{font-size:11px;color:var(--soft);font-weight:600;padding:6px 0;}
 .cal-grid .cd{padding:6px 4px;border-radius:9px;font-size:13px;cursor:pointer;}
 .cal-grid .cd:hover{background:var(--surface2);}
-.cal-grid .cd.today{background:var(--sea);color:#fff;font-weight:700;}
-.cal-grid .cd.has-event::after{content:'·';display:block;color:var(--lemon);font-size:18px;line-height:0;margin-top:2px;}
+.cal-grid .cd.today{background:var(--sea);color:var(--on-sea);font-weight:700;}
+.cal-grid .cd.has-event::after{content:'·';display:block;color:var(--accent);font-size:18px;line-height:0;margin-top:2px;}
 .cal-grid .cd.past{color:var(--soft);}
 .cal-grid .cd.empty{color:transparent;}
 .cal-grid .cd.sel{outline:2px solid var(--sea);outline-offset:1px;}
 .cal-month{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .cal-month h3{font-family:var(--voice);font-weight:400;font-size:20px;}
-.cal-month button{border:none;background:var(--surface2);color:var(--sea);border-radius:8px;width:28px;height:28px;font-size:14px;cursor:pointer;}
+.cal-month button{border:none;background:var(--surface2);color:var(--sea-text);border-radius:8px;width:28px;height:28px;font-size:14px;cursor:pointer;}
 
 /* ── word of year ── */
-.woy-card{background:linear-gradient(135deg,var(--sea-bg),var(--lemon-bg));border-radius:22px;padding:32px;text-align:center;margin-bottom:18px;}
+.woy-card{background:linear-gradient(135deg,var(--sea-bg),var(--accent-bg));border-radius:22px;padding:32px;text-align:center;margin-bottom:18px;}
 .woy-word{font-family:var(--voice);font-size:48px;font-weight:400;color:var(--sea-deep);margin-bottom:10px;}
 .woy-sub{font-size:14px;color:var(--soft);max-width:400px;margin:0 auto;line-height:1.6;}
 
 /* ── examen steps ── */
 .examen-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px dashed var(--line);}
 .examen-step:last-child{border-bottom:none;}
-.step-num{width:28px;height:28px;border-radius:50%;background:var(--sea);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--sea);color:var(--on-sea);display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px;}
 .step-q{font-family:var(--voice);font-size:15px;line-height:1.5;margin-bottom:4px;}
 .step-hint{font-size:12px;color:var(--soft);}
 
 /* ── mood ── */
 .mood-pick{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
 .mood-btn{border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 14px;font-size:20px;cursor:pointer;text-align:center;}
-.mood-btn:hover,.mood-btn.on{border-color:var(--sea);background:var(--sea-bg);}
+.mood-btn:hover,.mood-btn.on{border-color:var(--sea-text);background:var(--sea-bg);}
 .mood-label{font-size:11px;color:var(--soft);display:block;margin-top:3px;}
 
 /* ── section visibility ── */
@@ -217,14 +243,14 @@ textarea.note-input:focus{border-color:var(--sea);}
 .section.active{display:block;}
 
 /* ── toast ── */
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#274B6B;color:#fff;font-size:13px;padding:10px 20px;border-radius:30px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--ground);font-size:13px;padding:10px 20px;border-radius:30px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ── input ── */
 .field-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .field-row label{font-size:13px;color:var(--soft);width:120px;flex-shrink:0;}
 .field-row input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;font-family:var(--sans);color:var(--ink);background:var(--surface);outline:none;}
-.field-row input:focus{border-color:var(--sea);}
+.field-row input:focus{border-color:var(--sea-text);}
 
 @media(max-width:860px){
   .app{grid-template-columns:1fr;}
@@ -237,9 +263,9 @@ textarea.note-input:focus{border-color:var(--sea);}
 <!-- ═══ SIGN-IN GATE ═══ -->
 <div id="signin-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--ground);flex-direction:column;align-items:center;justify-content:center;gap:28px;">
   <div style="font-family:var(--voice);font-size:32px;color:var(--sea-deep);letter-spacing:.02em;">DOMENICA OS</div>
-  <div style="font-size:14px;color:var(--soft);text-align:center;max-width:300px;">Sign in with your Google account to continue.</div>
+  <div style="font-size:14px;color:var(--soft-ground);text-align:center;max-width:300px;">Sign in with your Google account to continue.</div>
   <div id="g_id_signin"></div>
-  <div id="signin-error" style="color:#B4532E;font-size:13px;display:none;">This account doesn't have access.</div>
+  <div id="signin-error" style="color:var(--neg);font-size:13px;display:none;">This account doesn't have access.</div>
 </div>
 
 <div class="app" id="app-shell" style="display:none;">
@@ -253,9 +279,95 @@ textarea.note-input:focus{border-color:var(--sea);}
     </div>
   </div>
   <div id="nav-root"></div>
-  <div style="padding:10px 12px 6px;font-size:11px;color:var(--soft);display:flex;align-items:center;gap:5px;margin-top:auto;">
-    <span id="sync-badge" style="color:var(--sea);font-weight:600;"></span>
-    <span style="opacity:.5;">syncs across devices</span>
+
+  <!-- Memento mori — cross, roses, skull -->
+  <div class="rail-ornament" aria-hidden="true">
+    <svg viewBox="0 0 148 122" fill="none" stroke="currentColor">
+      <path d="M5 54 Q37 44 74 54 Q111 64 143 54" stroke-width="1"/>
+      <path d="M20 51 Q23 45 26 50" stroke-width="0.8"/>
+      <path d="M52 57 Q55 51 58 56" stroke-width="0.8"/>
+      <path d="M90 50 Q93 44 96 49" stroke-width="0.8"/>
+      <path d="M120 57 Q123 51 126 56" stroke-width="0.8"/>
+
+      <line x1="74" y1="4" x2="74" y2="70" stroke-width="2.2"/>
+      <line x1="57" y1="20" x2="91" y2="20" stroke-width="2.2"/>
+
+      <ellipse cx="22" cy="22" rx="4" ry="7.5" transform="rotate(0,22,34)" stroke-width="0.9"/>
+      <ellipse cx="22" cy="22" rx="4" ry="7.5" transform="rotate(72,22,34)" stroke-width="0.9"/>
+      <ellipse cx="22" cy="22" rx="4" ry="7.5" transform="rotate(144,22,34)" stroke-width="0.9"/>
+      <ellipse cx="22" cy="22" rx="4" ry="7.5" transform="rotate(216,22,34)" stroke-width="0.9"/>
+      <ellipse cx="22" cy="22" rx="4" ry="7.5" transform="rotate(288,22,34)" stroke-width="0.9"/>
+      <ellipse cx="22" cy="26" rx="2.8" ry="5" transform="rotate(36,22,34)" stroke-width="0.8"/>
+      <ellipse cx="22" cy="26" rx="2.8" ry="5" transform="rotate(108,22,34)" stroke-width="0.8"/>
+      <ellipse cx="22" cy="26" rx="2.8" ry="5" transform="rotate(180,22,34)" stroke-width="0.8"/>
+      <ellipse cx="22" cy="26" rx="2.8" ry="5" transform="rotate(252,22,34)" stroke-width="0.8"/>
+      <ellipse cx="22" cy="26" rx="2.8" ry="5" transform="rotate(324,22,34)" stroke-width="0.8"/>
+      <circle cx="22" cy="34" r="3.2" stroke-width="0.8"/>
+      <line x1="22" y1="46" x2="22" y2="56" stroke-width="1"/>
+      <path d="M22 50 C18 47 15 49 17 52" stroke-width="0.8"/>
+
+      <ellipse cx="126" cy="22" rx="4" ry="7.5" transform="rotate(0,126,34)" stroke-width="0.9"/>
+      <ellipse cx="126" cy="22" rx="4" ry="7.5" transform="rotate(72,126,34)" stroke-width="0.9"/>
+      <ellipse cx="126" cy="22" rx="4" ry="7.5" transform="rotate(144,126,34)" stroke-width="0.9"/>
+      <ellipse cx="126" cy="22" rx="4" ry="7.5" transform="rotate(216,126,34)" stroke-width="0.9"/>
+      <ellipse cx="126" cy="22" rx="4" ry="7.5" transform="rotate(288,126,34)" stroke-width="0.9"/>
+      <ellipse cx="126" cy="26" rx="2.8" ry="5" transform="rotate(36,126,34)" stroke-width="0.8"/>
+      <ellipse cx="126" cy="26" rx="2.8" ry="5" transform="rotate(108,126,34)" stroke-width="0.8"/>
+      <ellipse cx="126" cy="26" rx="2.8" ry="5" transform="rotate(180,126,34)" stroke-width="0.8"/>
+      <ellipse cx="126" cy="26" rx="2.8" ry="5" transform="rotate(252,126,34)" stroke-width="0.8"/>
+      <ellipse cx="126" cy="26" rx="2.8" ry="5" transform="rotate(324,126,34)" stroke-width="0.8"/>
+      <circle cx="126" cy="34" r="3.2" stroke-width="0.8"/>
+      <line x1="126" y1="46" x2="126" y2="56" stroke-width="1"/>
+      <path d="M126 50 C130 47 133 49 131 52" stroke-width="0.8"/>
+
+      <path d="M74 71 C64.5 71 58.5 78 58 87 C57.7 92 58.2 95.5 59.2 98.2 C59.9 100.2 61 101.4 62.6 101.9 C63.1 103.4 63.9 104.6 65.2 105.6 L65.2 107.6 L82.8 107.6 L82.8 105.6 C84.1 104.6 84.9 103.4 85.4 101.9 C87 101.4 88.1 100.2 88.8 98.2 C89.8 95.5 90.3 92 90 87 C89.5 78 83.5 71 74 71 Z" stroke-width="1.15"/>
+
+      <path d="M63 85.5 C66.5 82.8 71.5 83.2 72.6 85.8 C73.4 87.7 72.9 91.5 71.6 93.8 C70.4 95.9 67.6 96.7 65.2 95.3 C63 94 62 90.5 62.2 87.8 C62.3 86.7 62.6 85.9 63 85.5 Z" fill="currentColor" fill-opacity="0.62" stroke-width="0.8"/>
+      <path d="M85 85.5 C81.5 82.8 76.5 83.2 75.4 85.8 C74.6 87.7 75.1 91.5 76.4 93.8 C77.6 95.9 80.4 96.7 82.8 95.3 C85 94 86 90.5 85.8 87.8 C85.7 86.7 85.4 85.9 85 85.5 Z" fill="currentColor" fill-opacity="0.62" stroke-width="0.8"/>
+
+      <path d="M61.5 83.5 C65.5 79.8 71 80.2 73 83" stroke-width="0.9"/>
+      <path d="M86.5 83.5 C82.5 79.8 77 80.2 75 83" stroke-width="0.9"/>
+
+      <path d="M74 90 L74 96" stroke-width="0.75"/>
+      <path d="M74 96.8 C73.5 98.4 72.4 99.7 71.6 100.6 C71 101.3 71.3 101.9 72.2 102 L75.8 102 C76.7 101.9 77 101.3 76.4 100.6 C75.6 99.7 74.5 98.4 74 96.8 Z" fill="currentColor" fill-opacity="0.62" stroke-width="0.7"/>
+
+      <path d="M60.5 96 C62.5 99.5 64.5 101.3 67 101.9" stroke-width="0.8"/>
+      <path d="M87.5 96 C85.5 99.5 83.5 101.3 81 101.9" stroke-width="0.8"/>
+
+      <path d="M74 71 L74 75.5" stroke-width="0.65"/>
+      <path d="M74 75.5 C70 76.5 66 78.5 63.5 81.5" stroke-width="0.6"/>
+      <path d="M74 75.5 C78 76.5 82 78.5 84.5 81.5" stroke-width="0.6"/>
+
+      <line x1="86.5" y1="76.5" x2="88.5" y2="78.5" stroke-width="0.5" opacity="0.7"/>
+      <line x1="87.8" y1="80" x2="89.6" y2="82" stroke-width="0.5" opacity="0.7"/>
+      <line x1="88.5" y1="84" x2="90.2" y2="86" stroke-width="0.5" opacity="0.7"/>
+      <line x1="88.8" y1="88" x2="90.3" y2="90" stroke-width="0.5" opacity="0.7"/>
+
+      <line x1="65.2" y1="103.6" x2="82.8" y2="103.6" stroke-width="0.85"/>
+      <line x1="68" y1="103.6" x2="68" y2="107.6" stroke-width="0.85"/>
+      <line x1="71" y1="103.6" x2="71" y2="107.6" stroke-width="0.85"/>
+      <line x1="74" y1="103.6" x2="74" y2="107.6" stroke-width="0.85"/>
+      <line x1="77" y1="103.6" x2="77" y2="107.6" stroke-width="0.85"/>
+      <line x1="80" y1="103.6" x2="80" y2="107.6" stroke-width="0.85"/>
+
+      <path d="M65 108.6 L65 110.4 C65 114.3 68.8 116.6 74 116.6 C79.2 116.6 83 114.3 83 110.4 L83 108.6 Z" stroke-width="1.1"/>
+      <line x1="68" y1="108.6" x2="68" y2="112" stroke-width="0.85"/>
+      <line x1="71" y1="108.6" x2="71" y2="112.4" stroke-width="0.85"/>
+      <line x1="74" y1="108.6" x2="74" y2="112.6" stroke-width="0.85"/>
+      <line x1="77" y1="108.6" x2="77" y2="112.4" stroke-width="0.85"/>
+      <line x1="80" y1="108.6" x2="80" y2="112" stroke-width="0.85"/>
+    </svg>
+  </div>
+
+  <div class="rail-foot">
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" id="theme-icon" fill="none" stroke="currentColor" stroke-width="1.6"></svg>
+      <span id="theme-label">Dark</span>
+    </button>
+    <div class="sync-line">
+      <span id="sync-badge"></span>
+      <span style="opacity:.65;">syncs across devices</span>
+    </div>
   </div>
 </aside>
 
@@ -265,8 +377,24 @@ textarea.note-input:focus{border-color:var(--sea);}
 <!-- ── HOME ── -->
 <div class="section active" id="s-home">
   <section class="card hero">
-    <svg class="branch" viewBox="0 0 220 150" id="branch"></svg>
-    <svg class="wave" viewBox="0 0 1200 42" preserveAspectRatio="none"><path d="M0,28 C150,6 300,6 450,22 C620,42 780,42 960,20 C1080,8 1140,10 1200,18 L1200,42 L0,42 Z" fill="currentColor"/></svg>
+    <!-- Chalice & host — Eucharist -->
+    <svg class="branch" viewBox="0 0 56 74" fill="none" stroke="currentColor" aria-hidden="true">
+      <circle cx="28" cy="9" r="6.5" stroke-width="1"/>
+      <line x1="28" y1="3.5" x2="28" y2="14.5" stroke-width="1"/>
+      <line x1="22.5" y1="9" x2="33.5" y2="9" stroke-width="1"/>
+      <line x1="28" y1="0" x2="28" y2="1.8" stroke-width="0.8"/>
+      <line x1="35.5" y1="2.3" x2="34.3" y2="3.5" stroke-width="0.8"/>
+      <line x1="38.5" y1="9" x2="36.5" y2="9" stroke-width="0.8"/>
+      <line x1="35.5" y1="15.7" x2="34.3" y2="14.5" stroke-width="0.8"/>
+      <line x1="20.5" y1="2.3" x2="21.7" y2="3.5" stroke-width="0.8"/>
+      <line x1="17.5" y1="9" x2="19.5" y2="9" stroke-width="0.8"/>
+      <line x1="20.5" y1="15.7" x2="21.7" y2="14.5" stroke-width="0.8"/>
+      <line x1="28" y1="15.5" x2="28" y2="20" stroke-width="0.7" stroke-dasharray="1 1.5"/>
+      <path d="M11 20 Q12 40 20 46 L20 54 L36 54 L36 46 Q44 40 45 20 Z" stroke-width="1.2"/>
+      <ellipse cx="28" cy="54" rx="4.5" ry="2.2" stroke-width="0.9"/>
+      <line x1="28" y1="56" x2="28" y2="64" stroke-width="2"/>
+      <path d="M12 68 Q12 64 28 64 Q44 64 44 68 Q44 73 28 73 Q12 73 12 68 Z" stroke-width="1"/>
+    </svg>
     <div class="in">
       <div class="litday" id="litday"></div>
       <div id="feastwrap"></div>
@@ -302,7 +430,7 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="trend-up" id="home-trend">▲ 5.2% since last month</div>
       <div class="nwrow"><span>Retirement</span><span id="home-ret">$32,200</span></div>
       <div class="nwrow"><span>Savings</span><span id="home-sav">$21,400</span></div>
-      <div class="nwrow"><span>Loans</span><span id="home-loan" style="color:#B4532E">−$5,000</span></div>
+      <div class="nwrow"><span>Loans</span><span id="home-loan" style="color:var(--neg)">−$5,000</span></div>
     </section>
   </div>
 </div>
@@ -343,12 +471,12 @@ textarea.note-input:focus{border-color:var(--sea);}
       <p style="font-size:13px;color:var(--soft);margin:0 0 14px;">Connect your Google Calendar to see events here. Needs the <b>secret ICS link</b> — not the regular Google Calendar link.</p>
       <div style="background:var(--sea-bg);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;line-height:1.8;color:var(--ink);">
         <b>How to get the correct URL:</b><br>
-        1. Go to <a href="https://calendar.google.com" target="_blank" style="color:var(--sea);">calendar.google.com</a><br>
+        1. Go to <a href="https://calendar.google.com" target="_blank" style="color:var(--sea-text);">calendar.google.com</a><br>
         2. On the left, find your calendar name → click the <b>⋮ three-dot menu</b><br>
         3. Click <b>"Settings and sharing"</b><br>
         4. Scroll down to <b>"Integrate calendar"</b><br>
-        5. Copy <b>"Secret address in iCal format"</b> — it ends in <code style="background:#fff;padding:1px 4px;border-radius:4px;">.ics</code><br>
-        <span style="color:#b04040;font-size:12px;">⚠ Not the "public URL" or any link that doesn't end in .ics</span>
+        5. Copy <b>"Secret address in iCal format"</b> — it ends in <code style="background:var(--surface2);padding:1px 4px;border-radius:4px;">.ics</code><br>
+        <span style="color:var(--neg);font-size:12px;">⚠ Not the "public URL" or any link that doesn't end in .ics</span>
       </div>
       <input type="url" id="gcal-url-input" placeholder="https://calendar.google.com/calendar/ical/…/private-…/basic.ics" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;background:var(--surface2);color:var(--ink);margin-bottom:6px;">
       <div style="font-size:12px;color:var(--soft);margin-bottom:10px;">For birthdays too: add your <b>Birthdays calendar</b> ICS the same way (it's a separate calendar in Google Calendar settings)</div>
@@ -437,38 +565,38 @@ textarea.note-input:focus{border-color:var(--sea);}
   <!-- Goal cards -->
   <div class="cards">
     <div class="card">
-      <h3 class="lbl" style="color:#6E9A5E"><svg viewBox="0 0 24 24" style="stroke:#6E9A5E"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>Spiritual</h3>
-      <div class="goal-item"><div class="gtop"><b>Mass 5×/week</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:#6E9A5E"></i></div><div class="goal-note">4 of 5 this week · Sunday always</div></div>
-      <div class="goal-item"><div class="gtop"><b>Adoration 5×/week</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:#6E9A5E"></i></div><div class="goal-note">4 of 5 this week</div></div>
-      <div class="goal-item"><div class="gtop"><b>Rosary 1×/week</b><span class="gpct">100%</span></div><div class="bar"><i style="width:100%;background:#6E9A5E"></i></div><div class="goal-note">✓ done this week</div></div>
-      <div class="goal-item"><div class="gtop"><b>Confession every 2 weeks</b><span class="gpct">—</span></div><div class="bar"><i style="width:0%;background:#6E9A5E"></i></div><div class="goal-note" style="color:#B4532E">Last: Jul 26 · overdue</div></div>
+      <h3 class="lbl" style="color:var(--leaf)"><svg viewBox="0 0 24 24" style="stroke:var(--leaf)"><path d="M12 3v18M8 8c0-3 8-3 8 0"/><circle cx="12" cy="14" r="3"/></svg>Spiritual</h3>
+      <div class="goal-item"><div class="gtop"><b>Mass 5×/week</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:var(--leaf)"></i></div><div class="goal-note">4 of 5 this week · Sunday always</div></div>
+      <div class="goal-item"><div class="gtop"><b>Adoration 5×/week</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:var(--leaf)"></i></div><div class="goal-note">4 of 5 this week</div></div>
+      <div class="goal-item"><div class="gtop"><b>Rosary 1×/week</b><span class="gpct">100%</span></div><div class="bar"><i style="width:100%;background:var(--leaf)"></i></div><div class="goal-note">✓ done this week</div></div>
+      <div class="goal-item"><div class="gtop"><b>Confession every 2 weeks</b><span class="gpct">—</span></div><div class="bar"><i style="width:0%;background:var(--leaf)"></i></div><div class="goal-note" style="color:var(--neg)">Last: Jul 26 · overdue</div></div>
     </div>
     <div class="card">
-      <h3 class="lbl" style="color:#4FA3A0"><svg viewBox="0 0 24 24" style="stroke:#4FA3A0"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zM2 12h20"/><path d="M12 2a15 10 0 010 20 15 10 0 010-20"/></svg>Physical / Health</h3>
-      <div class="goal-item"><div class="gtop"><b>Strength 5×/week (10 min)</b><span class="gpct">60%</span></div><div class="bar"><i style="width:60%;background:#4FA3A0"></i></div><div class="goal-note">3 sessions this week · arms, abs, legs rotation</div></div>
-      <div class="goal-item"><div class="gtop"><b>7,500 steps / day</b><span class="gpct">71%</span></div><div class="bar"><i style="width:71%;background:#4FA3A0"></i></div><div class="goal-note">5 of 7 days hit target</div></div>
-      <div class="goal-item"><div class="gtop"><b>Hold weight at 145 lb</b><span class="gpct">95%</span></div><div class="bar"><i style="width:95%;background:#4FA3A0"></i></div><div class="goal-note">Current: 147 lb · goal: 145 lb</div></div>
+      <h3 class="lbl" style="color:var(--teal)"><svg viewBox="0 0 24 24" style="stroke:var(--teal)"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zM2 12h20"/><path d="M12 2a15 10 0 010 20 15 10 0 010-20"/></svg>Physical / Health</h3>
+      <div class="goal-item"><div class="gtop"><b>Strength 5×/week (10 min)</b><span class="gpct">60%</span></div><div class="bar"><i style="width:60%;background:var(--teal)"></i></div><div class="goal-note">3 sessions this week · arms, abs, legs rotation</div></div>
+      <div class="goal-item"><div class="gtop"><b>7,500 steps / day</b><span class="gpct">71%</span></div><div class="bar"><i style="width:71%;background:var(--teal)"></i></div><div class="goal-note">5 of 7 days hit target</div></div>
+      <div class="goal-item"><div class="gtop"><b>Hold weight at 145 lb</b><span class="gpct">95%</span></div><div class="bar"><i style="width:95%;background:var(--teal)"></i></div><div class="goal-note">Current: 147 lb · goal: 145 lb</div></div>
     </div>
     <div class="card">
-      <h3 class="lbl" style="color:#4F7CA8"><svg viewBox="0 0 24 24" style="stroke:#4F7CA8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Mental</h3>
-      <div class="goal-item"><div class="gtop"><b>Italian — reach B1</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:#4F7CA8"></i></div><div class="goal-note">Presente ✓ · Passato prossimo 70% · Imperfetto next</div></div>
-      <div class="goal-item"><div class="gtop"><b>Harry Potter 1 in Italian by Dec 31</b><span class="gpct">12%</span></div><div class="bar"><i style="width:12%;background:#4F7CA8"></i></div><div class="goal-note">Chapter 3 of 17</div></div>
-      <div class="goal-item"><div class="gtop"><b>Read 12 books in 2026</b><span class="gpct">33%</span></div><div class="bar"><i style="width:33%;background:#4F7CA8"></i></div><div class="goal-note">4 of 12 · currently reading: Middlemarch</div></div>
+      <h3 class="lbl" style="color:var(--purple)"><svg viewBox="0 0 24 24" style="stroke:var(--purple)"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Mental</h3>
+      <div class="goal-item"><div class="gtop"><b>Italian — reach B1</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:var(--purple)"></i></div><div class="goal-note">Presente ✓ · Passato prossimo 70% · Imperfetto next</div></div>
+      <div class="goal-item"><div class="gtop"><b>Harry Potter 1 in Italian by Dec 31</b><span class="gpct">12%</span></div><div class="bar"><i style="width:12%;background:var(--purple)"></i></div><div class="goal-note">Chapter 3 of 17</div></div>
+      <div class="goal-item"><div class="gtop"><b>Read 12 books in 2026</b><span class="gpct">33%</span></div><div class="bar"><i style="width:33%;background:var(--purple)"></i></div><div class="goal-note">4 of 12 · currently reading: Middlemarch</div></div>
     </div>
     <div class="card">
-      <h3 class="lbl" style="color:#E0B24A"><svg viewBox="0 0 24 24" style="stroke:#E0B24A"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Financial</h3>
-      <div class="goal-item"><div class="gtop"><b>Retirement → $200k</b><span class="gpct">34%</span></div><div class="bar"><i style="width:34%;background:#E0B24A"></i></div><div class="goal-note">$32,200 of $200,000</div></div>
-      <div class="goal-item"><div class="gtop"><b>Savings → $25k</b><span class="gpct">52%</span></div><div class="bar"><i style="width:52%;background:#E0B24A"></i></div><div class="goal-note">$21,400 of $25,000 — almost there!</div></div>
-      <div class="goal-item"><div class="gtop"><b>Student loans → $0</b><span class="gpct">30%</span></div><div class="bar"><i style="width:30%;background:#E0B24A"></i></div><div class="goal-note">$5,000 remaining of $7,000</div></div>
+      <h3 class="lbl" style="color:var(--gold)"><svg viewBox="0 0 24 24" style="stroke:var(--gold)"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Financial</h3>
+      <div class="goal-item"><div class="gtop"><b>Retirement → $200k</b><span class="gpct">34%</span></div><div class="bar"><i style="width:34%;background:var(--gold)"></i></div><div class="goal-note">$32,200 of $200,000</div></div>
+      <div class="goal-item"><div class="gtop"><b>Savings → $25k</b><span class="gpct">52%</span></div><div class="bar"><i style="width:52%;background:var(--gold)"></i></div><div class="goal-note">$21,400 of $25,000 — almost there!</div></div>
+      <div class="goal-item"><div class="gtop"><b>Student loans → $0</b><span class="gpct">30%</span></div><div class="bar"><i style="width:30%;background:var(--gold)"></i></div><div class="goal-note">$5,000 remaining of $7,000</div></div>
     </div>
     <div class="card">
-      <h3 class="lbl" style="color:#C77E92"><svg viewBox="0 0 24 24" style="stroke:#C77E92"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Relationships &amp; Love</h3>
-      <div class="goal-item"><div class="gtop"><b>Keep core people in touch</b><span class="gpct">75%</span></div><div class="bar"><i style="width:75%;background:#C77E92"></i></div><div class="goal-note">3 of 4 people contacted within their cadence</div></div>
-      <div class="goal-item"><div class="gtop"><b>1 date or young-adult Catholic event / month</b><span class="gpct">0%</span></div><div class="bar"><i style="width:0%;background:#C77E92"></i></div><div class="goal-note" style="color:#B4532E">Not yet this month — book something before Aug 31</div></div>
+      <h3 class="lbl" style="color:var(--rose)"><svg viewBox="0 0 24 24" style="stroke:var(--rose)"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Relationships &amp; Love</h3>
+      <div class="goal-item"><div class="gtop"><b>Keep core people in touch</b><span class="gpct">75%</span></div><div class="bar"><i style="width:75%;background:var(--rose)"></i></div><div class="goal-note">3 of 4 people contacted within their cadence</div></div>
+      <div class="goal-item"><div class="gtop"><b>1 date or young-adult Catholic event / month</b><span class="gpct">0%</span></div><div class="bar"><i style="width:0%;background:var(--rose)"></i></div><div class="goal-note" style="color:var(--neg)">Not yet this month — book something before Aug 31</div></div>
     </div>
     <div class="card">
-      <h3 class="lbl" style="color:#D08A5A"><svg viewBox="0 0 24 24" style="stroke:#D08A5A"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Career</h3>
-      <div class="goal-item"><div class="gtop"><b>Director → Sr Director</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:#D08A5A"></i></div><div class="goal-note">Currently Director · 10/10 on promotion</div></div>
+      <h3 class="lbl" style="color:var(--coral)"><svg viewBox="0 0 24 24" style="stroke:var(--coral)"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Career</h3>
+      <div class="goal-item"><div class="gtop"><b>Director → Sr Director</b><span class="gpct">80%</span></div><div class="bar"><i style="width:80%;background:var(--coral)"></i></div><div class="goal-note">Currently Director · 10/10 on promotion</div></div>
     </div>
   </div>
 </div>
@@ -480,10 +608,10 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="cards">
     <div class="card">
       <h3 class="lbl">core circle</h3>
-      <div class="person"><div class="av" style="background:#DCEAF3;font-size:18px;">👩</div><div><div class="name">Mom</div><div class="last">Last talked: 2 days ago · weekly</div></div><span class="ok">✓ good</span></div>
-      <div class="person"><div class="av" style="background:#FBEEC2;font-size:18px;">👩‍🦱</div><div><div class="name">Giulia</div><div class="last">Last talked: 5 days ago · weekly</div></div><span class="ok">✓ good</span></div>
-      <div class="person"><div class="av" style="background:#EDE0F5;font-size:18px;">👨</div><div><div class="name">Dad</div><div class="last">Last talked: 12 days ago · bi-weekly</div></div><span class="nudge">reach out soon</span></div>
-      <div class="person"><div class="av" style="background:#D5EDDA;font-size:18px;">👩‍🦰</div><div><div class="name">Caitlin</div><div class="last">Last talked: 3 weeks ago · monthly</div></div><span class="nudge">overdue !</span></div>
+      <div class="person"><div class="av" style="background:var(--tint3);font-size:18px;">👩</div><div><div class="name">Mom</div><div class="last">Last talked: 2 days ago · weekly</div></div><span class="ok">✓ good</span></div>
+      <div class="person"><div class="av" style="background:var(--tint2);font-size:18px;">👩‍🦱</div><div><div class="name">Giulia</div><div class="last">Last talked: 5 days ago · weekly</div></div><span class="ok">✓ good</span></div>
+      <div class="person"><div class="av" style="background:var(--tint4);font-size:18px;">👨</div><div><div class="name">Dad</div><div class="last">Last talked: 12 days ago · bi-weekly</div></div><span class="nudge">reach out soon</span></div>
+      <div class="person"><div class="av" style="background:var(--accent-bg);font-size:18px;">👩‍🦰</div><div><div class="name">Caitlin</div><div class="last">Last talked: 3 weeks ago · monthly</div></div><span class="nudge">overdue !</span></div>
       <div style="margin-top:14px;"><button class="btn btn-ghost" style="font-size:13px;">+ Add person</button></div>
     </div>
     <div class="card">
@@ -539,7 +667,7 @@ textarea.note-input:focus{border-color:var(--sea);}
       <div class="trend-up" id="money-trend">▲ 5.2% since last month</div>
       <div class="nwrow"><span>Retirement / Investments</span><span id="money-ret-val">$32,200</span></div>
       <div class="nwrow"><span>Savings</span><span id="money-sav-val">$21,400</span></div>
-      <div class="nwrow"><span>Student Loans</span><span id="money-loan-val" style="color:#B4532E">−$5,000</span></div>
+      <div class="nwrow"><span>Student Loans</span><span id="money-loan-val" style="color:var(--neg)">−$5,000</span></div>
       <div style="margin-top:18px;border-top:1px dashed var(--line);padding-top:16px;">
         <h3 class="lbl" style="margin-bottom:14px;">update numbers</h3>
         <div class="field-row"><label>Retirement</label><input type="number" id="money-input-ret" placeholder="$"></div>
@@ -550,9 +678,9 @@ textarea.note-input:focus{border-color:var(--sea);}
     </div>
     <div class="card">
       <h3 class="lbl">goal progress</h3>
-      <div class="goal-item"><div class="gtop"><b>Retirement → $200k</b><span class="gpct">34%</span></div><div class="bar"><i style="width:34%;background:#E0B24A"></i></div><div class="goal-note">$32,200 of $200,000</div></div>
-      <div class="goal-item"><div class="gtop"><b>Savings → $25k</b><span class="gpct">86%</span></div><div class="bar"><i style="width:86%;background:#E0B24A"></i></div><div class="goal-note">$21,400 of $25,000 — almost there!</div></div>
-      <div class="goal-item"><div class="gtop"><b>Loans → $0</b><span class="gpct">30%</span></div><div class="bar"><i style="width:30%;background:#E0B24A"></i></div><div class="goal-note">$5,000 remaining</div></div>
+      <div class="goal-item"><div class="gtop"><b>Retirement → $200k</b><span class="gpct">34%</span></div><div class="bar"><i style="width:34%;background:var(--gold)"></i></div><div class="goal-note">$32,200 of $200,000</div></div>
+      <div class="goal-item"><div class="gtop"><b>Savings → $25k</b><span class="gpct">86%</span></div><div class="bar"><i style="width:86%;background:var(--gold)"></i></div><div class="goal-note">$21,400 of $25,000 — almost there!</div></div>
+      <div class="goal-item"><div class="gtop"><b>Loans → $0</b><span class="gpct">30%</span></div><div class="bar"><i style="width:30%;background:var(--gold)"></i></div><div class="goal-note">$5,000 remaining</div></div>
     </div>
   </div>
 </div>
@@ -592,20 +720,20 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="card" style="margin-bottom:18px;">
     <h3 class="lbl">on this day, last year</h3>
     <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:8px;height:200px;">
-      <div class="ph" style="grid-row:1/span 2;background:#CFE0D6;"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div>
-      <div class="ph" style="background:#EFDCC0;"></div>
-      <div class="ph" style="background:#DCE6EF;"></div>
+      <div class="ph" style="grid-row:1/span 2;background:var(--tint1);"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 5"/></svg></div>
+      <div class="ph" style="background:var(--tint2);"></div>
+      <div class="ph" style="background:var(--tint3);"></div>
     </div>
     <div class="memcap" style="margin-top:12px;"><b>August 2025 · Amalfi Coast.</b> You picked these three. Add photos from your camera roll for each month.</div>
   </div>
   <div class="card">
     <h3 class="lbl">monthly albums <span class="r">+ add photos</span></h3>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;">
-      <div style="aspect-ratio:1;background:#CFE0D6;border-radius:12px;"></div>
-      <div style="aspect-ratio:1;background:#EFDCC0;border-radius:12px;"></div>
-      <div style="aspect-ratio:1;background:#DCE6EF;border-radius:12px;"></div>
-      <div style="aspect-ratio:1;background:#EDE0F5;border-radius:12px;"></div>
-      <div style="aspect-ratio:1;background:#D5EDDA;border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:var(--tint1);border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:var(--tint2);border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:var(--tint3);border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:var(--tint4);border-radius:12px;"></div>
+      <div style="aspect-ratio:1;background:var(--accent-bg);border-radius:12px;"></div>
       <div style="aspect-ratio:1;background:var(--line);border-radius:12px;display:grid;place-items:center;color:var(--soft);font-size:22px;">+</div>
     </div>
   </div>
@@ -620,11 +748,11 @@ textarea.note-input:focus{border-color:var(--sea);}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
       <h3 class="lbl" style="margin:0;"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M2 12h20M12 2a15 10 0 010 20A15 10 0 0112 2z"/></svg>your world</h3>
       <div style="display:flex;gap:16px;font-size:12px;color:var(--soft);">
-        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#6E9A5E;border-radius:3px;display:inline-block;"></span>visited</span>
-        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:#E7B12F;border-radius:3px;display:inline-block;"></span>wish list</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:var(--leaf);border-radius:3px;display:inline-block;"></span>visited</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;background:var(--accent);border-radius:3px;display:inline-block;"></span>wish list</span>
       </div>
     </div>
-    <svg id="travel-map" viewBox="0 0 1000 500" style="width:100%;border-radius:12px;background:var(--sea-bg);display:block;"></svg>
+    <svg id="travel-map" viewBox="0 0 1000 500" style="width:100%;border-radius:12px;background:var(--map-sea);display:block;"></svg>
     <div style="font-size:12px;color:var(--soft);text-align:center;margin-top:10px;">
       <b id="tmap-vc">5</b> countries visited · <b id="tmap-wc">4</b> on your wish list
     </div>
@@ -667,7 +795,7 @@ textarea.note-input:focus{border-color:var(--sea);}
   <div class="page-title">Annual Review</div>
   <div class="page-sub">2026 at a glance — assembled from everything you've tracked.</div>
   <div class="cards">
-    <div class="card"><h3 class="lbl">goals progress</h3><div class="goal-item"><div class="gtop"><b>Spiritual habits</b><span class="gpct">83%</span></div><div class="bar"><i style="width:83%;background:#6E9A5E"></i></div></div><div class="goal-item"><div class="gtop"><b>Physical</b><span class="gpct">70%</span></div><div class="bar"><i style="width:70%;background:#4FA3A0"></i></div></div><div class="goal-item"><div class="gtop"><b>Italian &amp; reading</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:#4F7CA8"></i></div></div><div class="goal-item"><div class="gtop"><b>Financial</b><span class="gpct">50%</span></div><div class="bar"><i style="width:50%;background:#E0B24A"></i></div></div></div>
+    <div class="card"><h3 class="lbl">goals progress</h3><div class="goal-item"><div class="gtop"><b>Spiritual habits</b><span class="gpct">83%</span></div><div class="bar"><i style="width:83%;background:var(--leaf)"></i></div></div><div class="goal-item"><div class="gtop"><b>Physical</b><span class="gpct">70%</span></div><div class="bar"><i style="width:70%;background:var(--teal)"></i></div></div><div class="goal-item"><div class="gtop"><b>Italian &amp; reading</b><span class="gpct">40%</span></div><div class="bar"><i style="width:40%;background:var(--purple)"></i></div></div><div class="goal-item"><div class="gtop"><b>Financial</b><span class="gpct">50%</span></div><div class="bar"><i style="width:50%;background:var(--gold)"></i></div></div></div>
     <div class="card"><h3 class="lbl">daybook highlights</h3><div id="yr-daybook-highlights"><div style="color:var(--soft);font-size:13px;">Log days in Daybook to see highlights here.</div></div></div>
     <div class="card"><h3 class="lbl">by the numbers</h3><div class="row"><span>Habit check-ins</span><span class="soft" id="yr-habits-count">—</span></div><div class="row"><span>Days logged</span><span class="soft" id="yr-days-count">—</span></div><div class="row"><span>Books read</span><span class="soft">4 of 12</span></div><div class="row"><span>Masses attended</span><span class="soft" id="yr-mass-count">—</span></div><div class="row"><span>Countries visited</span><span class="soft">1</span></div></div>
   </div>
@@ -754,14 +882,14 @@ buildNav();
 
 // ═══════ HABITS ═══════
 const DEFAULT_HABITS = [
-  {id:'mass',    name:'Daily Mass',  isLemon:false},
-  {id:'adora',   name:'Adoration',   isLemon:false},
-  {id:'rosary',  name:'Rosary',      isLemon:false},
-  {id:'strength',name:'Strength',    isLemon:true},
-  {id:'steps',   name:'7,500 steps', isLemon:true},
-  {id:'italian', name:'Italian',     isLemon:false},
-  {id:'read',    name:'Read',        isLemon:false},
-  {id:'daybook', name:'Daybook',     isLemon:false},
+  {id:'mass',    name:'Daily Mass',  isBody:false},
+  {id:'adora',   name:'Adoration',   isBody:false},
+  {id:'rosary',  name:'Rosary',      isBody:false},
+  {id:'strength',name:'Strength',    isBody:true},
+  {id:'steps',   name:'7,500 steps', isBody:true},
+  {id:'italian', name:'Italian',     isBody:false},
+  {id:'read',    name:'Read',        isBody:false},
+  {id:'daybook', name:'Daybook',     isBody:false},
 ];
 const CK='<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:3"><path d="M5 12l5 5L20 7"/></svg>';
 let habitWeekOffset = 0;
@@ -824,7 +952,7 @@ function renderHabitTable(tableId, weekOffset){
       const done = !!(logs[dk] && logs[dk][h.id]);
       const isToday = dk === todayDk;
       const isFuture = d > now;
-      const cls = 'dot' + (h.isLemon?' lem':'') + (done?' on':'') + (isToday?' today':'');
+      const cls = 'dot' + (h.isBody?' acc':'') + (done?' on':'') + (isToday?' today':'');
       if(isFuture && !done){
         html += `<td class="c"><button class="${cls}" style="opacity:.3;cursor:default;" disabled></button></td>`;
       } else {
@@ -917,7 +1045,7 @@ function renderHabitStats(){
     <h3 class="lbl" style="margin-bottom:16px;"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>stats</h3>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
       <div style="text-align:center;background:var(--surface2);border-radius:14px;padding:14px 8px;">
-        <div style="font-size:26px;font-weight:700;color:var(--sea);">${wkPct}%</div>
+        <div style="font-size:26px;font-weight:700;color:var(--sea-text);">${wkPct}%</div>
         <div style="font-size:12px;color:var(--soft);margin-top:2px;">this week</div>
         <div style="font-size:11px;color:var(--soft);">${wkDone}/${wkPoss}</div>
       </div>
@@ -927,7 +1055,7 @@ function renderHabitStats(){
         <div style="font-size:11px;color:var(--soft);">${moDone}/${moPoss}</div>
       </div>
       <div style="text-align:center;background:var(--surface2);border-radius:14px;padding:14px 8px;">
-        <div style="font-size:26px;font-weight:700;color:var(--lemon);">${totalYr}</div>
+        <div style="font-size:26px;font-weight:700;color:var(--accent);">${totalYr}</div>
         <div style="font-size:12px;color:var(--soft);margin-top:2px;">${yr} total</div>
         <div style="font-size:11px;color:var(--soft);">completions</div>
       </div>
@@ -938,7 +1066,7 @@ function renderHabitStats(){
         const pct = Math.min(Math.round(cnt/Math.max(daysElapsed,1)*100), 100);
         return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <span style="font-size:13px;min-width:100px;">${h.name}</span>
-          <div style="flex:1"><div class="bar"><i style="width:${pct}%;background:${h.isLemon?'var(--lemon)':'var(--sea)'}"></i></div></div>
+          <div style="flex:1"><div class="bar"><i style="width:${pct}%;background:${h.isBody?'var(--accent)':'var(--sea-text)'}"></i></div></div>
           <span style="font-size:13px;color:var(--soft);min-width:70px;text-align:right;">${cnt}× this yr</span>
         </div>`;
       }).join('')}
@@ -956,27 +1084,27 @@ function renderHomeHabits(){
 
 // ═══════ MINI WHEEL (home) ═══════
 (function(){
-  const A=[['#4FA3A0',6],['#4F7CA8',5],['#8A6BA8',7],['#D08A5A',8],['#E0B24A',5],['#C77E92',7],['#6E9A5E',8]];
+  const A=[['var(--teal)',6],['var(--purple)',5],['var(--rose)',7],['var(--coral)',8],['var(--gold)',5],['var(--rose)',7],['var(--leaf)',8]];
   const CX=100,CY=100,R=84,STEP=360/7;
   function pt(r,d){const a=(d-90)*Math.PI/180;return [CX+r*Math.cos(a),CY+r*Math.sin(a)];}
   function wedge(r,a0,a1){const[x0,y0]=pt(r,a0),[x1,y1]=pt(r,a1);return `M${CX},${CY} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z`;}
   let s='';
   A.forEach((a,i)=>{s+=`<path d="${wedge(R,i*STEP,(i+1)*STEP)}" fill="${a[0]}" opacity="0.13"/>`;});
   A.forEach((a,i)=>{s+=`<path d="${wedge(R*a[1]/10,i*STEP,(i+1)*STEP)}" fill="${a[0]}" opacity="0.9"/>`;});
-  for(let i=0;i<7;i++){const[x,y]=pt(R,i*STEP);s+=`<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#274B6B" stroke-opacity="0.15"/>`;}
-  s+=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#274B6B" stroke-opacity="0.25"/>`;
+  for(let i=0;i<7;i++){const[x,y]=pt(R,i*STEP);s+=`<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--ink)" stroke-opacity="0.15"/>`;}
+  s+=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--ink)" stroke-opacity="0.25"/>`;
   document.getElementById('mini-home').innerHTML=s;
 })();
 
 // ═══════ BIG WHEEL (7 areas page) ═══════
 const AREAS=[
-  {name:'Physical',score:6,color:'#4FA3A0',note:'Strength training is building; steps are steady. Weight near goal.',goals:[['Fitness — strength 5×/wk + 7,500 steps',62],['Health — hold 145 lb',70]]},
-  {name:'Mental',score:5,color:'#4F7CA8',note:'Italian is the big lever this year. Reading picks up as the queue grows.',goals:[['Italian — reach B1 + Harry Potter 1',40],['Reading — 12 books in 2026',33]]},
-  {name:'Emotional',score:7,color:'#8A6BA8',note:'Gratitude and journaling are your steadiest anchors.',goals:[['Gratitude — 3 a day',80],['Journal — daily',70]]},
-  {name:'Career',score:8,color:'#D08A5A',note:'Director now — 10/10 lands with the Sr Director promotion.',goals:[['Director → Sr Director',80]]},
-  {name:'Financial',score:5,color:'#E0B24A',note:'Three clear targets: retirement, savings, clearing the loans.',goals:[['Retirement → $200k',34],['Savings → $25k',52],['Student loans → $0',30]]},
-  {name:'Relationships',score:7,color:'#C77E92',note:'Keeping your core people close and making room for love.',goals:[['Keep core people in touch',75],['Love — 1 date or event a month',0]]},
-  {name:'Spiritual',score:8,color:'#6E9A5E',note:'Your center. Daily Mass and adoration carry this one.',goals:[['Mass 5×/wk · Adoration 5×/wk',80],['Rosary + Divine Mercy weekly',85],['Confession every 2 weeks',60]]}
+  {name:'Physical',score:6,color:'var(--teal)',note:'Strength training is building; steps are steady. Weight near goal.',goals:[['Fitness — strength 5×/wk + 7,500 steps',62],['Health — hold 145 lb',70]]},
+  {name:'Mental',score:5,color:'var(--purple)',note:'Italian is the big lever this year. Reading picks up as the queue grows.',goals:[['Italian — reach B1 + Harry Potter 1',40],['Reading — 12 books in 2026',33]]},
+  {name:'Emotional',score:7,color:'var(--rose)',note:'Gratitude and journaling are your steadiest anchors.',goals:[['Gratitude — 3 a day',80],['Journal — daily',70]]},
+  {name:'Career',score:8,color:'var(--coral)',note:'Director now — 10/10 lands with the Sr Director promotion.',goals:[['Director → Sr Director',80]]},
+  {name:'Financial',score:5,color:'var(--gold)',note:'Three clear targets: retirement, savings, clearing the loans.',goals:[['Retirement → $200k',34],['Savings → $25k',52],['Student loans → $0',30]]},
+  {name:'Relationships',score:7,color:'var(--rose)',note:'Keeping your core people close and making room for love.',goals:[['Keep core people in touch',75],['Love — 1 date or event a month',0]]},
+  {name:'Spiritual',score:8,color:'var(--leaf)',note:'Your center. Daily Mass and adoration carry this one.',goals:[['Mass 5×/wk · Adoration 5×/wk',80],['Rosary + Divine Mercy weekly',85],['Confession every 2 weeks',60]]}
 ];
 (function(){
   const CX=200,CY=200,R=150,N=7,STEP=360/N;
@@ -987,9 +1115,9 @@ const AREAS=[
     let s='';
     AREAS.forEach((a,i)=>{s+=`<path d="${wedge(R,i*STEP,(i+1)*STEP)}" fill="${a.color}" opacity="0.13"/>`;});
     AREAS.forEach((a,i)=>{s+=`<path d="${wedge(R*a.score/10,i*STEP,(i+1)*STEP)}" fill="${a.color}" opacity="0.9"/>`;});
-    for(let k=1;k<=10;k++){s+=`<circle cx="${CX}" cy="${CY}" r="${R*k/10}" fill="none" stroke="#274B6B" stroke-opacity="0.10"/>`;}
-    for(let i=0;i<N;i++){const[x,y]=pt(R,i*STEP);s+=`<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#274B6B" stroke-opacity="0.18"/>`;}
-    s+=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#274B6B" stroke-opacity="0.25" stroke-width="1.5"/>`;
+    for(let k=1;k<=10;k++){s+=`<circle cx="${CX}" cy="${CY}" r="${R*k/10}" fill="none" stroke="var(--ink)" stroke-opacity="0.10"/>`;}
+    for(let i=0;i<N;i++){const[x,y]=pt(R,i*STEP);s+=`<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--ink)" stroke-opacity="0.18"/>`;}
+    s+=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--ink)" stroke-opacity="0.25" stroke-width="1.5"/>`;
     if(sel!=null){const a=AREAS[sel];s+=`<path d="${wedge(R,sel*STEP,(sel+1)*STEP)}" fill="none" stroke="${a.color}" stroke-width="4"/>`;}
     AREAS.forEach((a,i)=>{const mid=i*STEP+STEP/2;const[lx,ly]=pt(R+26,mid);const anch=Math.cos((mid-90)*Math.PI/180)>0.25?'start':Math.cos((mid-90)*Math.PI/180)<-0.25?'end':'middle';s+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anch}" dominant-baseline="middle" font-size="13" font-weight="600" fill="${a.color}" font-family="'Avenir Next',sans-serif">${a.name}</text>`;});
     AREAS.forEach((a,i)=>{s+=`<path class="seg" style="cursor:pointer" data-i="${i}" d="${wedge(R,i*STEP,(i+1)*STEP)}" fill="transparent"/>`;});
@@ -1013,10 +1141,27 @@ const AREAS=[
   if(document.getElementById('s-life-goals').classList.contains('active')){draw();detail();}
 })();
 
-// ═══════ LEMON BRANCH ═══════
-const leaf=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="19" ry="8" fill="#6E9A5E"/><path d="M-17 0 L17 0" stroke="#4f7742" stroke-width="1.1"/></g>`;
-const lemon=(x,y,r)=>`<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="17" ry="13" fill="#E7B12F"/><ellipse cx="-5" cy="-4" rx="5" ry="3" fill="#F3D06A"/><path d="M14 -2 q6 -1 8 3" stroke="#6E9A5E" stroke-width="3" fill="none" stroke-linecap="round"/></g>`;
-document.getElementById('branch').innerHTML='<path d="M205 4 C150 18 120 40 96 78 C80 104 60 120 34 128" stroke="#8a6a3a" stroke-width="4" fill="none" stroke-linecap="round"/>'+leaf(170,20,25)+leaf(196,40,-15)+leaf(120,52,40)+leaf(150,74,-10)+leaf(74,104,30)+lemon(104,92,15)+lemon(52,120,-8)+lemon(150,44,10);
+// ═══════ THEME ═══════
+const MOON='<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';
+const SUN='<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.5 1.5M17.6 17.6l1.5 1.5M19.1 4.9l-1.5 1.5M6.4 17.6l-1.5 1.5"/>';
+
+function applyTheme(mode){
+  // mode is 'light' or 'dark'
+  document.documentElement.setAttribute('data-theme', mode);
+  const icon  = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  // The button offers the theme you'd switch TO
+  if(icon)  icon.innerHTML = mode==='dark' ? SUN : MOON;
+  if(label) label.textContent = mode==='dark' ? 'Light' : 'Dark';
+}
+
+window.toggleTheme = function(){
+  const next = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  localStorage.setItem('sos_theme', next);
+  applyTheme(next);
+};
+
+applyTheme(localStorage.getItem('sos_theme') || 'light');
 
 // ═══════ LITURGICAL + FEAST ═══════
 (function(){
@@ -1084,7 +1229,7 @@ document.getElementById('branch').innerHTML='<path d="M205 4 C150 18 120 40 96 7
 })();
 
 // ═══════ COLLECTIONS ═══════
-const COLL_COLORS=['#4FA3A0','#C77E92','#D08A5A','#8A6BA8','#E0B24A','#4F7CA8','#6E9A5E'];
+const COLL_COLORS=['var(--teal)','var(--rose)','var(--coral)','var(--rose)','var(--gold)','var(--purple)','var(--leaf)'];
 const STATUS_CSS={'read':'status-read','currently reading':'status-reading','want to read':'status-want','watched':'status-read','want to watch':'status-want','attended':'status-read','want to see':'status-want','milestone':'status-reading'};
 const STATUS_LABEL={'read':'✓ read','currently reading':'currently reading','want to read':'want to read','watched':'✓ watched','want to watch':'want to watch','attended':'✓ attended','want to see':'want to see','milestone':'milestone'};
 
@@ -1359,7 +1504,7 @@ function renderJournalRecent(){
     <div class="j-entry">
       <div class="j-date">${e.date}</div>
       <div class="j-text">${escHtml(e.entry).substring(0,180)}${e.entry.length>180?'…':''}</div>
-      ${e.mood?`<span class="j-mood" style="background:var(--lemon-bg);color:#8a6a14;">${e.mood}</span>`:''}
+      ${e.mood?`<span class="j-mood" style="background:var(--accent-bg);color:var(--accent-ink);">${e.mood}</span>`:''}
     </div>`).join('');
 }
 
@@ -1580,7 +1725,7 @@ function renderTravelLists(){
       countries.features.forEach(f=>{
         const id=+f.id;
         const vis=VISITED.has(id), wl=WISHLIST.has(id);
-        const fill=vis?'#6E9A5E':wl?'#E7B12F':'#C8DCE8';
+        const fill=vis?'var(--leaf)':wl?'var(--accent)':'var(--map-land)';
         const op=vis||wl?'0.88':'0.55';
         const d=coordsToPath(f.geometry.coordinates,f.geometry.type);
         if(d) html+=`<path d="${d}" fill="${fill}" fill-opacity="${op}"/>`;
@@ -1589,13 +1734,13 @@ function renderTravelLists(){
       // Country borders
       {
         const d=coordsToPath(borders.coordinates,borders.type);
-        html+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="0.4"/>`;
+        html+=`<path d="${d}" fill="none" stroke="var(--surface)" stroke-width="0.4"/>`;
       }
 
       // Flag pins for visited & wishlist
-      const pin=(x,y,flag,color)=>`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="9" fill="${color}" stroke="#fff" stroke-width="1.5"/><text text-anchor="middle" dominant-baseline="central" font-size="10">${flag}</text></g>`;
-      data.visited.forEach(t=>{const c=CENTROIDS[t.country];if(!c)return;const[px,py]=proj(c);html+=pin(px,py,FLAGS[t.country]||'🌍','#6E9A5E');});
-      data.wishlist.forEach(t=>{const c=CENTROIDS[t.country];if(!c)return;const[px,py]=proj(c);html+=pin(px,py,FLAGS[t.country]||'🌟','#E7B12F');});
+      const pin=(x,y,flag,color)=>`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="9" fill="${color}" stroke="var(--surface)" stroke-width="1.5"/><text text-anchor="middle" dominant-baseline="central" font-size="10">${flag}</text></g>`;
+      data.visited.forEach(t=>{const c=CENTROIDS[t.country];if(!c)return;const[px,py]=proj(c);html+=pin(px,py,FLAGS[t.country]||'🌍','var(--leaf)');});
+      data.wishlist.forEach(t=>{const c=CENTROIDS[t.country];if(!c)return;const[px,py]=proj(c);html+=pin(px,py,FLAGS[t.country]||'🌟','var(--accent)');});
 
       svg.innerHTML=html;
     }catch(e){
@@ -1636,7 +1781,7 @@ window.selectMood = function(v){
   selectedMood = v;
   document.querySelectorAll('.mood-star').forEach(b=>{
     const bv = +b.dataset.v;
-    b.style.borderColor = bv===v ? 'var(--sea)' : 'var(--line)';
+    b.style.borderColor = bv===v ? 'var(--sea-text)' : 'var(--line)';
     b.style.background = bv===v ? 'var(--sea-bg)' : 'none';
   });
 };
@@ -1682,14 +1827,14 @@ function renderToday(){
     const W=300, H=80, PAD=10;
     const xStep = pts.length > 1 ? (W-PAD*2)/(pts.length-1) : 0;
     const yScale = v => PAD + (H-PAD*2) * (1 - (v-1)/4);
-    const MOOD_COLORS = ['','#B4532E','#D08A5A','#6E8093','#6E9A5E','#E7B12F'];
+    const MOOD_COLORS = ['','var(--neg)','var(--coral)','var(--soft)','var(--leaf)','var(--accent)'];
 
     let path='', circles='';
     pts.forEach((e,i)=>{
       const x = PAD + i*xStep;
       const y = yScale(e.mood||3);
       path += (i===0?`M${x},${y}`:`L${x},${y}`);
-      circles += `<circle cx="${x}" cy="${y}" r="4" fill="${MOOD_COLORS[e.mood]||'var(--sea)'}"><title>${e.date}: ${['','awful','bad','ok','good','great'][e.mood]||''}</title></circle>`;
+      circles += `<circle cx="${x}" cy="${y}" r="4" fill="${MOOD_COLORS[e.mood]||'var(--sea-text)'}"><title>${e.date}: ${['','awful','bad','ok','good','great'][e.mood]||''}</title></circle>`;
     });
 
     // Y axis labels
@@ -1700,7 +1845,7 @@ function renderToday(){
     }
 
     chartEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:300px;display:block;">
-      <path d="${path}" fill="none" stroke="var(--sea)" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="${path}" fill="none" stroke="var(--sea-text)" stroke-width="1.5" stroke-linejoin="round"/>
       ${circles}${labels}
     </svg>`;
   } else if(chartEl) {
@@ -1720,7 +1865,7 @@ function renderToday(){
     const words = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,40);
     if(!words.length){ wcEl.innerHTML='<div style="color:var(--soft);font-size:13px;">Words will appear here as you log days.</div>'; return; }
     const max = words[0][1];
-    const CLOUD_COLORS = ['var(--sea)','var(--leaf)','var(--coral)','var(--purple)','var(--lemon)','var(--teal)'];
+    const CLOUD_COLORS = ['var(--sea-text)','var(--leaf)','var(--coral)','var(--purple)','var(--accent)','var(--teal)'];
     wcEl.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;line-height:1.8;">'+
       words.map(([w,cnt],i)=>{
         const sz = 13 + Math.round((cnt/max)*22);
@@ -1731,7 +1876,7 @@ function renderToday(){
 }
 
 // ═══════ BRAIN DUMP — STICKY NOTES ═══════
-const STICKY_COLORS = ['#FFF9C4','#DCEAF3','#D5EDDA','#EDE0F5','#FFE0CC','#FBEEC2'];
+const STICKY_COLORS = ['var(--tint2)','var(--tint3)','var(--accent-bg)','var(--tint4)','var(--tint5)','var(--tint2)'];
 
 window.saveBrain = function(){
   const ta = document.getElementById('brain-textarea');
@@ -1806,10 +1951,10 @@ function renderBodyDisplay(){
     // Area fill
     const areaD = d + ` L${(PAD+(pts.length-1)*xStep).toFixed(1)},${H} L${PAD},${H} Z`;
     chartEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:320px;display:block;">
-      <path d="${areaD}" fill="var(--sea)" fill-opacity=".12"/>
-      <path d="${d}" fill="none" stroke="var(--sea)" stroke-width="2" stroke-linejoin="round"/>
-      <circle cx="${(PAD+(pts.length-1)*xStep).toFixed(1)}" cy="${yScale(vals[vals.length-1]).toFixed(1)}" r="4" fill="var(--sea)"/>
-      <text x="${(PAD+(pts.length-1)*xStep).toFixed(1)}" y="${yScale(vals[vals.length-1]).toFixed(1)-8}" text-anchor="middle" font-size="10" fill="var(--sea)">${vals[vals.length-1]} lb</text>
+      <path d="${areaD}" fill="var(--sea-text)" fill-opacity=".12"/>
+      <path d="${d}" fill="none" stroke="var(--sea-text)" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="${(PAD+(pts.length-1)*xStep).toFixed(1)}" cy="${yScale(vals[vals.length-1]).toFixed(1)}" r="4" fill="var(--sea-text)"/>
+      <text x="${(PAD+(pts.length-1)*xStep).toFixed(1)}" y="${yScale(vals[vals.length-1]).toFixed(1)-8}" text-anchor="middle" font-size="10" fill="var(--sea-text)">${vals[vals.length-1]} lb</text>
     </svg>`;
   }
 }
@@ -1833,7 +1978,7 @@ window.connectGCal = function(){
   function isICS(u){ return u && u.includes('calendar.google.com') && u.includes('.ics'); }
   if(!isICS(url)){
     showToast('⚠ URL must end in .ics — see instructions above');
-    document.getElementById('gcal-url-input').style.borderColor='#b04040';
+    document.getElementById('gcal-url-input').style.borderColor='var(--neg)';
     return;
   }
   document.getElementById('gcal-url-input').style.borderColor='';
@@ -2161,7 +2306,7 @@ function showSignIn(){
         <input id="gcid-input" type="text" placeholder="xxxx.apps.googleusercontent.com"
           style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--line);
           border-radius:10px;font-size:13px;margin-bottom:10px;">
-        <button onclick="saveClientId()" style="padding:10px 22px;background:var(--sea);color:#fff;
+        <button onclick="saveClientId()" style="padding:10px 22px;background:var(--sea);color:var(--on-sea);
           border:none;border-radius:20px;font-size:14px;cursor:pointer;">Save & continue</button>
         <br><br><span style="font-size:11px;opacity:.6;">
           Get it at console.cloud.google.com → APIs & Services → Credentials → OAuth 2.0 Client ID (Web).<br>
